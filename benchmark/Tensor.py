@@ -8,8 +8,8 @@ def indextupel(dim):
    keyset={(0,),(1,),(2,)}
    for j in range(1,dim):
       keyset=add_index(keyset)
-
    return(keyset) 
+
 def del_index(keyset,pos):
     keyset=list(keyset)
     if len(keyset)==0:
@@ -18,6 +18,7 @@ def del_index(keyset,pos):
     if l <2 :
         raise(ToShortTupelError)
     newset=set()
+    pos=pos%l
     for key in keyset:
         before=key[0:pos]
         after =key[pos+1:l]
@@ -295,30 +296,34 @@ class Tensor(object):
                     ocart=other.transform2(["cart"])
                     print(ocart)
                     res=scoords.scalarSimp(sum(map(lambda key:scart.components[key]*ocart.components[key],scart.components.keys())))
-                    left_keys=del_index(sc.keys(),-1)
-                    print("left_keys=")
-                    print(left_keys)
                     
-                    right_keys=del_index(oc.keys(),1)
-                    #right_keys=set(add_index(oc.keys(),ns-1))
-                    keyset=indexTensProd(left_keys,right_keys)
-                    print("keyset="+str(keyset))
-                    #res=scoords.scalarSimp(sum(map(lambda
-                     #                              key:sc[key]*oc[key],keyset)))
-                 
-            else
+            else:
                 #at least one of the tensors
                 left_keys=del_index(sc.keys(),-1)
                 print("left_keys=")
                 print(left_keys)
-                
-                right_keys=del_index(oc.keys(),1)
+                right_keys=del_index(oc.keys(),0)
                 #right_keys=set(add_index(oc.keys(),ns-1))
                 keyset=indexTensProd(left_keys,right_keys)
+                for rk in right_keys:
+                    #extract all tupels of the original lefthand side tensor 
+                    # that start with rk and build a first order tensor 
+                    # from it
+                    testset=add_index(rk)
+                    l_matches=testset.intersection(sc.keys)
+                    lvec_components={}
+                    for m in l_matches:
+                        lvec_components[(m[-1],)]=sc[m]
+                    testset=indexTensProd(indextupel(1),lk)
+                    r_matches=testset.intersection(oc.keys)
+                    lvec_components={}
+                    for m in l_matches:
+                        rvec_components[(m[0],)]=oc[m]
+                    raise("Weitermachen")
                 print("keyset="+str(keyset))
                 #res=scoords.scalarSimp(sum(map(lambda
-               #                              key:sc[key]*oc[key],keyset)))
-              raise(NotImplementedError) 
+                #                              key:sc[key]*oc[key],keyset)))
+                #  raise(NotImplementedError) 
         return(res)
     
     def transform2(self,newComponentTypes):

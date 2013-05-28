@@ -107,10 +107,10 @@ class TensorTest(unittest.TestCase):
         self.assertEqual(u|v,sp.g_cc()[1,1])
 
         #second order Tensors
-        #u  =Tensor(sp,["cart","cart"],{(0,0):1})
-        #v  =Tensor(sp,["cart","cart"],{(0,0):1})
-        #ref=Tensor(sp,["cart","cart"],{(0,0):1})
-        #self.assertEqual(u|v,ref)
+        u  =Tensor(sp,["cart","cart"],{(0,0):1})
+        v  =Tensor(sp,["cart","cart"],{(0,0):1})
+        ref=Tensor(sp,["cart","cart"],{(0,0):1})
+        self.assertEqual(u|v,ref)
 
     def test_indextupel(self):
         t=indextupel(1)
@@ -137,6 +137,11 @@ class TensorTest(unittest.TestCase):
         t=indextupel(2)
         res=del_index(t,1)
         self.assertEqual(res,indextupel(1))
+        
+        t=indextupel(2)
+        res=del_index(t,-1)
+        self.assertEqual(res,indextupel(1))
+        
 
         t=indextupel(3)
         res=del_index(t,0)
@@ -148,6 +153,10 @@ class TensorTest(unittest.TestCase):
 
         t=indextupel(3)
         res=del_index(t,2)
+        self.assertEqual(res,indextupel(2))
+
+        t=indextupel(3)
+        res=del_index(t,-1)
         self.assertEqual(res,indextupel(2))
 
         t={(1,2,3)}

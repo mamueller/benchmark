@@ -16,7 +16,7 @@ def suite():
     #s.addTest(TensorTest("test_vec_grad"))
     #s.addTest(TensorTest("test_partder"))
     s.addTest(TensorTest("test_scalarProduct"))
-    #s.addTest(TensorTest("test_del_index"))
+    s.addTest(TensorTest("test_del_index"))
     #s.addTest(TensorTest("test_raise_and_lower"))
     #s.addTest(TensorTest("test_equal"))
     #s.addTest(TensorTest("test_cart"))
