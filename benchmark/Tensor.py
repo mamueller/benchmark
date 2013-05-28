@@ -19,7 +19,10 @@ def del_index(keyset,pos):
         raise(ToShortTupelError)
     newset=set()
     for key in keyset:
-        newkey=key[0:pos]+key[pos:l]
+        before=key[0:pos]
+        after =key[pos+1:l]
+        #print("\n key="+str(key)+'\n before='+ str(before)+"\n after="+ str(after))
+        newkey=before+after
         newset.add(newkey)
     return(newset)   
 
@@ -280,7 +283,9 @@ class Tensor(object):
             sc=self.components
             oc=other.components
             ns=len(scT)
+            print("ns="+str(ns))
             no=len(ocT)
+            print("no="+str(no))
             if len(scT)==1 and len(ocT)==1:
                 if (scT[-1]=="roof" and ocT[0]=="cellar") or (scT[-1]=="cellar" and ocT[0]=="roof"):
                     res=sum(map(lambda key:sc[key]*oc[key],sc.keys()))
@@ -290,17 +295,29 @@ class Tensor(object):
                     ocart=other.transform2(["cart"])
                     print(ocart)
                     res=scoords.scalarSimp(sum(map(lambda key:scart.components[key]*ocart.components[key],scart.components.keys())))
-            if ns==2 and no==1:
-                if (scT[-1]=="cart" and ocT[0]=="cart"): 
-                    left_keys=del_index(sc.keys(),1)
+                    left_keys=del_index(sc.keys(),-1)
                     print("left_keys=")
                     print(left_keys)
-                    right_keys=set(add_index(oc.keys(),ns-1))
+                    
+                    right_keys=del_index(oc.keys(),1)
+                    #right_keys=set(add_index(oc.keys(),ns-1))
                     keyset=indexTensProd(left_keys,right_keys)
                     print("keyset="+str(keyset))
-                    res=scoords.scalarSimp(sum(map(lambda
-                                                   key:sc[key]*oc[key],keyset)))
-            else:     
+                    #res=scoords.scalarSimp(sum(map(lambda
+                     #                              key:sc[key]*oc[key],keyset)))
+                 
+            else
+                #at least one of the tensors
+                left_keys=del_index(sc.keys(),-1)
+                print("left_keys=")
+                print(left_keys)
+                
+                right_keys=del_index(oc.keys(),1)
+                #right_keys=set(add_index(oc.keys(),ns-1))
+                keyset=indexTensProd(left_keys,right_keys)
+                print("keyset="+str(keyset))
+                #res=scoords.scalarSimp(sum(map(lambda
+               #                              key:sc[key]*oc[key],keyset)))
               raise(NotImplementedError) 
         return(res)
     

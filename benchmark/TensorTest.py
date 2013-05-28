@@ -98,13 +98,20 @@ class TensorTest(unittest.TestCase):
         self.assertEqual(u|v,1)
         self.assertEqual(v|u,1)
         
-	u=Tensor(sp,["cellar"],{(1,):1})
+        u=Tensor(sp,["cellar"],{(1,):1})
         v=Tensor(sp,["cellar"],{(1,):1})
         self.assertEqual(u|v,sp.g_rr()[1,1])
         
-	u=Tensor(sp,["roof"],{(1,):1})
+        u=Tensor(sp,["roof"],{(1,):1})
         v=Tensor(sp,["roof"],{(1,):1})
         self.assertEqual(u|v,sp.g_cc()[1,1])
+
+        #second order Tensors
+        #u  =Tensor(sp,["cart","cart"],{(0,0):1})
+        #v  =Tensor(sp,["cart","cart"],{(0,0):1})
+        #ref=Tensor(sp,["cart","cart"],{(0,0):1})
+        #self.assertEqual(u|v,ref)
+
     def test_indextupel(self):
         t=indextupel(1)
         self.assertEqual(t,{(0,),(1,),(2,)})
@@ -115,6 +122,38 @@ class TensorTest(unittest.TestCase):
 	                  (1,0,0),(1,0,1),(1,0,2),(1,1,0),(1,1,1),(1,1,2),(1,2,0),(1,2,1),(1,2,2),\
 	                  (2,0,0),(2,0,1),(2,0,2),(2,1,0),(2,1,1),(2,1,2),(2,2,0),(2,2,1),(2,2,2),\
 			  })
+    def test_del_index(self):
+        t=indextupel(1)
+        with self.assertRaises(ToShortTupelError):
+            res=del_index(t,0)
+        t={}
+        with self.assertRaises(EmptyIndexSetError):
+            res=del_index(t,0)
+        
+        t=indextupel(2)
+        res=del_index(t,0)
+        self.assertEqual(res,indextupel(1))
+        
+        t=indextupel(2)
+        res=del_index(t,1)
+        self.assertEqual(res,indextupel(1))
+
+        t=indextupel(3)
+        res=del_index(t,0)
+        self.assertEqual(res,indextupel(2))
+
+        t=indextupel(3)
+        res=del_index(t,1)
+        self.assertEqual(res,indextupel(2))
+
+        t=indextupel(3)
+        res=del_index(t,2)
+        self.assertEqual(res,indextupel(2))
+
+        t={(1,2,3)}
+        res=del_index(t,1)
+        self.assertEqual(res,{(1,3)})
+
 
     def test_transform2_vector(self):
         sp=Spherical()
