@@ -1,0 +1,119 @@
+%\documentclass[11pt,twoside]{book}    % 
+\documentclass[11pt,a4paper,twoside]{article}    % 
+\usepackage{url}
+%\usepackage{tex4ht}
+\usepackage[round]{natbib}% Literaturzitate mit Autor und Jahr im Text
+\usepackage{a4}	% a4 has a higher and a little bit wider textarea
+%\usepackage{cite,textcomp,color,ngerman}
+\usepackage{amsmath,amssymb}
+\usepackage[algo2e,ruled]{algorithm2e} % Algorithmen in Boxen
+\usepackage[breaklinks]{hyperref}   % doesn't work but using it after
+                                    % typedref/amsthm gives errors
+\usepackage{amsthm}
+\usepackage[nottoc]{tocbibind}
+
+% mathematical commands
+\newcommand{\mb}{\mathbf}
+\newcommand{\pdiff}[2]{\frac{\partial#1}{\partial #2}}
+\newtheorem{thm}{Theorem}
+
+% space-saving list environment
+\newenvironment{dlist}
+   {\begin{list}
+      {$\bullet$}
+      {
+      \setlength{\topsep}{0.5ex}
+      \setlength{\partopsep}{0.0ex}
+      \setlength{\parsep}{0.5ex}
+      \setlength{\itemsep}{0.0ex}
+      \setlength{\itemindent}{3.0ex}
+      \setlength{\leftmargin}{0.0ex}
+      \setlength{\labelsep}{1.0ex}
+      }
+   }
+   {\end{list}}
+
+
+\begin{document}
+
+\subsection{Modeling Convection and Evolution of the Earth's Mantle Using Terra}
+
+One of the earliest three-dimensional numerical model was the 
+spherical-shell model Terra, developed by \citet{Baumgardner1983,Baumgardner1985a}.
+It uses a finite-element discretization on a triangular grid, and it utilizes
+an efficient multigrid algorithm to solve for the velocity. 
+It was parallelized by \citet{Bunge1995} through message passing and
+domain decomposition in two of three dimensions. A first study of
+convection with Earth-like Rayleigh number of $10^8$ and depth-dependent
+viscosity was done by \citet{Bunge1997}. At the same time, \citet{Yang1997}
+improved the multigrid algorithm with matrix-dependent transfer operators to
+represent varying coefficients properly on coarse grids. With this code,
+\citet{Richards2001} investigated surface mobility as a function of viscosity
+variation and yield stress, and \citet{Reese2005} explored a parameter range of 
+$\Delta \eta$ between $10^5$ and $5 \times 10^7$ with an internal Rayleigh
+number of $10^6$. \citet{Walzer2004a} derived a viscosity profile, with three
+high-viscosity and three low-viscosity zones and steep gradients, based on 
+postglacial rebound, mantle mineralogy, seismic tomography, thermodynamics
+and high-pressure geophysics. However, some restrictions were put into this
+viscosity model because of numerical reasons, especially regarding lateral
+variations due to temperature-dependence. Their model derived the evolution of
+self-consistent oceanic plates in connection with the thermal evolution of the
+spherical shell of the Earth. In this model it was necessary to assume that the
+oceanic lithosphere is also a \emph{chemical} boundary layer and that its
+existence is not determined by the temperature dependence of viscosity alone.
+
+\citet{Walzer2008a,Walzer2008b} again showed the importance of these viscosity
+variations for plate tectonics and surface mobility on Earth and incorporated
+chemical differentiation of continents and, as a complement, of the
+depleted MORB mantle (DMM). In their model, continents evolve by the interplay
+of chemical differentiation and convection/mixing, without the requirement
+of modified boundary conditions on the outer surface of the shell. DMM is partly
+stirred into the other mantle reservoirs, resulting in a marble-cake mantle with
+a high concentration of DMM in the asthenosphere \citep{Walzer2011}.
+
+Terra was also applied by \citet{Oldham2004} to investigate layered convection 
+and by \citet{Bunge2005,Davies2005a,Davies2005,Davies2009} to study thermally driven mantle plumes.
+To reach a higher grid resolution in the upper mantle, \citet{Davies2008} added
+a multi-resolution multigrid method to Terra.
+
+\citet{Phillips2005,Phillips2007,Coltice2007,Phillips2009,Phillips2010} studied the influence of mobile continents on mantle temperture and convective wavelength.
+
+\citet{Bunge2001} used Terra to calculate mantle flow in a circulation model
+to further constrain seismic tomographic imaging of the mantle. 
+They further did inverse modeling with data assimilation for the past 200~Ma \citet{Bunge2002,Bunge2003} 
+to infer mantle flow and structure from seismic tomography and plate motion history.
+\citet{Schuberth2009,Schuberth2009a} also investigated thermal and elastic properties and heterogeneities within the mantle to explain velocity models based on global seismic tomography.
+
+\citet{Iaffaldano2007} coupled Terra to a lithospheric model to study plate coupling at the Nazca-South America
+convergent margin.
+
+\subsection{Inf-sup in Spherical Shell}
+\citet{Tabata2000} extended the proof of unique solvability to 
+Ray\-leigh-B\'enard convection in a spherical shell with free-slip boundary
+conditions and later also to variable-viscosity convection
+\citep{Tabata2002,Tabata2006}. 
+As mentioned before, although they use a slightly different formulation 
+of the bilinear form $a$, their results should be valid for our formulation
+as well. The viscosity in their model is supposed to be a continuously
+differentiable function 
+of position, time and temperature. It is also confined to an interval 
+between extremal values on which the error estimates depend. However, 
+the inf-sup constant $\beta$ in their model decreases linearly 
+with the overall viscosity contrast.
+
+
+%The convection code Terra has been 
+
+%% ------------------------------------------------------------------------ %%
+%
+%  REFERENCE LIST AND TEXT CITATIONS
+%
+%% ------------------------------------------------------------------------ %%
+
+\bibliographystyle{abbrvnat}
+%\bibliographystyle{plainnat}
+%\bibliographystyle{spphys}
+\bibliography{wz,ck}
+
+
+\end{document}

@@ -1,0 +1,3 @@
+# some simplifications do not work with sympy 0.71 but (some complicated terms evaluation to 1) are not regognized) and so some tests fail
+# with sympy 0.72  those problems do not arise
+
