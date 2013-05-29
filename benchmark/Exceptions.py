@@ -1,5 +1,11 @@
 from string import Template
 ##########################################################
+class ComponentsLengthError(Exception):
+    def __init__(self,components):
+        self.components=components
+    def __str__(self):
+        return("The initialize method of class Vector accepts exactly one component type , but got: "+str(components))
+##########################################################
 class ComponentTypesTupelMismatch(Exception):
     def __init__(self,tupel,types):
         self.tupel=tupel

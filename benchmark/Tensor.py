@@ -1,15 +1,18 @@
 #!/usr/bin/python
+# vim:set ff=unix expandtab ts=4 sw=4:
 import copy 
 from sympy import *
 from Exceptions import *
 from Coords import *
 from CoordsTransform import *
+###########################################################
 def indextupel(dim):
    keyset={(0,),(1,),(2,)}
    for j in range(1,dim):
       keyset=add_index(keyset)
    return(keyset) 
 
+###########################################################
 def del_index(keyset,pos):
     keyset=list(keyset)
     if len(keyset)==0:
@@ -27,6 +30,7 @@ def del_index(keyset,pos):
         newset.add(newkey)
     return(newset)   
 
+###########################################################
 def add_index(keyset,n=1):
     if n==0:
         return(keyset)
@@ -40,6 +44,7 @@ def add_index(keyset,n=1):
                     newset.add(newkey)
         return(add_index(newset,n-1) )          
 
+###########################################################
 def indexTensProd(is1,is2):
     newset=set()
     for k1 in is1:
@@ -48,6 +53,7 @@ def indexTensProd(is1,is2):
             newset.add(newkey)
     return(newset)
                
+###########################################################
 def changedTupel(origTupel,position,newvalue):
     # tuples are immutable, therefor we have to convert to a list
     # first, change what we want to change and then convert back
@@ -57,6 +63,7 @@ def changedTupel(origTupel,position,newvalue):
     return(tuple(l))
 
 	   
+###########################################################
 def components2vec(components):
     vec=zeros((3,1))
     for i in range(0,3):
@@ -66,6 +73,7 @@ def components2vec(components):
     print(vec)	   
     return(vec)
 
+###########################################################
 def vec2components(vec):
     comp={}
     for i in range(0,len(vec)):
@@ -73,6 +81,7 @@ def vec2components(vec):
     return(comp)
    
 class Tensor(object):
+###########################################################
     def __init__(self,coords,componentTypes,components):
         if not(set(componentTypes).issubset({"roof","cellar","cart","phys"})):
             raise(UnknownComponentType(componentTypes))
@@ -110,10 +119,11 @@ class Tensor(object):
         self.roof2cart=CoordsTransform("roof","cart",coords.J)
         self.cellar2cart=CoordsTransform("cellar","cart",coords.Jinv.transpose())
 
+###########################################################
     def __str__(self):
-        res="class:Tensor\n"+"componentTypes="+str(self.componentTypes)+"\n"\
-                +"components="+str(self.components)+"\n"
+        res="class:"+self.__class__.__name__+"\n"+"componentTypes="+str(self.componentTypes)+"\ncomponents="+str(self.components)+"\n"
         return(res)
+###########################################################
     def __repr__(self):
         # this function should return an expression that when passed to eval
         # creates an identical copy of the object
@@ -121,6 +131,7 @@ class Tensor(object):
         return(res)
         
     
+###########################################################
     def raise_index(self,pos):
         # raise index pos of the tensor
         # simmonds P39 2.9
@@ -151,16 +162,19 @@ class Tensor(object):
         Res.componentTypes[pos]="roof"
         return(Res)
     
+###########################################################
     def raise_first_index(self):
         # raise index ind of the tensor
         # simmonds P39 2.9
         return(self.raise_index(0))
         
+###########################################################
     def raise_last_index(self):
         # raise index ind of the tensor
         # simmonds P39 2.9
         return(self.raise_index(-1))
     
+###########################################################
     def lower_index(self,pos):
         # lower index ind of the tensor self
         # simmonds P39 2.9
@@ -191,14 +205,17 @@ class Tensor(object):
         Res.componentTypes[pos]="cellar"
         return(Res)
     
+###########################################################
     def lower_first_index(self):
         # lower index ind of the tensor self
         # simmonds P39 2.9
         return(self.lower_index(0))
+###########################################################
     def lower_last_index(self):
         # lower index ind of the tensor self
         # simmonds P39 2.9
         return(self.lower_index(-1))
+###########################################################
     def __add__(self,other):
         cself=copy.deepcopy(self)
         t=other.__class__.__name__
@@ -225,17 +242,20 @@ class Tensor(object):
                 raise(NotImplementedError)
         else:
             raise(ArgumentTypeError("+",self.__class__.__name__,t))
+###########################################################
     def __sub__(self,other):
        return(self+(-1)*other) 
     
                     
     
+###########################################################
     def __rmul__(self,lf):
         cself=copy.deepcopy(self)
         # in case that the left factor lf in a product of the form lf*rf
         # does not belong to this class we swap the order
         return(cself.__mul__(lf))
     
+###########################################################
     def __mul__(self,other):
         cself=copy.deepcopy(self)
         t=type(other)
@@ -273,6 +293,82 @@ class Tensor(object):
                raise(NotImplementedError) 
             return(res)
 
+###########################################################
+    
+    def vectorScalarProduct(self,other): #(scalar Product | )
+        scoords=self.coords
+        ocoords=other.coords
+        if scoords!=ocoords:
+          raise(NotImplementedError) 
+        else:
+            scT=self.componentTypes
+            ocT=other.componentTypes
+            sc=self.components
+            oc=other.components
+            sck=sc.keys()
+            ock=oc.keys()
+            ns=len(scT)
+            no=len(ocT)
+            if not(ns==1 and no==1):
+                print("ns="+str(ns))
+                print("no="+str(no))
+                raise(NotImplementedError) 
+            else:
+                ll=scT[-1] #last left 
+                fr=ocT[0]  #first right
+                if (ll=="roof" and fr=="cellar") or (ll=="cellar" and fr=="roof") or (ll=="cart" and fr=="cart"):
+                    res=sum(map(lambda key:sc[key]*oc[key],sck))
+                else: 
+                    scart=self.transform2(["cart"])
+                    print(scart)
+                    ocart=other.transform2(["cart"])
+                    print(ocart)
+                    res=scoords.scalarSimp(sum(map(lambda key:scart.components[key]*ocart.components[key],scart.components.keys())))
+            return(res)
+
+###########################################################
+    def tensorVectorScalarProduct(self,other): #(scalar Product | )
+        scoords=self.coords
+        ocoords=other.coords
+        if scoords!=ocoords:
+          raise(NotImplementedError) 
+        else:
+            scT=self.componentTypes
+            ocT=other.componentTypes
+            sc=self.components
+            oc=other.components
+            sck=sc.keys()
+            ock=oc.keys()
+            ns=len(scT)
+            no=len(ocT)
+            if not(ns>1 and no==1):
+                print("ns="+str(ns))
+                print("no="+str(no))
+                raise(NotImplementedError) 
+            left_keys=del_index(sck,-1)
+            print("left_keys=")
+            print(left_keys)
+            for lk in left_keys:
+                #extract all tupels of the original lefthand side tensor 
+                # that start with lk and build a first order tensor 
+                # from it
+                testset=indexTensProd(indextupel(1),{lk})
+                l_matches=testset.intersection(sck)
+                lvec_components={}
+                for m in l_matches:
+                    lvec_components[(m[-1],)]=sc[m]
+                print("lvec_components")
+                print(lvec_components)
+                lvec=Tensor(scoords,scT[-1],lvec_components)
+            #return(res)
+            #print("keyset="+str(keyset))
+            ##res=scoords.scalarSimp(sum(map(lambda
+            ##                              key:sc[key]*oc[key],keyset)))
+            ##  raise(NotImplementedError) 
+            #return(res)
+
+
+###########################################################
     def __or__(self,other): #(scalar Product | )
         scoords=self.coords
         ocoords=other.coords
@@ -283,49 +379,32 @@ class Tensor(object):
             ocT=other.componentTypes
             sc=self.components
             oc=other.components
+            sck=sc.keys()
+            ock=oc.keys()
             ns=len(scT)
-            print("ns="+str(ns))
             no=len(ocT)
+            print("ns="+str(ns))
             print("no="+str(no))
-            if len(scT)==1 and len(ocT)==1:
-                if (scT[-1]=="roof" and ocT[0]=="cellar") or (scT[-1]=="cellar" and ocT[0]=="roof"):
-                    res=sum(map(lambda key:sc[key]*oc[key],sc.keys()))
-                else: 
-                    scart=self.transform2(["cart"])
-                    print(scart)
-                    ocart=other.transform2(["cart"])
-                    print(ocart)
-                    res=scoords.scalarSimp(sum(map(lambda key:scart.components[key]*ocart.components[key],scart.components.keys())))
-                    
-            else:
-                #at least one of the tensors
-                left_keys=del_index(sc.keys(),-1)
-                print("left_keys=")
-                print(left_keys)
-                right_keys=del_index(oc.keys(),0)
-                #right_keys=set(add_index(oc.keys(),ns-1))
-                keyset=indexTensProd(left_keys,right_keys)
-                for rk in right_keys:
-                    #extract all tupels of the original lefthand side tensor 
-                    # that start with rk and build a first order tensor 
-                    # from it
-                    testset=add_index(rk)
-                    l_matches=testset.intersection(sc.keys)
-                    lvec_components={}
-                    for m in l_matches:
-                        lvec_components[(m[-1],)]=sc[m]
-                    testset=indexTensProd(indextupel(1),lk)
-                    r_matches=testset.intersection(oc.keys)
-                    lvec_components={}
-                    for m in l_matches:
-                        rvec_components[(m[0],)]=oc[m]
-                    raise("Weitermachen")
-                print("keyset="+str(keyset))
-                #res=scoords.scalarSimp(sum(map(lambda
-                #                              key:sc[key]*oc[key],keyset)))
-                #  raise(NotImplementedError) 
-        return(res)
+            #both tensors are vectors
+            if (ns==1 and no==1):
+                return(self.vectorScalarProduct(other))
+                
+            ##the left tensor has at least dimensio 2
+            elif (ns>1 and no==1):
+                return(self.tensorVectorScalarProduct(other))
+
+            ##the right hand side tensor has at least dimensio 2
+            elif (ns==1 and no>1):
+                return(other.tensorVectorScalarProduct(self))
+            
+            ##both tensors have at least dimensio 2
+            elif (ns>1 and no>1):
+                raise(NotImplementedError) 
+            else: 
+                raise(NotImplementedError) 
+
     
+###########################################################
     def transform2(self,newComponentTypes):
         cs=copy.deepcopy(self)
         c=cs.coords
@@ -353,6 +432,7 @@ class Tensor(object):
         
         return(cs)
     
+###########################################################
     def div(self):
         sc=copy.deepcopy(self)
         cT=sc.componentTypes
@@ -365,6 +445,7 @@ class Tensor(object):
                 f=lambda j:sc.covder(j,(j,k))
                 n[(k,)]=sum(map(f,range(0,3)))
             return(Tensor(co,[cT[1]],n))
+###########################################################
     def transpose(self):
         new=self
         coords=self.coords
@@ -376,11 +457,13 @@ class Tensor(object):
            new.componentTypes=["roof","cellar"]
            new=new.lower_first_index().raise_last_index()
         return(new)
+###########################################################
     def str(self):
         description="coords="+str(self.coords)\
                 +"componentTypes="+str(self.componentTypes)\
                 +"components="+str(self.components)
         return(description)
+###########################################################
     def __eq__(self,other):
         boolval=\
         type(self.coords)==type(other.coords) and \
@@ -388,6 +471,7 @@ class Tensor(object):
         self.components==other.components
         return(boolval)
     
+###########################################################
     def subs(self,*args):
         sc=copy.deepcopy(self)
         c=sc.components
@@ -397,6 +481,7 @@ class Tensor(object):
         sc.components=n
         return(sc)
 
+###########################################################
     def partder(self,i):
         sct=self.componentTypes
         sco=self.coords
@@ -410,6 +495,7 @@ class Tensor(object):
         
         res=Tensor(sco,sct,rc)
         return(res)
+###########################################################
     def covder(self,i,k):
         # this function computes the covariant derivative of a tensor
         # is the index of the partial derivative adn k is an index tupel
@@ -460,6 +546,7 @@ class Tensor(object):
             
 
 
+###########################################################
     def nabla(self):
         # This function applies the Nabla operator to the tensor.
         cs=copy.deepcopy(self)
@@ -472,7 +559,3 @@ class Tensor(object):
         for i in t:
             comp[i]=cs.partder(i)
         res=Tensor(cs.coords,"cellar",comp)
-           
-        
-
-# vim:set ff=unix expandtab ts=4 sw=4:

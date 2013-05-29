@@ -2,10 +2,11 @@
 # vim:set ff=unix expandtab ts=4 sw=4:
 import unittest 
 from Spherical import *
-from Tensor import *
+from Vector import * 
 
 class TensorTest(unittest.TestCase):
-    def test_initialization(self):
+###########################################################
+    def test_Tensor_initialization(self):
         sp=Spherical()
         # test some allowed use cases
         u=Tensor(sp,["cellar"],{0:1})
@@ -21,6 +22,22 @@ class TensorTest(unittest.TestCase):
         with self.assertRaises(ComponentTypesTupelMismatch):
             # wrong number of component types
              Tensor(sp,["cellar"],{(1,1):1})
+
+###########################################################
+    def test_Vector_initialization(self):
+        sp=Spherical()
+        # test some allowed use cases
+        u=Vector(sp,["cellar"],{0:1})
+        u=Vector(sp,["cart"],{0:1})
+        u=Vector(sp,["cellar","roof"],{(0,0):1}) 
+        #more than one is no longer a Vector
+        with self.assertRaises(ComponentsLengthError): 
+            u=Vector(sp,["cellar","roof"],{(0,0):1,(1,1):1,(2,2):1}) 
+        # retrieve values from the tensor
+        #ucr=u.components(["cellar","roof"])
+        
+
+###########################################################
     def test_equal(self):
         # we test if a==b behaves like expected
         sp=Spherical()
@@ -38,6 +55,7 @@ class TensorTest(unittest.TestCase):
         w=Tensor(sp,["roof"],{(1,):1})
     
         self.assertTrue(not(u==w))
+###########################################################
     def test_raise_and_lower(self):
         sp=Spherical()
         u=Tensor(sp,["cellar"],{(1,):1})
@@ -46,6 +64,7 @@ class TensorTest(unittest.TestCase):
         v=u.raise_last_index().lower_first_index()
         self.assertTrue(u==v)
         
+###########################################################
     def testScalarMul(self):
         sp=Spherical()
         u=Tensor(sp,["roof"],{(1,):1})
@@ -55,6 +74,7 @@ class TensorTest(unittest.TestCase):
         v=5*u
         self.assertEqual(v,w)
     
+###########################################################
     def testAdd(self):
         sp=Spherical()
         u=Tensor(sp,["roof"],{(1,):1})
@@ -82,6 +102,7 @@ class TensorTest(unittest.TestCase):
         with self.assertRaises(ArgumentTypeError):
            u+3 
         
+###########################################################
     def testSub(self):
         sp=Spherical()
         u=Tensor(sp,["roof"],{(1,):1})
@@ -90,28 +111,33 @@ class TensorTest(unittest.TestCase):
         res=u-v
         self.assertEqual(res,ref)
     
+###########################################################
     def test_scalarProduct(self):
         sp=Spherical()
-        #first order Tensors
-        u=Tensor(sp,["cellar"],{(1):1})
-        v=Tensor(sp,["roof"],{(1):1})
+
+        #second order Tensor times vector
+        u  =Tensor(sp,["cart","cart"],{(0,0):1})
+        v  =Tensor(sp,["cart"],{(1,):1})
+        ref=Tensor(sp,["cart"],{(0,):1})
+        self.assertEqual(u|v,ref)
+
+###########################################################
+    def test_Vector_scalarProduct(self):
+        sp=Spherical()
+        
+        u=Vector(sp,["cellar"],{(1):1})
+        v=Vector(sp,["roof"],{(1):1})
         self.assertEqual(u|v,1)
         self.assertEqual(v|u,1)
         
-        u=Tensor(sp,["cellar"],{(1,):1})
-        v=Tensor(sp,["cellar"],{(1,):1})
+        u=Vector(sp,["cellar"],{(1,):1})
+        v=Vector(sp,["cellar"],{(1,):1})
         self.assertEqual(u|v,sp.g_rr()[1,1])
         
-        u=Tensor(sp,["roof"],{(1,):1})
-        v=Tensor(sp,["roof"],{(1,):1})
+        u=Vector(sp,["roof"],{(1,):1})
+        v=Vector(sp,["roof"],{(1,):1})
         self.assertEqual(u|v,sp.g_cc()[1,1])
-
-        #second order Tensors
-        u  =Tensor(sp,["cart","cart"],{(0,0):1})
-        v  =Tensor(sp,["cart","cart"],{(0,0):1})
-        ref=Tensor(sp,["cart","cart"],{(0,0):1})
-        self.assertEqual(u|v,ref)
-
+###########################################################
     def test_indextupel(self):
         t=indextupel(1)
         self.assertEqual(t,{(0,),(1,),(2,)})
@@ -122,6 +148,21 @@ class TensorTest(unittest.TestCase):
 	                  (1,0,0),(1,0,1),(1,0,2),(1,1,0),(1,1,1),(1,1,2),(1,2,0),(1,2,1),(1,2,2),\
 	                  (2,0,0),(2,0,1),(2,0,2),(2,1,0),(2,1,1),(2,1,2),(2,2,0),(2,2,1),(2,2,2),\
 			  })
+              
+###########################################################
+    def test_add_index(self):
+        t=indextupel(1)
+        res=add_index(t,0)
+        self.assertEqual(res,t)
+        
+        res=add_index(t,1)
+        self.assertEqual(res,indextupel(2))
+        
+        res=add_index(t)
+        self.assertEqual(res,indextupel(2))
+
+
+###########################################################
     def test_del_index(self):
         t=indextupel(1)
         with self.assertRaises(ToShortTupelError):
@@ -164,6 +205,7 @@ class TensorTest(unittest.TestCase):
         self.assertEqual(res,{(1,3)})
 
 
+###########################################################
     def test_transform2_vector(self):
         sp=Spherical()
         X=Tensor(sp,["roof"],{(0,):1})
@@ -187,6 +229,7 @@ class TensorTest(unittest.TestCase):
         zc=zero.components	
         sp.testnumshell(zc[(0,)],0.1,2,1e-7)
     
+###########################################################
     def test_transform2_secondOrderTensors(self):
         
         ##  construct a two dimensional testcase
@@ -248,6 +291,7 @@ class TensorTest(unittest.TestCase):
 
         
         
+###########################################################
     def test_vec_grad(self):  
         sp=Spherical()
         x,y,z=sp.X
@@ -284,6 +328,7 @@ class TensorTest(unittest.TestCase):
         ## transform back to cartesian basis
         #cartcart=sp.rr2CartCart(rr)
         #print(cartcart)
+###########################################################
     def test_partder(self):
         sp=Spherical()
         r,phi,theta=sp.U
