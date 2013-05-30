@@ -296,77 +296,117 @@ class Tensor(object):
 ###########################################################
     
     def vectorScalarProduct(self,other): #(scalar Product | )
-        scoords=self.coords
-        ocoords=other.coords
-        if scoords!=ocoords:
-          raise(NotImplementedError) 
+        scT=self.componentTypes
+        ocT=other.componentTypes
+        sc=self.components
+        oc=other.components
+        sck=sc.keys()
+        ock=oc.keys()
+        commonKeys=set(sck).intersection(ock)
+        ns=len(scT)
+        no=len(ocT)
+        if not(ns==1 and no==1):
+            print("ns="+str(ns))
+            print("no="+str(no))
+            raise(NotImplementedError) 
         else:
-            scT=self.componentTypes
-            ocT=other.componentTypes
-            sc=self.components
-            oc=other.components
-            sck=sc.keys()
-            ock=oc.keys()
-            ns=len(scT)
-            no=len(ocT)
-            if not(ns==1 and no==1):
-                print("ns="+str(ns))
-                print("no="+str(no))
-                raise(NotImplementedError) 
-            else:
-                ll=scT[-1] #last left 
-                fr=ocT[0]  #first right
-                if (ll=="roof" and fr=="cellar") or (ll=="cellar" and fr=="roof") or (ll=="cart" and fr=="cart"):
-                    res=sum(map(lambda key:sc[key]*oc[key],sck))
-                else: 
-                    scart=self.transform2(["cart"])
-                    print(scart)
-                    ocart=other.transform2(["cart"])
-                    print(ocart)
-                    res=scoords.scalarSimp(sum(map(lambda key:scart.components[key]*ocart.components[key],scart.components.keys())))
-            return(res)
+            ll=scT[-1] #last left 
+            fr=ocT[0]  #first right
+            if (ll=="roof" and fr=="cellar") or (ll=="cellar" and fr=="roof") or (ll=="cart" and fr=="cart"):
+                res=sum(map(lambda key:sc[key]*oc[key],commonKeys))
+                res=self.coords.scalarSimp(sympify(res))
+            else: 
+                scart=self.transform2(["cart"])
+                ocart=other.transform2(["cart"])
+                res=scart.vectorScalarProduct(ocart)
+        return(res)
 
 ###########################################################
     def tensorVectorScalarProduct(self,other): #(scalar Product | )
-        scoords=self.coords
-        ocoords=other.coords
-        if scoords!=ocoords:
-          raise(NotImplementedError) 
-        else:
-            scT=self.componentTypes
-            ocT=other.componentTypes
-            sc=self.components
-            oc=other.components
-            sck=sc.keys()
-            ock=oc.keys()
-            ns=len(scT)
-            no=len(ocT)
-            if not(ns>1 and no==1):
-                print("ns="+str(ns))
-                print("no="+str(no))
-                raise(NotImplementedError) 
-            left_keys=del_index(sck,-1)
-            print("left_keys=")
-            print(left_keys)
-            for lk in left_keys:
-                #extract all tupels of the original lefthand side tensor 
-                # that start with lk and build a first order tensor 
-                # from it
-                testset=indexTensProd(indextupel(1),{lk})
-                l_matches=testset.intersection(sck)
-                lvec_components={}
-                for m in l_matches:
-                    lvec_components[(m[-1],)]=sc[m]
-                print("lvec_components")
-                print(lvec_components)
-                lvec=Tensor(scoords,scT[-1],lvec_components)
-            #return(res)
-            #print("keyset="+str(keyset))
-            ##res=scoords.scalarSimp(sum(map(lambda
-            ##                              key:sc[key]*oc[key],keyset)))
-            ##  raise(NotImplementedError) 
-            #return(res)
+        # self is a tensor of arbitrary order
+        # other is a vector (a tensor of first order)
+        scT=self.componentTypes
+        ocT=other.componentTypes
+        sc=self.components
+        sck=sc.keys()
+        ns=len(scT)
+        no=len(ocT)
+        if not(ns>1 and no==1):
+            print("ns="+str(ns))
+            print("no="+str(no))
+            raise(NotImplementedError) 
+        left_keys=del_index(sck,-1)
+        print("left_keys=")
+        print(left_keys)
+        resComponents={}
+        for lk in left_keys:
+            # extract all tupels of the original lefthand side tensor 
+            # that start with lk and build a first order tensor 
+            # from it
+            testset=indexTensProd({lk},indextupel(1))
+            l_matches=testset.intersection(sck)
+            lvec_components={}
+            for m in l_matches:
+                lvec_components[(m[-1],)]=sc[m]
+            print("lvec_components")
+            print(lvec_components)
+            lvec=Tensor(self.coords,[scT[-1]],lvec_components)
+            print(lvec)
+            print(other)
+            resComponents[lk]=lvec.vectorScalarProduct(other)
+        resComponentTypes=scT[0:-1]
+        res=Tensor(self.coords,resComponentTypes,resComponents)
+        return(res)
 
+###########################################################
+    def tensorTensorScalarProduct(self,other): #(scalar Product | )
+        # self is a tensor of arbitrary order
+        # other is a tensor of arbitrary order
+        scT=self.componentTypes
+        ocT=other.componentTypes
+        sc=self.components
+        oc=other.components
+        sck=sc.keys()
+        ock=oc.keys()
+        ns=len(scT)
+        no=len(ocT)
+        if not(ns>1 and no>1):
+            print("ns="+str(ns))
+            print("no="+str(no))
+            raise(NotImplementedError) 
+        left_keys=del_index(sck,-1)
+        right_keys=del_index(sck,0)
+        resComponents={}
+        for lk in left_keys:
+            # extract all tupels of the original lefthand side tensor 
+            # that start with lk and build a first order tensor 
+            # from it
+            l_testset=indexTensProd({lk},indextupel(1))
+            l_matches=l_testset.intersection(sck)
+            lvec_components={}
+            for m in l_matches:
+                lvec_components[(m[-1],)]=sc[m]
+            lvec=Tensor(self.coords,[scT[-1]],lvec_components)
+            
+            for rk in right_keys:
+                r_testset=indexTensProd(indextupel(1),{rk})
+                r_matches=r_testset.intersection(ock)
+                rvec_components={}
+                for m in l_matches:
+                    rvec_components[(m[0],)]=sc[m]
+                rvec=Tensor(other.coords,[ocT[0]],rvec_components)
+            resComponents[lk+rk]=lvec.vectorScalarProduct(rvec)
+            resComponentTypes=scT[0:-1]+ocT[1:]
+        res=Tensor(self.coords,resComponentTypes,resComponents)
+        return(res)
+
+###########################################################
+    def extractVector(self,tup):
+        #use in scalar product
+        pos=tup.index("*")
+        scT=self.componentTypes
+        sc=self.components
+        sck=sc.keys()
 
 ###########################################################
     def __or__(self,other): #(scalar Product | )
@@ -399,7 +439,7 @@ class Tensor(object):
             
             ##both tensors have at least dimensio 2
             elif (ns>1 and no>1):
-                raise(NotImplementedError) 
+                return(self.tensorTensorScalarProduct(self))
             else: 
                 raise(NotImplementedError) 
 
