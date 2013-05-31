@@ -411,10 +411,18 @@ class Tensor(object):
 ###########################################################
     def extractVector(self,tup):
         #use in scalar product
-        pos=tup.index("*")
         scT=self.componentTypes
         sc=self.components
         sck=sc.keys()
+        pos=tup.index("*")
+        matchfun=lambda testtup: (testtup[0:pos]==tup[0:pos] and testtup[pos+1:]==tup[pos+1:])
+        matchingKeys=filter(matchfun,sck)
+        vec_components={}
+        for m in matchingKeys:
+            vec_components[(m[pos],)]=sc[m]
+        vec=Tensor(self.coords,[scT[pos]],vec_components)
+        return(vec)
+
 
 ###########################################################
     def __or__(self,other): #(scalar Product | )

@@ -111,6 +111,15 @@ class TensorTest(unittest.TestCase):
         sp=Spherical()
         u  =Tensor(sp,["cart","cart"],{(0,0):1,(0,1):2})
         self.assertEqual(u.extractVector((0,"*")),Tensor(sp,["cart"],{(0,):1,(1,):2}))
+        self.assertEqual(u.extractVector(("*",0)),Tensor(sp,["cart"],{(0,):1}))
+        self.assertEqual(u.extractVector(("*",1)),Tensor(sp,["cart"],{(0,):2}))
+        self.assertEqual(u.extractVector(("*",2)),Tensor(sp,["cart"],{}))
+        
+        u  =Tensor(sp,["roof","cart","cellar"],{(0,0,0):1,(0,1,0):2})
+        self.assertEqual(u.extractVector((0,"*",0)),Tensor(sp,["cart"],{(0,):1,(1,):2}))
+        #self.assertEqual(u.extractVector(("*",0)),Tensor(sp,["cart"],{(0,):1}))
+        #self.assertEqual(u.extractVector(("*",1)),Tensor(sp,["cart"],{(0,):2}))
+        #self.assertEqual(u.extractVector(("*",2)),Tensor(sp,["cart"],{}))
 
 ###########################################################
 
