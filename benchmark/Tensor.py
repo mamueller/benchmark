@@ -83,39 +83,47 @@ def vec2components(vec):
 class Tensor(object):
 ###########################################################
     def __init__(self,coords,componentTypes,components):
+        # test if we can handle the component types 
         if not(set(componentTypes).issubset({"roof","cellar","cart","phys"})):
             raise(UnknownComponentType(componentTypes))
-        # test if all indextupels have the same length
+        
+        self.components={} # initialize empty (Null Tensor)
+
         indextupels=components.keys()
-        t0=indextupels[0]
-        if isinstance(t0,int):
-            wrongtype=lambda y:not(isinstance(y,int))
-            if any(map(wrongtype,indextupels)):
-                raise(IndexTupelError(indextupels))
-            if len(componentTypes)!=1:
-                raise(ComponentTypesTupelMismatch(componentTypes,t0))
-        elif isinstance(t0,tuple):
-            l0=len(t0)
-            wronglength=lambda y:len(y)!=l0
-            if any(map(wronglength,indextupels)):
-                raise(IndexTupelError(indextupels))
-            if len(componentTypes)!=l0:
-                raise(ComponentTypesTupelMismatch(componentTypes,t0))
-        else:
-           raise(IndexTupelTypeError(indextupels))
+        
+        # if any indextuples are given then perform some compatibility tests
+        # otherwise proceed with the initialization of the Null tensor
+        if len(indextupels)!=0:
+            t0=indextupels[0]
+            # for first order Tensors we allow itegers as indeces instead of tuples
+            if isinstance(t0,int): 
+                wrongtype=lambda y:not(isinstance(y,int))
+                # make sure that all other indeces are integers to
+                if any(map(wrongtype,indextupels)):
+                    raise(IndexTupelError(indextupels))
+                # make sure that it really is a first order Tensor
+                if len(componentTypes)!=1:
+                    raise(ComponentTypesTupelMismatch(componentTypes,t0))
+            # for higher order tensors we expect tuples as indeces    
+            # we test if all indextupels have the same length and type
+            elif isinstance(t0,tuple):
+                l0=len(t0)
+                wronglength=lambda y:len(y)!=l0
+                if any(map(wronglength,indextupels)):
+                    raise(IndexTupelError(indextupels))
+                if len(componentTypes)!=l0:
+                    raise(ComponentTypesTupelMismatch(componentTypes,t0))
+            else:
+               raise(IndexTupelTypeError(indextupels))
+            # if the tests were successful copy the components
+            for it in indextupels:
+               self.components[it]=components[it]
+        
         self.coords=coords
         self.componentTypes=componentTypes
-        dim=len(componentTypes)
-        self.components={}
         r=range(0,coords.n)
-        #initialize with zeros
-        #for it in indextupel(dim):
-        #    self.components[it]=0
-        # now overwrite the parts with given values
-        for it in indextupels:
-           self.components[it]=components[it]
-        
         self.r=r
+        # initialize coordinate transformations
         self.roof2cart=CoordsTransform("roof","cart",coords.J)
         self.cellar2cart=CoordsTransform("cellar","cart",coords.Jinv.transpose())
 
@@ -336,8 +344,6 @@ class Tensor(object):
             print("no="+str(no))
             raise(NotImplementedError) 
         left_keys=del_index(sck,-1)
-        print("left_keys=")
-        print(left_keys)
         resComponents={}
         for lk in left_keys:
             # extract all tupels of the original lefthand side tensor 
@@ -348,12 +354,11 @@ class Tensor(object):
             lvec_components={}
             for m in l_matches:
                 lvec_components[(m[-1],)]=sc[m]
-            print("lvec_components")
-            print(lvec_components)
             lvec=Tensor(self.coords,[scT[-1]],lvec_components)
-            print(lvec)
-            print(other)
-            resComponents[lk]=lvec.vectorScalarProduct(other)
+            val=lvec.vectorScalarProduct(other)
+            if val!=0:
+                resComponents[lk]=val
+
         resComponentTypes=scT[0:-1]
         res=Tensor(self.coords,resComponentTypes,resComponents)
         return(res)
@@ -375,7 +380,7 @@ class Tensor(object):
             print("no="+str(no))
             raise(NotImplementedError) 
         left_keys=del_index(sck,-1)
-        right_keys=del_index(sck,0)
+        right_keys=del_index(ock,0)
         resComponents={}
         for lk in left_keys:
             # extract all tupels of the original lefthand side tensor 
@@ -392,10 +397,13 @@ class Tensor(object):
                 r_testset=indexTensProd(indextupel(1),{rk})
                 r_matches=r_testset.intersection(ock)
                 rvec_components={}
-                for m in l_matches:
-                    rvec_components[(m[0],)]=sc[m]
+                for m in r_matches:
+                    rvec_components[(m[0],)]=oc[m]
                 rvec=Tensor(other.coords,[ocT[0]],rvec_components)
-            resComponents[lk+rk]=lvec.vectorScalarProduct(rvec)
+            val=lvec.vectorScalarProduct(rvec)
+            if val!=0:
+                resComponents[lk+rk]=val
+
             resComponentTypes=scT[0:-1]+ocT[1:]
         res=Tensor(self.coords,resComponentTypes,resComponents)
         return(res)
@@ -423,8 +431,6 @@ class Tensor(object):
             ock=oc.keys()
             ns=len(scT)
             no=len(ocT)
-            print("ns="+str(ns))
-            print("no="+str(no))
             #both tensors are vectors
             if (ns==1 and no==1):
                 return(self.vectorScalarProduct(other))
@@ -439,7 +445,7 @@ class Tensor(object):
             
             ##both tensors have at least dimensio 2
             elif (ns>1 and no>1):
-                return(self.tensorTensorScalarProduct(self))
+                return(self.tensorTensorScalarProduct(other))
             else: 
                 raise(NotImplementedError) 
 

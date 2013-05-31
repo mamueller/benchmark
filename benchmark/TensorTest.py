@@ -8,8 +8,7 @@ class TensorTest(unittest.TestCase):
     def test_Tensor_initialization(self):
         sp=Spherical()
         # test some allowed use cases
-        #empty tensor (or null)
-        u=Tensor(sp,["cellar"],{})
+        u=Tensor(sp,["cellar"],{})#empty tensor (or null)
         u=Tensor(sp,["cellar"],{0:1})
         u=Tensor(sp,["cart"],{0:1})
         u=Tensor(sp,["cellar","roof"],{(0,0):1,(1,1):1,(2,2):1}) #identitytensor
@@ -122,11 +121,13 @@ class TensorTest(unittest.TestCase):
         u  =Tensor(sp,["cart","cart"],{(0,0):1})
         w  =Tensor(sp,["cart","cart"],{(1,1):1})
         v  =Tensor(sp,["cart"],{(1,):1})
-        ref=Tensor(sp,["cart"],{(0,):0})
+        
+        ref=Tensor(sp,["cart"],{})
         self.assertEqual(u|v,ref)
         self.assertEqual(v|u,ref)
+        
         self.assertEqual(u|u,u)
-        self.assertEqual(u|u,Tensor(sp,["cart","cart"],{}))
+        self.assertEqual(u|w,Tensor(sp,["cart","cart"],{}))
 
 ###########################################################
     def test_Vector_scalarProduct(self):
