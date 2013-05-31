@@ -117,8 +117,11 @@ class TensorTest(unittest.TestCase):
         
         u  =Tensor(sp,["roof","cart","cellar"],{(0,0,0):1,(0,1,0):2})
         self.assertEqual(u.extractVector((0,"*",0)),Tensor(sp,["cart"],{(0,):1,(1,):2}))
-        #self.assertEqual(u.extractVector(("*",0)),Tensor(sp,["cart"],{(0,):1}))
-        #self.assertEqual(u.extractVector(("*",1)),Tensor(sp,["cart"],{(0,):2}))
+        self.assertEqual(u.extractVector(("*",0,0)),Tensor(sp,["roof"],{(0,):1}))
+        
+        with self.assertRaises(ArgumentSizeError):
+            u  =Tensor(sp,["cart"],{(0,):1,(1,):2})
+            u.extractVector(("*",1))
         #self.assertEqual(u.extractVector(("*",2)),Tensor(sp,["cart"],{}))
 
 ###########################################################

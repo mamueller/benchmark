@@ -232,7 +232,7 @@ class Tensor(object):
             cto=other.componentTypes
             ctc=cself.componentTypes
             if len(cto)!=len(ctc):
-                raise(ArgumentSizeError("+",self.__class__.__name__,t))
+                raise(ArgumentSizeError("+",(len(cto),len(ctc))))
             if cto==ctc:
                 cc=cself.components
                 co=other.components
@@ -349,12 +349,7 @@ class Tensor(object):
             # extract all tupels of the original lefthand side tensor 
             # that start with lk and build a first order tensor 
             # from it
-            testset=indexTensProd({lk},indextupel(1))
-            l_matches=testset.intersection(sck)
-            lvec_components={}
-            for m in l_matches:
-                lvec_components[(m[-1],)]=sc[m]
-            lvec=Tensor(self.coords,[scT[-1]],lvec_components)
+            lvec=self.extractVector(lk+("*"))
             val=lvec.vectorScalarProduct(other)
             if val!=0:
                 resComponents[lk]=val
@@ -386,20 +381,13 @@ class Tensor(object):
             # extract all tupels of the original lefthand side tensor 
             # that start with lk and build a first order tensor 
             # from it
-            l_testset=indexTensProd({lk},indextupel(1))
-            l_matches=l_testset.intersection(sck)
-            lvec_components={}
-            for m in l_matches:
-                lvec_components[(m[-1],)]=sc[m]
-            lvec=Tensor(self.coords,[scT[-1]],lvec_components)
+            lvec=self.extractVector(lk+("*"))
             
             for rk in right_keys:
-                r_testset=indexTensProd(indextupel(1),{rk})
-                r_matches=r_testset.intersection(ock)
-                rvec_components={}
-                for m in r_matches:
-                    rvec_components[(m[0],)]=oc[m]
-                rvec=Tensor(other.coords,[ocT[0]],rvec_components)
+                # extract all tupels of the original right hand side tensor 
+                # that end with rk and build a first order tensor 
+                # from it
+                rvec=other.extractVector(("*")+rk)
             val=lvec.vectorScalarProduct(rvec)
             if val!=0:
                 resComponents[lk+rk]=val
@@ -412,6 +400,9 @@ class Tensor(object):
     def extractVector(self,tup):
         #use in scalar product
         scT=self.componentTypes
+        l=len(scT)
+        if l <2:
+            raise(ArgumentSizeError(s=(l),op="extractVector"))
         sc=self.components
         sck=sc.keys()
         pos=tup.index("*")

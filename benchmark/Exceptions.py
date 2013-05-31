@@ -91,11 +91,10 @@ class ArgumentTypeError(Exception):
 
 ##########################################################
 class ArgumentSizeError(Exception):
-    def __init__(self,s1,s2,op):
-        self.s1=s1
-        self.s2=s2
+    def __init__(self,s,op):
+        self.s=s
         self.op=op
     def __str__(self):
-        t=Template("The operation $op is not supported for sizes $s1 and $s2.")
+        t=Template("The operation $op is not supported for size(s)  $s.")
         return(t.substitute(op=self.op,s1=self.s1,s2=self.s2))
 
