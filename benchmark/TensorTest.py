@@ -129,7 +129,7 @@ class TensorTest(unittest.TestCase):
     def test_scalarProduct(self):
         sp=Spherical()
 
-        #second order Tensor times vector
+        # second order Tensor times vector
         u  =Tensor(sp,["cart","cart"],{(0,0):1})
         w  =Tensor(sp,["cart","cart"],{(1,1):1})
         v  =Tensor(sp,["cart"],{(1,):1})
@@ -140,7 +140,24 @@ class TensorTest(unittest.TestCase):
         
         self.assertEqual(u|u,u)
         self.assertEqual(u|w,Tensor(sp,["cart","cart"],{}))
+        # roof and cellar components 
+        u  =Tensor(sp,["roof","cellar"],{(0,0):1})
+        self.assertEqual(u|u,u)
+        
+        v  =Tensor(sp,["roof"],{(1,):1})
+        self.assertEqual(v|u,Tensor(sp,["roof"],{}))
+        # mixed with cartesian components 
+        # (We allow this although it is very unusual 
+        # e.g. e_x e_phi is a valid dyadic product 
+        # the components in this form thus refer to roof and cartesian base
+        # vectors. Usually the whole component set would be either cartesian
+        # or some combination of roof and cellar
+        w  =Tensor(sp,["roof","cellar"],{(1,1):1})
+        v  =Tensor(sp,["roof"],{(1,):1})
 
+
+
+        
 ###########################################################
     def test_Vector_scalarProduct(self):
         sp=Spherical()
@@ -162,6 +179,12 @@ class TensorTest(unittest.TestCase):
         u=Tensor(sp,["roof"],{(1,):1})
         v=Tensor(sp,["roof"],{(2,):1})
         self.assertEqual(u|v,0)
+        
+        ###test transformation invariance ####
+        eur=Tensor(sp,["cellar"],{(0,):1}) 
+        eor=Tensor(sp,["roof"],{(0,):1})
+        self.assertEqual(eur|eor,1)
+        self.assertEqual(eur.transform2(["cart"])|eor.transform2(["cart"]),1)
 ###########################################################
     def test_indextupel(self):
         t=indextupel(1)
@@ -365,7 +388,7 @@ class TensorTest(unittest.TestCase):
         
         v=Tensor(sp,["cellar"],{(0,):1})
         drv=v.partder(0)#with respect to r
-        ref=Tensor(sp,["cellar"],{(0,):0,(1,):0,(2,):0})
+        ref=Tensor(sp,["cellar"],{})
         self.assertEqual(drv,ref)
        
         v=Tensor(sp,["roof"],{(1,):1}) #e_phi

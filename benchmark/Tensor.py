@@ -349,7 +349,7 @@ class Tensor(object):
             # extract all tupels of the original lefthand side tensor 
             # that start with lk and build a first order tensor 
             # from it
-            lvec=self.extractVector(lk+("*"))
+            lvec=self.extractVector(lk+("*",))
             val=lvec.vectorScalarProduct(other)
             if val!=0:
                 resComponents[lk]=val
@@ -381,13 +381,13 @@ class Tensor(object):
             # extract all tupels of the original lefthand side tensor 
             # that start with lk and build a first order tensor 
             # from it
-            lvec=self.extractVector(lk+("*"))
+            lvec=self.extractVector(lk+("*",))
             
             for rk in right_keys:
                 # extract all tupels of the original right hand side tensor 
                 # that end with rk and build a first order tensor 
                 # from it
-                rvec=other.extractVector(("*")+rk)
+                rvec=other.extractVector(("*",)+rk)
             val=lvec.vectorScalarProduct(rvec)
             if val!=0:
                 resComponents[lk+rk]=val
@@ -585,9 +585,9 @@ class Tensor(object):
                     #print(sC[(j,p)])
                     #print(Gamma[ka,p,i])
                     s+=Gamma[ka,p,i]*sC[(j,p)]
-            return(simplify(s))
+            return(simplify(sco.scalarSimp(s)))
         
-        return(simplify(s))
+        return(simplify(sco.scalarSimp(s)))
             
 
 
