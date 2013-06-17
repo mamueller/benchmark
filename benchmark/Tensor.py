@@ -304,6 +304,7 @@ class Tensor(object):
 ###########################################################
     
     def vectorScalarProduct(self,other): #(scalar Product | )
+        sco=self.coords
         scT=self.componentTypes
         ocT=other.componentTypes
         sc=self.components
@@ -327,7 +328,7 @@ class Tensor(object):
                 scart=self.transform2(["cart"])
                 ocart=other.transform2(["cart"])
                 res=scart.vectorScalarProduct(ocart)
-        return(res)
+        return(sco.scalarSimp(res))
 
 ###########################################################
     def tensorVectorScalarProduct(self,other): #(scalar Product | )
@@ -414,13 +415,18 @@ class Tensor(object):
         vec=Tensor(self.coords,[scT[pos]],vec_components)
         return(vec)
 
+    def simp(self):
+        c=self.components
+        co=self.coords
+        for k in c.keys():
+            c[k]=co.scalarSimp(c[k])
 
 ###########################################################
     def __or__(self,other): #(scalar Product | )
         scoords=self.coords
         ocoords=other.coords
-        if scoords!=ocoords:
-          raise(NotImplementedError) 
+        if type(scoords)!=type(ocoords):
+            raise(NotImplementedError) 
         else:
             scT=self.componentTypes
             ocT=other.componentTypes
@@ -432,21 +438,22 @@ class Tensor(object):
             no=len(ocT)
             #both tensors are vectors
             if (ns==1 and no==1):
-                return(self.vectorScalarProduct(other))
+                res=self.vectorScalarProduct(other)
                 
             ##the left tensor has at least dimensio 2
             elif (ns>1 and no==1):
-                return(self.tensorVectorScalarProduct(other))
+                res=self.tensorVectorScalarProduct(other)
 
             ##the right hand side tensor has at least dimensio 2
             elif (ns==1 and no>1):
-                return(other.tensorVectorScalarProduct(self))
+                res=other.tensorVectorScalarProduct(self)
             
             ##both tensors have at least dimensio 2
             elif (ns>1 and no>1):
-                return(self.tensorTensorScalarProduct(other))
+                res=self.tensorTensorScalarProduct(other)
             else: 
                 raise(NotImplementedError) 
+            return(res)
 
     
 ###########################################################

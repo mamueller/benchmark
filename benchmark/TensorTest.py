@@ -184,7 +184,12 @@ class TensorTest(unittest.TestCase):
         eur=Tensor(sp,["cellar"],{(0,):1}) 
         eor=Tensor(sp,["roof"],{(0,):1})
         self.assertEqual(eur|eor,1)
-        self.assertEqual(eur.transform2(["cart"])|eor.transform2(["cart"]),1)
+        eur_cart=eur.transform2(["cart"])
+        eor_cart=eor.transform2(["cart"])
+        print(eur_cart)
+        print(eor_cart)
+        sp.testnumshell((eur_cart|eor_cart)-1,0.1,2,1e-7)
+        self.assertEqual(eur_cart|eor_cart,1)
 ###########################################################
     def test_indextupel(self):
         t=indextupel(1)
@@ -256,6 +261,7 @@ class TensorTest(unittest.TestCase):
 ###########################################################
     def test_transform2_vector(self):
         sp=Spherical()
+        
         X=Tensor(sp,["roof"],{(0,):1})
         Y=X.transform2(["cart"])
         self.assertEqual(Y,sp.t_gc[0])

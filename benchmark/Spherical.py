@@ -5,6 +5,10 @@ from Coords import *
 import unittest 
 import numpy as np
 class Spherical(Coords):
+    def extended_trigsimp(exp):
+        res=trigsimp(exp)
+	res.subs(sin(phi)**2*sin(theta)**2-cos(phi)**2*cos(theta)**2+cos(phi)**2+cos(theta)**2,1)
+	return(res)
     def __init__(self):
         x,y,z=symbols("x,y,z")
         X=x,y,z
@@ -42,7 +46,7 @@ class Spherical(Coords):
         U=[r,phi,theta]
         XofU=[x,y,z]
 	sc=super(Spherical,self)
-	sc.__init__(X,U,XofU,trigsimp)
+	sc.__init__(X,U,XofU,extended_trigsimp)
 
     def __repr__(self):
         return("Spherical()")
