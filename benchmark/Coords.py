@@ -6,24 +6,25 @@ import unittest
 import numpy as np
 
 class Coords(object):
-    def __init__(self,X,U,XofU,scalarSimp):
+    def __init__(self,X,U,XofU):
         self.X=X
         self.U=U
         self.XofU=XofU
         self.n=len(self.X)
-        self.scalarSimp=scalarSimp
         self.g_cc_=False
         self.g_rr_=False
         self.sf_=False
-
+        self.setup()
+    
+    def setup(self):
         def matSimp(Mat):
             s=Mat.shape
             res=zeros(s)
             for i in range (s[0]):
                 for j in range (s[1]): 
-                    res[i,j]=scalarSimp(Mat[i,j])
+                    res[i,j]=self.scalarSimp(Mat[i,j])
             return(res)
-	self.matSimp=matSimp
+        self.matSimp=matSimp
 
         # Matrix of the derivative dX/dU (Jacobi Matrix)
         def dd(i,j):
@@ -52,7 +53,7 @@ class Coords(object):
         # Jacobian (Determinant) of Jacobi Matrix
         detJ=self.J.det()
         # help sympy to use the trigonometric pythagoras
-        r,phi,theta=U
+        r,phi,theta=self.U
         self.detJ=self.scalarSimp(detJ)
         
         # the inverse roof basis
