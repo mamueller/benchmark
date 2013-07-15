@@ -48,9 +48,14 @@ class TensorTest(unittest.TestCase):
         w=Tensor(sp,["cellar"],{(2,):1})
         self.assertTrue(not(u==w))
         w=Tensor(sp,["roof"],{(1,):1})
-    
         self.assertTrue(not(u==w))
+
+        # test if a zero component is treated like a missing one
+        u=Tensor(sp,["cellar"],{})
+        v=Tensor(sp2,["cellar"],{(0,):0,(1,):0,(2,):0})
+        self.assertTrue(u==v)
 ###########################################################
+
     def test_raise_and_lower(self):
         sp=Spherical()
         u=Tensor(sp,["cellar"],{(1,):1})
@@ -393,6 +398,7 @@ class TensorTest(unittest.TestCase):
         self.assertEqual(drv,ref)
         
         v=Tensor(sp,["cellar"],{(0,):1})
+        # this is the roof base vector e^r
         drv=v.partder(0)#with respect to r
         ref=Tensor(sp,["cellar"],{})
         self.assertEqual(drv,ref)

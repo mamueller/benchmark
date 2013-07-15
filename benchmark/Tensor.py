@@ -126,6 +126,17 @@ class Tensor(object):
         # initialize coordinate transformations
         self.roof2cart=CoordsTransform("roof","cart",coords.J)
         self.cellar2cart=CoordsTransform("cellar","cart",coords.Jinv.transpose())
+        # remove zero entries
+        self.purge()
+###########################################################
+    def purge(self):
+        # If a component is zero it can be safely erased
+        # this is important to  make vectors and tensors
+        # with zero components compareable
+        c=self.components
+        for k in c.keys():
+            if c[k]==0:
+               del(self.components[k])
 
 ###########################################################
     def __str__(self):
@@ -415,11 +426,13 @@ class Tensor(object):
         vec=Tensor(self.coords,[scT[pos]],vec_components)
         return(vec)
 
+###########################################################
     def simp(self):
         c=self.components
         co=self.coords
         for k in c.keys():
             c[k]=co.scalarSimp(c[k])
+        self.purge()    
 
 ###########################################################
     def __or__(self,other): #(scalar Product | )

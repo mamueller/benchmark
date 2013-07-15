@@ -15,24 +15,25 @@ class Coords(object):
         self.g_rr_=False
         self.sf_=False
         self.setup()
-    
-    def setup(self):
-        def matSimp(Mat):
-            s=Mat.shape
-            res=zeros(s)
-            for i in range (s[0]):
-                for j in range (s[1]): 
-                    res[i,j]=self.scalarSimp(Mat[i,j])
-            return(res)
-        self.matSimp=matSimp
+    def scalarSimp(self,exp):
+    	pass
 
+    def matSimp(self,Mat):
+        s=Mat.shape
+        res=zeros(s)
+        for i in range (s[0]):
+            for j in range (s[1]): 
+                res[i,j]=self.scalarSimp(Mat[i,j])
+        return(res)
+
+    def setup(self):
         # Matrix of the derivative dX/dU (Jacobi Matrix)
         def dd(i,j):
             return(diff(self.XofU[i],self.U[j]))
         
         self.J=Matrix(self.n,self.n,dd)
         
-        self.Jinv=matSimp(self.J.inv())
+        self.Jinv=self.matSimp(self.J.inv())
 
         #
         # cellar Base vectors:

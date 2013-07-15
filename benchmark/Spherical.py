@@ -41,16 +41,15 @@ class Spherical(Coords):
         XofU=[x,y,z]
         U=[r,phi,theta]
         XofU=[x,y,z]
-        def sS(self,exp):
-            r,phi,theta=self.U
-            res=trigsimp(exp)
-            print("1")
-            res.subs(sin(phi)**2*sin(theta)**2-cos(phi)**2*cos(theta)**2+cos(phi)**2+cos(theta)**2,1)
-            return(res)
-
         sc=super(Spherical,self)
         inst=sc.__init__(X,U,XofU)
-        inst.scalarSimp=ss
+    
+    def scalarSimp(self,exp):	
+        r,phi,theta=self.U
+        res=trigsimp(exp)
+        res=res.subs(sin(phi)**2*sin(theta)**2-cos(phi)**2*cos(theta)**2+cos(phi)**2+cos(theta)**2,1)
+	res=simplify(res.subs((sin(phi))**2,1-(cos(phi))**2))
+        return(res)
 
     def __repr__(self):
         return("Spherical()")
