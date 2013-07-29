@@ -16,7 +16,7 @@ class Coords(object):
         self.sf_=False
         self.setup()
     def scalarSimp(self,exp):
-    	pass
+    	return(exp) #do nothing but return the input
 
     def matSimp(self,Mat):
         s=Mat.shape

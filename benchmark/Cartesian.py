@@ -21,7 +21,5 @@ class Cartesian(Coords):
 	# that adds some rules to simplify results. It is called by nearly all the methods
 	# before the result is returned. 
 	# In the case of the cartesian example this function does nothing 
-        def f(Mat): 
-            return(Mat)
 	sc=super(Cartesian,self)
-	sc.__init__(X,U,XofU,f)
+	sc.__init__(X,U,XofU)

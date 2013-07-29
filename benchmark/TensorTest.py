@@ -358,17 +358,24 @@ class TensorTest(unittest.TestCase):
         r,phi,theta=sp.U
         # we start with the following vector valued function f given in 
         # cartesian coordinates
-        fX=Tensor(sp,["cart"],{(2,):x})
+        fX=Tensor(sp,["cart"],{(2,):x}) #=x*e
+        #                                    z
         # if a vector v is given in cartesian coordinates
-        # the change in fX in the direction of v can be expressed
-        # by the Tensor equation 
-        # A|vc+O(|vc|**2) where A is the second order tensor to represent the 
+        # the vector of change of fX deltafX according to a change of position
+        # deltaX can be expressend by the Tensor equation 
+        # delta_fX=A|delta_X+O(|delta_X|**2) where A
+        # is the second order tensor to represent the 
         # gradient of v and | is the scalar product 
         
-        #                                            x       x            x 
-        Aref=Tensor(sp,["cart","cart"],{(2,0):1}) #=e  v,x =e  (x*e ),x =e e  =e e
-        #                                                          z        x   x x
-        
+        # Althouhg it is simple to derive A in this case we 
+        #                                              i
+        # compute it with Simmonds eq(4.10): nabla v= g v,i
+        # where nabla v is the transposed gradient
+        #            x       x            x     x          
+        # nabla v= =e  v,x =e  (x*e ),x =e e  =e e  =Tensor(sp,["cart","cart"],{(0,2):1})
+        #                          z        z     z
+        # since 
+        Aref=Tensor(sp,["cart","cart"],{(2,0):1})
         # first we express the (cartesian) components of f as functions of r,phi and theta
         cx=fX.components    
         cu={}

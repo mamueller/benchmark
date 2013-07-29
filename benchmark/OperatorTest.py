@@ -260,12 +260,11 @@ class OperatorTest(unittest.TestCase):
         #u_c=Matrix(3,1,[ur,uphi,utheta])
 	u=Tensor(sp,["cellar"],{(1,):ur})
 	v=Tensor(sp,["roof"],{(2,):vphi})
-        res1=v|(T*u)
+        res1=v|(T|u)
         ## the definition of the transposed Tensor
-	    ## for all u,v : v * A u =u *A^t v
+	    ## for all u,v : v | A |u =u |A^t| v
         TT=T.transpose()
-	print("T^t=",TT.mat)
-        res2=u|(TT*v)
+        res2=u|(TT|v)
         print("res1-res2=",sp.scalarSimp(res1-res2))
 
 

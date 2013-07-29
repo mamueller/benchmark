@@ -79,7 +79,8 @@ def vec2components(vec):
     for i in range(0,len(vec)):
         comp[(i,)]=vec[i]
     return(comp)
-   
+###########################################################
+###########################################################
 class Tensor(object):
 ###########################################################
     def __init__(self,coords,componentTypes,components):
@@ -138,6 +139,22 @@ class Tensor(object):
             if c[k]==0:
                del(self.components[k])
 
+###########################################################
+    def switchComponentType(self,n):
+        pt=self.componentTypes[n]
+        if pt=="roof":
+            nt="cellar"
+        elif pt=="cellar":
+            nt="roof"
+        elif pt=="cart":
+            nt=pt
+        self.componentTypes[n]=nt
+###########################################################
+    def switchFirstComponentType(self):
+        self.switchComponentType(0)
+###########################################################
+    def switchLastComponentType(self):
+        self.switchComponentType(-1)
 ###########################################################
     def __str__(self):
         res="class:"+self.__class__.__name__+"\n"+"componentTypes="+str(self.componentTypes)+"\ncomponents="+str(self.components)+"\n"
@@ -512,15 +529,9 @@ class Tensor(object):
             return(Tensor(co,[cT[1]],n))
 ###########################################################
     def transpose(self):
-        new=self
-        coords=self.coords
-        sc=self.componentTypes
-        if len(sc)!=2:
-          raise(NotImplementedError) 
-        elif sc==["cellar","roof"]:
-           new.mat=self.mat.transpose()
-           new.componentTypes=["roof","cellar"]
-           new=new.lower_first_index().raise_last_index()
+        new=copy.deepcopy(self)
+        new.switchFirstComponentType()
+        new.switchLastComponentType()
         return(new)
 ###########################################################
     def str(self):
