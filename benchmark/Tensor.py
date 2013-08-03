@@ -301,33 +301,9 @@ class Tensor(object):
             d=cself.components
             res.components={k:other*d[k] for k in d.keys()}
             return(res)
-        scoords=cself.coords
-        ocoords=other.coords
-        if scoords!=ocoords:
-            raise(NotImplementedError) 
         else:
-            sc=cself.componentTypes
-            oc=other.componentTypes
-            print(sc)
-            print(oc)
-            sl=sc[-1]
-            of=oc[0]
-            print("sl,of",sl,of)
-            if (sl=="roof" and of=="cellar") or (sl=="cellar" and of=="roof"):
-                mat=cself.mat*other.mat
-                l=sc[0:-1]+oc[1:]
-                res=Tensor(scoords,l,mat)
-            elif (sl=="cellar" and of=="cellar"):
-                # raise first index of ohter tensor
-                new=other.raise_first_index()
-                res=cself.__mul__(cself,new)
-            elif (sl=="roof" and of=="roof"):
-                # lower first index of ohter tensor
-                new=other.lower_first_index()
-                res=cself.__mul__(new)
-            else: 
-               raise(NotImplementedError) 
-            return(res)
+            print("the outer product is not implemented yet")
+            raise(NotImplementedError) 
 
 ###########################################################
     
@@ -557,17 +533,17 @@ class Tensor(object):
         sc.components=n
         return(sc)
 
+
 ###########################################################
     def partder(self,i):
         sct=self.componentTypes
         sco=self.coords
         sC=self.components
-        keyset=indextupel(1)
         sm=components2vec(sC)
         rc={}
-        for k in range(0,sco.n):
+        for k in sC.keys():
             #rc[(k,)]=sco.cov_der_v(i,k,sm)
-            rc[(k,)]=self.covder(i,(k,))
+            rc[k]=self.covder(i,(k))
         
         res=Tensor(sco,sct,rc)
         return(res)
@@ -587,21 +563,32 @@ class Tensor(object):
         n=sco.n
         sC=self.components
         keys=sC.keys()
-        if sct==["roof"]:#p.79 eq.4.17
-            if not((k,) in keys):
+        print("covder here")
+        print(sct)
+        print(sct==["cart"])
+        if sct==["cart"]:
+            if not(k in keys):
                 s=0
             else:
-                s=diff(sC[(k,)],sco.U[i])
+                print("covder cart here")
+                s=diff(sC[k],sco.X[i])
+            return(simplify(s))
+
+        elif sct==["roof"]:#p.79 eq.4.17
+            if not(k in keys):
+                s=0
+            else:
+                s=diff(sC[k],sco.U[i])
             for j in keys:
                     s+=sco.Gamma[k[0],i,j[0]]*sC[j]
-        if sct==["cellar"]:#p.79 eq.4.19
-            if not((k,) in keys):
+        elif sct==["cellar"]:#p.79 eq.4.19
+            if not(k in keys):
                 s=0
             else:
-                s=diff(sC[(k,)],sco.U[i])
+                s=diff(sC[k],sco.U[i])
             for j in keys:
                     s=s-sco.Gamma[j[0],i,k[0]]*sC[j]
-        if sct==["roof","roof"]:#p.98  eq 4.117
+        elif sct==["roof","roof"]:#p.98  eq 4.117
             j= k[0] #first component of the index
             ka=k[1] #second component of the index
             Gamma=sco.Gamma
@@ -617,6 +604,9 @@ class Tensor(object):
                     #print(Gamma[ka,p,i])
                     s+=Gamma[ka,p,i]*sC[(j,p)]
             return(simplify(sco.scalarSimp(s)))
+        else:
+            raise NotImplementedError
+            
         
         return(simplify(sco.scalarSimp(s)))
             
@@ -624,14 +614,12 @@ class Tensor(object):
 
 ###########################################################
     def nabla(self):
-        # This function applies the Nabla operator to the tensor.
-        cs=copy.deepcopy(self)
-        cst=cs.componentTypes
+        # This function applies the Nabla operator (always from left) 
+        # to the tensor.
+        csc=self.coords
+        gr=csc.t_gr
         #            i
         # nabla v = g * v,i (* = "direct Product")
-        keys=cs.components.keys()
-        components={}
-        t=indextupel(1)
-        for i in t:
-            comp[i]=cs.partder(i)
-        res=Tensor(cs.coords,"cellar",comp)
+        f=lambda i :gr[i]*self.partder(i)
+        res=sum(map(f,range(0,csc.n)))
+        return(res)

@@ -65,7 +65,7 @@ class TensorTest(unittest.TestCase):
         self.assertTrue(u==v)
         
 ###########################################################
-    def testScalarMul(self):
+    def test_ScalarMul(self):
         sp=Spherical()
         u=Tensor(sp,["roof"],{(1,):1})
         v=u*5
@@ -349,7 +349,15 @@ class TensorTest(unittest.TestCase):
 
 
         
-        
+    def test_nabla(self):
+        sp=Spherical()
+        x,y,z=sp.X
+        xu,yu,zu=sp.XofU
+        r,phi,theta=sp.U
+        # we start with the following vector valued function f given in 
+        # cartesian coordinates
+        fX=Tensor(sp,["cart"],{(2,):x}) #=x*e
+        fX.nabla()
 ###########################################################
     def test_vec_grad(self):  
         sp=Spherical()
@@ -386,7 +394,7 @@ class TensorTest(unittest.TestCase):
         # since the vectorgradient is very easy to define if the vector is given
         # in roof components we compute these first
         fUr=fUc.transform2(["roof"])
-	cr=fUr.nabla()
+        cr=fUr.nabla()
         
         #cr=sp.cellarComponentsOfNablaOnRoofComponents(fUr)
         ## transform into roofroof
@@ -397,7 +405,14 @@ class TensorTest(unittest.TestCase):
 ###########################################################
     def test_partder(self):
         sp=Spherical()
+        x,y,z=sp.X
         r,phi,theta=sp.U
+        
+        v=Tensor(sp,["cart"],{(0,):x})
+        drv=v.partder(0)#with respect to x
+        print(drv)
+        ref=Tensor(sp,["cart"],{(0,):1})
+        self.assertEqual(drv,ref)
         
         v=Tensor(sp,["roof"],{(0,):1})
         drv=v.partder(0)#with respect to r
@@ -419,7 +434,6 @@ class TensorTest(unittest.TestCase):
         drv=v.partder(0)#with respect to r
         ref=Tensor(sp,["cellar"],{(0,):0,(1,):-1/r,(2,):0})
         self.assertEqual(drv,ref)
-        print(drv)
         
         
         
