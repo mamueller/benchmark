@@ -130,8 +130,16 @@ class TensorTest(unittest.TestCase):
         #self.assertEqual(u.extractVector(("*",2)),Tensor(sp,["cart"],{}))
 
 ###########################################################
+    def test_outerProduct(self):
+        sp=Spherical()
+        u=Tensor(sp,["cellar"],{(1,):1})
+        v=Tensor(sp,["roof"],{(1,):1})
+        
+        self.assertEqual(u*v,Tensor(sp,["cellar","roof"],{(1,1):1}))
 
-    def test_scalarProduct(self):
+
+###########################################################
+    def test_innerProduct(self):
         sp=Spherical()
 
         # second order Tensor times vector
@@ -164,7 +172,7 @@ class TensorTest(unittest.TestCase):
 
         
 ###########################################################
-    def test_Vector_scalarProduct(self):
+    def test_Vector_innerProduct(self):
         sp=Spherical()
         
         u=Tensor(sp,["cellar"],{(1):1})

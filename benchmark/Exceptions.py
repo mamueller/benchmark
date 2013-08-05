@@ -77,8 +77,10 @@ class LowerError(Exception):
 
 ##########################################################
 class NotImplementedError(Exception):
+    def __init__(self,str="The feature is not implemented yet: "):
+        self.str=str
     def __str__(self):
-        return("The feature is not implemented yet: ")
+        return(self.str)
 ##########################################################
 class ArgumentTypeError(Exception):
     def __init__(self,cl1,cl2,op):
@@ -97,4 +99,13 @@ class ArgumentSizeError(Exception):
     def __str__(self):
         t=Template("The operation $op is not supported for size(s)  $s.")
         return(t.substitute(op=self.op,s1=self.s1,s2=self.s2))
+##########################################################
+class CoordsMissMatchError(Exception):
+    def __init__(self,c1,c2):
+        self.c1=c1
+        self.c2=c2
+    def __str__(self):
+        t=Template("The coordinate frame  $c1 of the first Tensor differs from the coordinate frame  $c2 ot the second.")
+        return(t.substitute(c1=self.c1,c2=self.c2))
+
 

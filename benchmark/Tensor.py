@@ -271,11 +271,11 @@ class Tensor(object):
                     cc[k]+=co[k]
                 return(cself)    
             else:        
-                print("adding tensors has up to now only been implemented for "\
+                str="adding tensors has up to now only been implemented for "\
                       +"Tensors with the same component types. It could of course "\
                       +"be implemented by a implicit conversion to a common"\
-                      +"component Type sequence")
-                raise(NotImplementedError)
+                      +"component Type sequence"
+                raise(NotImplementedError(str))
         else:
             raise(ArgumentTypeError("+",self.__class__.__name__,t))
 ###########################################################
@@ -293,17 +293,42 @@ class Tensor(object):
     
 ###########################################################
     def __mul__(self,other):
-        cself=copy.deepcopy(self)
         t=type(other)
         #print("t="+str(t))
+        cs=copy.deepcopy(self)
         if t==int or t==float or t==complex:
-            res=cself
-            d=cself.components
+            res=cs
+            d=self.components
             res.components={k:other*d[k] for k in d.keys()}
             return(res)
+        elif t==type(self):
+            scoords=self.coords
+            ocoords=other.coords
+            if scoords!=ocoords:
+                raise(CoordsMissMatchError( scoords, ocoords))
+            
+            co=copy.deepcopy(other)
+            sc=cs.components
+            sck=sc.keys()
+            print("sck",sck)
+            sct=cs.componentTypes
+            oc=co.components
+            ock=oc.keys()
+            print("ock",ock)
+            oct=co.componentTypes
+            nct=sct+oct #new component Types
+            nc={}#new components
+
+            for k1 in sck:
+                for k2 in ock:
+                    newkey=k1+k2
+                    print("newkey=", newkey) 
+                    nc[newkey]=sc[k1]*oc[k2]
+            res=Tensor(cs.coords,nct,nc)
+            return(res)
         else:
-            print("the outer product is not implemented yet")
-            raise(NotImplementedError) 
+            str="the outer product is not implemented yet"
+            raise(NotImplementedError(str)) 
 
 ###########################################################
     
