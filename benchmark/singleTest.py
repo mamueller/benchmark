@@ -19,9 +19,9 @@ def suite():
     #s.addTest(TensorTest("test_partder"))
 
    #  s.addTest(TensorTest("test_Tensor_initialization"))
-   # s.addTest(TensorTest("test_scalarProduct"))
-    s.addTest(TensorTest("test_outerProduct"))
-    #s.addTest(TensorTest("test_Vector_scalarProduct"))
+    s.addTest(TensorTest("test_innerProduct"))
+    #s.addTest(TensorTest("test_outerProduct"))
+    #s.addTest(TensorTest("test_Vector_innerProduct"))
     #s.addTest(TensorTest("test_transform2_vector"))
     #s.addTest(TensorTest("test_extractVector"))
     #s.addTest(TensorTest("test_toVector"))

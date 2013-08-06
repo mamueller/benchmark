@@ -134,8 +134,24 @@ class TensorTest(unittest.TestCase):
         sp=Spherical()
         u=Tensor(sp,["cellar"],{(1,):1})
         v=Tensor(sp,["roof"],{(1,):1})
+        res=u*v
+        self.assertEqual(res,Tensor(sp,["cellar","roof"],{(1,1):1}))
+
+        u=Tensor(sp,["cellar","cellar"],{(0,1):3,(1,1):4})
+        v=Tensor(sp,["roof","cellar"],{(1,0):2})
+        self.assertEqual(u*v,Tensor(sp,["cellar","cellar","roof","cellar"],{(0,1,1,0):6,(1,1,1,0):8}))
         
-        self.assertEqual(u*v,Tensor(sp,["cellar","roof"],{(1,1):1}))
+        # test that res=a*b does not change when we modify a or b later on 
+        # this ensures that we did not forget to copy the igredients instead of referencing them 
+        a=Tensor(sp,["cellar"],{(1,):1})
+        b=Tensor(sp,["roof"],{(1,):1})
+        res=a*b
+        self.assertEqual(res,Tensor(sp,["cellar","roof"],{(1,1):1}))
+
+        sp2=Spherical()
+        a=Tensor(sp2,["roof"],{(2,):2})
+        b=Tensor(sp2,["cellar"],{(0,):2})
+        self.assertEqual(res,Tensor(sp,["cellar","roof"],{(1,1):1}))
 
 
 ###########################################################
@@ -167,6 +183,18 @@ class TensorTest(unittest.TestCase):
         # or some combination of roof and cellar
         w  =Tensor(sp,["roof","cellar"],{(1,1):1})
         v  =Tensor(sp,["roof"],{(1,):1})
+        
+        # test that res=a!b does not change when we modify a or b later on 
+        # this ensures that we did not forget to copy the igredients instead of referencing them 
+        a=Tensor(sp,["cellar"],{(1,):2})
+        b=Tensor(sp,["roof"],{(1,):3})
+        res=a|b
+        self.assertEqual(res,6)
+
+        sp2=Spherical()
+        a=Tensor(sp2,["roof"],{(2,):2})
+        b=Tensor(sp2,["cellar"],{(0,):2})
+        self.assertEqual(res,6)
 
 
 
