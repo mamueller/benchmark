@@ -23,3 +23,7 @@ class Cartesian(Coords):
 	# In the case of the cartesian example this function does nothing 
 	sc=super(Cartesian,self)
 	sc.__init__(X,U,XofU)
+
+    def __repr__(self):
+        return("Cartesian()")
+   

@@ -6,6 +6,9 @@ from Exceptions import *
 from Coords import *
 from CoordsTransform import *
 ###########################################################
+def pp(str,gl):
+    print("pp:",str,eval(str,gl))
+###########################################################
 def indextupel(dim):
    keyset={(0,),(1,),(2,)}
    for j in range(1,dim):
@@ -310,11 +313,11 @@ class Tensor(object):
             co=copy.deepcopy(other)
             sc=cs.components
             sck=sc.keys()
-            print("sck",sck)
+            #print("sck",sck)
             sct=cs.componentTypes
             oc=co.components
             ock=oc.keys()
-            print("ock",ock)
+            #print("ock",ock)
             oct=co.componentTypes
             nct=sct+oct #new component Types
             nc={}#new components
@@ -588,14 +591,13 @@ class Tensor(object):
         n=sco.n
         sC=self.components
         keys=sC.keys()
-        print("covder here")
-        print(sct)
-        print(sct==["cart"])
+        #print("covder here")
+        #print(sct)
+        #print(sct==["cart"])
         if sct==["cart"]:
             if not(k in keys):
                 s=0
             else:
-                print("covder cart here")
                 s=diff(sC[k],sco.X[i])
             return(simplify(s))
 
@@ -639,12 +641,16 @@ class Tensor(object):
 
 ###########################################################
     def nabla(self):
+        print("nabla ",self)
         # This function applies the Nabla operator (always from left) 
         # to the tensor.
         csc=self.coords
         gr=csc.t_gr
         #            i
+        pp("self.partder(0)",locals())
+        res=gr[0]*self.partder(0)
+        pp("res",locals())
         # nabla v = g * v,i (* = "direct Product")
-        f=lambda i :gr[i]*self.partder(i)
-        res=sum(map(f,range(0,csc.n)))
+        #f=lambda i :gr[i]*self.partder(i)
+        #res=sum(map(f,range(0,csc.n)))
         return(res)

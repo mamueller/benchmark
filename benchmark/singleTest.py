@@ -15,11 +15,11 @@ def suite():
     #s.addTest(TensorTest("test_transform2_secondOrderTensors"))
     #s.addTest(OperatorTest("test_roofCellar_transpose"))
     #s.addTest(TensorTest("test_vec_grad"))
-    #s.addTest(TensorTest("test_nabla"))
+    s.addTest(TensorTest("test_nabla"))
     #s.addTest(TensorTest("test_partder"))
 
    #  s.addTest(TensorTest("test_Tensor_initialization"))
-    s.addTest(TensorTest("test_innerProduct"))
+    #s.addTest(TensorTest("test_innerProduct"))
     #s.addTest(TensorTest("test_outerProduct"))
     #s.addTest(TensorTest("test_Vector_innerProduct"))
     #s.addTest(TensorTest("test_transform2_vector"))

@@ -2,6 +2,7 @@
 # vim:set ff=unix expandtab ts=4 sw=4:
 import unittest 
 from Spherical import *
+from Cartesian import *
 
 class TensorTest(unittest.TestCase):
 ###########################################################
@@ -384,15 +385,19 @@ class TensorTest(unittest.TestCase):
 #        #print("new="+str(res_cart_new.subs({phi:pi/4,theta:pi/4,r:3})))
 
 
+###########################################################
         
     def test_nabla(self):
-        sp=Spherical()
-        x,y,z=sp.X
-        xu,yu,zu=sp.XofU
-        r,phi,theta=sp.U
-        # we start with the following vector valued function f given in 
-        # cartesian coordinates
-        fX=Tensor(sp,["cart"],{(2,):x}) #=x*e
+        #sp=Spherical()
+        #x,y,z=sp.X
+        #xu,yu,zu=sp.XofU
+        #r,phi,theta=sp.U
+        ## we start with the following vector valued function f given in 
+        ## cartesian coordinates
+        #fX=Tensor(sp,["cart"],{(2,):x}) #=x*e
+        c=Cartesian()
+        x,y,z=c.U
+        fX=Tensor(c,["cart"],{(2,):x}) #=x*e
         fX.nabla()
 ###########################################################
     def test_vec_grad(self):  
