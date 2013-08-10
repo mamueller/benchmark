@@ -256,7 +256,7 @@ class Tensor(object):
     def __add__(self,other):
         cself=copy.deepcopy(self)
         t=other.__class__.__name__
-        #print("t="+str(t))
+        pp("t",locals())
         if t==self.__class__.__name__:
             cto=other.componentTypes
             ctc=cself.componentTypes
@@ -279,14 +279,15 @@ class Tensor(object):
                 raise(NotImplementedError(str))
         else:
             raise(ArgumentTypeError("+",self.__class__.__name__,t))
-###########################################################
-    def __rmul__(self,lf):
+############################################################
+    def __radd__(self,lf):
         cself=copy.deepcopy(self)
-        # in case that the left summand in a sum of the form lf+rf
-        # does not belong to this class we swap the order
+        # this is necessary to make sum() work
+        # it only calls add but in different oder
+        print("<<<<<<<<<<<<<<<<<<<<radd>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         return(cself.__add__(lf))
     
-###########################################################
+##########################################################
     def __sub__(self,other):
        return(self+(-1)*other) 
     
