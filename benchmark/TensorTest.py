@@ -388,16 +388,12 @@ class TensorTest(unittest.TestCase):
 ###########################################################
         
     def test_nabla(self):
-        #sp=Spherical()
-        #x,y,z=sp.X
-        #xu,yu,zu=sp.XofU
-        #r,phi,theta=sp.U
-        ## we start with the following vector valued function f given in 
-        ## cartesian coordinates
-        #fX=Tensor(sp,["cart"],{(2,):x}) #=x*e
+        # we start with the following vector valued function f given in 
+        # cartesian coordinates
         c=Cartesian()
         x,y,z=c.U
-        fX=Tensor(c,["cart"],{(2,):x}) #=x*e
+        fX=Tensor(c,["roof"],{(2,):x}) #=x*e_z
+        pp("fX",locals())
         fX.nabla()
 ###########################################################
     def test_vec_grad(self):  
@@ -448,12 +444,6 @@ class TensorTest(unittest.TestCase):
         sp=Spherical()
         x,y,z=sp.X
         r,phi,theta=sp.U
-        
-        v=Tensor(sp,["cart"],{(0,):x})
-        drv=v.partder(0)#with respect to x
-        print(drv)
-        ref=Tensor(sp,["cart"],{(0,):1})
-        self.assertEqual(drv,ref)
         
         v=Tensor(sp,["roof"],{(0,):1})
         drv=v.partder(0)#with respect to r

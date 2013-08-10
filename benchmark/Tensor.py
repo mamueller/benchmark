@@ -2,12 +2,10 @@
 # vim:set ff=unix expandtab ts=4 sw=4:
 import copy 
 from sympy import *
+from helperFunctions import *
 from Exceptions import *
 from Coords import *
 from CoordsTransform import *
-###########################################################
-def pp(str,gl):
-    print("pp:",str,eval(str,gl))
 ###########################################################
 def indextupel(dim):
    keyset={(0,),(1,),(2,)}
@@ -282,6 +280,13 @@ class Tensor(object):
         else:
             raise(ArgumentTypeError("+",self.__class__.__name__,t))
 ###########################################################
+    def __rmul__(self,lf):
+        cself=copy.deepcopy(self)
+        # in case that the left summand in a sum of the form lf+rf
+        # does not belong to this class we swap the order
+        return(cself.__add__(lf))
+    
+###########################################################
     def __sub__(self,other):
        return(self+(-1)*other) 
     
@@ -325,7 +330,6 @@ class Tensor(object):
             for k1 in sck:
                 for k2 in ock:
                     newkey=k1+k2
-                    print("newkey=", newkey) 
                     nc[newkey]=sc[k1]*oc[k2]
             res=Tensor(cs.coords,nct,nc)
             return(res)
@@ -567,10 +571,8 @@ class Tensor(object):
         sct=self.componentTypes
         sco=self.coords
         sC=self.components
-        sm=components2vec(sC)
         rc={}
         for k in sC.keys():
-            #rc[(k,)]=sco.cov_der_v(i,k,sm)
             rc[k]=self.covder(i,(k))
         
         res=Tensor(sco,sct,rc)
@@ -578,7 +580,7 @@ class Tensor(object):
 ###########################################################
     def covder(self,i,k):
         # this function computes the covariant derivative of a tensor
-        # is the index of the partial derivative adn k is an index tupel
+        # where i is the index of the partial derivative and k is an index tupel
         # if the tensor is given in roof components v
         # (these are the components of v with respect to the >>cellar<< base vectors since v=vr[i]gc[i])
         # the return value is interpreted as a roof component 
@@ -591,17 +593,15 @@ class Tensor(object):
         n=sco.n
         sC=self.components
         keys=sC.keys()
-        #print("covder here")
-        #print(sct)
-        #print(sct==["cart"])
-        if sct==["cart"]:
-            if not(k in keys):
-                s=0
-            else:
-                s=diff(sC[k],sco.X[i])
-            return(simplify(s))
+        #if sct==["cart"]:
+        #    if not(k in keys):
+        #        s=0
+        #    else:
+        #        s=diff(sC[k],sco.X[i])
+        #    return(simplify(s))
 
-        elif sct==["roof"]:#p.79 eq.4.17
+        #elif sct==["roof"]:#p.79 eq.4.17
+        if sct==["roof"]:#p.79 eq.4.17
             if not(k in keys):
                 s=0
             else:
@@ -632,7 +632,7 @@ class Tensor(object):
                     s+=Gamma[ka,p,i]*sC[(j,p)]
             return(simplify(sco.scalarSimp(s)))
         else:
-            raise NotImplementedError
+            raise NotImplementedError("The covariant derivative is implemented for roof and cellar components only, at the moment for tensors of order 2 at most.")
             
         
         return(simplify(sco.scalarSimp(s)))
@@ -646,11 +646,17 @@ class Tensor(object):
         # to the tensor.
         csc=self.coords
         gr=csc.t_gr
-        #            i
-        pp("self.partder(0)",locals())
-        res=gr[0]*self.partder(0)
+        i=0
+        pp("i",locals())
+        pp("self.partder(i)",locals())
+        res=Tensor(csc,["cellar"],{(i,):1})*self.partder(i)
         pp("res",locals())
         # nabla v = g * v,i (* = "direct Product")
-        #f=lambda i :gr[i]*self.partder(i)
-        #res=sum(map(f,range(0,csc.n)))
+        f=lambda i :Tensor(csc,["cellar"],{(i,):1})*self.partder(i)
+        tl=map(f,range(0,csc.n))
+        pp("tl",locals())
+
+        #pp("Tensor(Cartesian(),['cellar', 'roof'],{(0, 2): 1}), Tensor(Cartesian(),['cellar', 'roof'],{})",locals())
+        res=sum(map(f,range(0,csc.n)))
+
         return(res)
