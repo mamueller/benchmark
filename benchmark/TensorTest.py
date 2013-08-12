@@ -394,7 +394,9 @@ class TensorTest(unittest.TestCase):
         x,y,z=c.U
         fX=Tensor(c,["roof"],{(2,):x}) #=x*e_z
         pp("fX",locals())
-        fX.nabla()
+        fXn=fX.nabla()
+
+
 ###########################################################
     def test_vec_grad(self):  
         sp=Spherical()

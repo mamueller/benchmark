@@ -256,7 +256,6 @@ class Tensor(object):
     def __add__(self,other):
         cself=copy.deepcopy(self)
         t=other.__class__.__name__
-        pp("t",locals())
         if t==self.__class__.__name__:
             cto=other.componentTypes
             ctc=cself.componentTypes
@@ -278,14 +277,20 @@ class Tensor(object):
                       +"component Type sequence"
                 raise(NotImplementedError(str))
         else:
-            raise(ArgumentTypeError("+",self.__class__.__name__,t))
+            raise(ArgumentTypeError(self.__class__.__name__,t,"+"))
 ############################################################
-    def __radd__(self,lf):
-        cself=copy.deepcopy(self)
+    def __radd__(self,other):
+        cs= copy.deepcopy(self)
         # this is necessary to make sum() work
-        # it only calls add but in different oder
-        print("<<<<<<<<<<<<<<<<<<<<radd>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        return(cself.__add__(lf))
+        # it only calls >>add<< but in different oder
+        # and it filters the first summand >>0<< that is
+        # introduced by >>sum<< which is a proplem since 
+        # >>add<< for Tensors does not accept integers of course
+        
+        if other==0:
+            return(cs)
+        else:    
+            return(cs.__add__(other))
     
 ##########################################################
     def __sub__(self,other):
@@ -638,26 +643,20 @@ class Tensor(object):
         
         return(simplify(sco.scalarSimp(s)))
             
-
-
 ###########################################################
     def nabla(self):
-        print("nabla ",self)
         # This function applies the Nabla operator (always from left) 
         # to the tensor.
         csc=self.coords
         gr=csc.t_gr
         i=0
-        pp("i",locals())
-        pp("self.partder(i)",locals())
-        res=Tensor(csc,["cellar"],{(i,):1})*self.partder(i)
-        pp("res",locals())
+        #            i
         # nabla v = g * v,i (* = "direct Product")
         f=lambda i :Tensor(csc,["cellar"],{(i,):1})*self.partder(i)
-        tl=map(f,range(0,csc.n))
-        pp("tl",locals())
-
-        #pp("Tensor(Cartesian(),['cellar', 'roof'],{(0, 2): 1}), Tensor(Cartesian(),['cellar', 'roof'],{})",locals())
         res=sum(map(f,range(0,csc.n)))
-
         return(res)
+
+###########################################################
+    def grad(self):
+        cs=copy.deepcopy(self)
+        return((cs.nabla).transpose())
