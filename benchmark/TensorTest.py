@@ -398,6 +398,20 @@ class TensorTest(unittest.TestCase):
 
 
 ###########################################################
+    def test_vec_grad_cart(self):  
+        c=Cartesian()
+        # note that roof and cellar
+        # components are equal in this case
+        x,y,z=c.U
+        fX=Tensor(c,["roof"],{(2,):x}) #=x*e
+        #                                   z
+        An=fX.nabla()
+        pp("An",locals())
+        Ag=fX.grad()
+        pp("Ag",locals())
+        Aref=Tensor(c,["roof","cellar"],{(2,0):1})
+
+###########################################################
     def test_vec_grad(self):  
         sp=Spherical()
         x,y,z=sp.X
@@ -419,28 +433,72 @@ class TensorTest(unittest.TestCase):
         # compute it with Simmonds eq(4.10): nabla v= g v,i
         # where nabla v is the transposed gradient
         #            x       x            x     x          
-        # nabla v= =e  v,x =e  (x*e ),x =e e  =e e  =Tensor(sp,["cart","cart"],{(0,2):1})
+        # nabla v = e  v,x =e  (x*e ),x =e e  =e e  =Tensor(sp,["cart","cart"],{(0,2):1})
         #                          z        z     z
         # since 
         Aref=Tensor(sp,["cart","cart"],{(2,0):1})
-        # first we express the (cartesian) components of f as functions of r,phi and theta
-        cx=fX.components    
-        cu={}
-        for k in cx.keys():
-            cu[k]=simplify(cx[k].subs({x:xu,y:yu,z:zu}).subs(cos(phi)**2,(1-sin(phi)**2)))
-        fUc=Tensor(sp,["cart"],cu)
-        # the vector f is still given with respect to the cartesian basis
-        # since the vectorgradient is very easy to define if the vector is given
-        # in roof components we compute these first
-        fUr=fUc.transform2(["roof"])
-        cr=fUr.nabla()
+        # we now chose a value for delta_X
+        delta_X=Tensor(sp,["cart"],{(0,):1}) #unit vector in x direction
+        d_fX=Aref|delta_X
+        print(d_fX)
+
+
+
+
+        ## first we express the (cartesian) components of f as functions of r,phi and theta
+        #cx=fX.components    
+        #cu={}
+        #for k in cx.keys():
+        #    cu[k]=simplify(cx[k].subs({x:xu,y:yu,z:zu}).subs(cos(phi)**2,(1-sin(phi)**2)))
+        #fUc=Tensor(sp,["cart"],cu)
+        ## the vector f is still given with respect to the cartesian basis
+        ## since the vectorgradient is very easy to define if the vector is given
+        ## in roof components we compute these first
+        #fUr=fUc.transform2(["roof"])
+        #cr=fUr.nabla()
+        #
+        ##cr=sp.cellarComponentsOfNablaOnRoofComponents(fUr)
+        ### transform into roofroof
+        ##rr=sp.cr2rr(cr)
+        ### transform back to cartesian basis
+        ##cartcart=sp.rr2CartCart(rr)
+        ##print(cartcart)
+###########################################################
+    def test_transpose(self):
+        c=Cartesian()
+        # note that roof and cellar
+        # components are equal in this case
+        x,y,z=c.U
+        A=Tensor(c,["roof","cellar"],{(2,0):1})
+        a=Tensor(c,["cellar"],{(2,):x})
+        b=Tensor(c,["roof"],{(2,):x})
+        res=a|A|b        
+        res_trans=b|A.transpose()|a  #definition of the transposed Tensor       
+        self.assertEqual(res,res_trans)
         
-        #cr=sp.cellarComponentsOfNablaOnRoofComponents(fUr)
-        ## transform into roofroof
-        #rr=sp.cr2rr(cr)
-        ## transform back to cartesian basis
-        #cartcart=sp.rr2CartCart(rr)
-        #print(cartcart)
+        sp=Spherical()
+        r,phi,theta=sp.U
+        
+        A=Tensor(sp,["roof","cellar"],{(2,0):1})
+        a=Tensor(sp,["cellar"],{(0,):r,(1,):phi,(2,):r*phi})
+        b=Tensor(sp,["roof"],{(2,):phi})
+        res=a|A|b        
+        res_trans=b|A.transpose()|a  #definition of the transposed Tensor       
+        self.assertEqual(res,res_trans)
+
+        A=Tensor(sp,["cart","cart"],{(2,0):1})
+        a=Tensor(sp,["cellar"],{(1,):r})
+        b=Tensor(sp,["roof"],{(2,):phi})
+        res=a|A|b        
+        res_trans=b|A.transpose()|a  #definition of the transposed Tensor       
+        self.assertEqual(res,res_trans)
+
+        A=Tensor(sp,["roof","roof"],{(2,0):1})
+        a=Tensor(sp,["cellar"],{(0,):r})
+        b=Tensor(sp,["cellar"],{(2,):phi})
+        res=a|A|b        
+        res_trans=b|A.transpose()|a  #definition of the transposed Tensor       
+        self.assertEqual(res,res_trans)
 ###########################################################
     def test_partder(self):
         sp=Spherical()

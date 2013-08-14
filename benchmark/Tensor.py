@@ -63,6 +63,14 @@ def changedTupel(origTupel,position,newvalue):
     l[position]=newvalue
     return(tuple(l))
 
+###########################################################
+def exchangeEnds(origTupel):
+    fe=origTupel[0]  #first index
+    le=origTupel[-1] #last index
+    l=list(origTupel)
+    l[0]=le
+    l[-1]=fe
+    return(tuple(l))
 	   
 ###########################################################
 def components2vec(components):
@@ -140,22 +148,6 @@ class Tensor(object):
             if c[k]==0:
                del(self.components[k])
 
-###########################################################
-    def switchComponentType(self,n):
-        pt=self.componentTypes[n]
-        if pt=="roof":
-            nt="cellar"
-        elif pt=="cellar":
-            nt="roof"
-        elif pt=="cart":
-            nt=pt
-        self.componentTypes[n]=nt
-###########################################################
-    def switchFirstComponentType(self):
-        self.switchComponentType(0)
-###########################################################
-    def switchLastComponentType(self):
-        self.switchComponentType(-1)
 ###########################################################
     def __str__(self):
         res="class:"+self.__class__.__name__+"\n"+"componentTypes="+str(self.componentTypes)+"\ncomponents="+str(self.components)+"\n"
@@ -543,9 +535,20 @@ class Tensor(object):
             return(Tensor(co,[cT[1]],n))
 ###########################################################
     def transpose(self):
-        new=copy.deepcopy(self)
-        new.switchFirstComponentType()
-        new.switchLastComponentType()
+        #switch the component types
+        ct=copy.deepcopy(self.componentTypes)
+        fct=ct[0 ]
+        lct=ct[-1]
+        ct[0]=lct
+        ct[-1]=fct
+        #switch the components 
+        c=self.components
+        keys=c.keys()
+        nc={} 
+        for k in keys:
+            newkey=exchangeEnds(k)
+            nc[newkey]=c[k]
+        new=Tensor(self.coords,ct,nc) 
         return(new)
 ###########################################################
     def str(self):
@@ -659,4 +662,4 @@ class Tensor(object):
 ###########################################################
     def grad(self):
         cs=copy.deepcopy(self)
-        return((cs.nabla).transpose())
+        return((cs.nabla()).transpose())
