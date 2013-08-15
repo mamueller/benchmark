@@ -399,17 +399,56 @@ class TensorTest(unittest.TestCase):
 
 ###########################################################
     def test_vec_grad_cart(self):  
+        # we first veryfy that our implementation 
+        # works for the comparativly simple case
+        # of cartisian coordinates. Here the base vectors are constant
+        # so the derivative of a vector has only to take into account
+        # the components. Also roof and cellar base vectors are 
+        # indistinguishable in this case
+        
         c=Cartesian()
-        # note that roof and cellar
-        # components are equal in this case
         x,y,z=c.U
-        fX=Tensor(c,["roof"],{(2,):x}) #=x*e
+        # we start with the following vector valued function f given in 
+        # cartesian coordinates
+        #                                         z       
+        F=Tensor(c,["roof"],{(2,):x}) #=x*e   =xe   (roof and cellar base
+        vect 
         #                                   z
-        An=fX.nabla()
-        pp("An",locals())
-        Ag=fX.grad()
-        pp("Ag",locals())
+        # The vector of change of f delta_F according to a change of position
+        # delta_X can be expressend by a linear function A acting on 
+        # delta_X and a remainder. We call the linear part dF
+        #
+        # delta_F = A(delta_X) + O(|delta_X|**2) 
+        #
+        #         = dF         + O(|delta_X|**2) 
+        # 
+        # we can express the application of A on delta_X by
+        # the scalar product. So we get 
+        #
+        # d_F=A|delta_X
+        #
+        # is the second order tensor to represent the 
+        # gradient of v and | is the scalar product 
+        # 
+        # To check if we implemented A correctly 
+        # we compute the vector of change directly starting
+        # from the definition of the derivative
+        #
+        #
+        #            dF             dF              dF        
+        # delta_F= ---- delta_x + ---- delta_y  + ---- delta_z
+        #            dx             dx              dz        
+
+
+
         Aref=Tensor(c,["roof","cellar"],{(2,0):1})
+        
+        
+        An=fX.nabla()
+        Ag=fX.grad()
+        self.assertEqual(Ag,Aref)
+        pp("Ag",locals())
+        pp("An",locals())
 
 ###########################################################
     def test_vec_grad(self):  
@@ -421,12 +460,6 @@ class TensorTest(unittest.TestCase):
         # cartesian coordinates
         fX=Tensor(sp,["cart"],{(2,):x}) #=x*e
         #                                    z
-        # if a vector v is given in cartesian coordinates
-        # the vector of change of fX deltafX according to a change of position
-        # deltaX can be expressend by the Tensor equation 
-        # delta_fX=A|delta_X+O(|delta_X|**2) where A
-        # is the second order tensor to represent the 
-        # gradient of v and | is the scalar product 
         
         # Althouhg it is simple to derive A in this case we 
         #                                              i
