@@ -247,6 +247,7 @@ class Tensor(object):
 ###########################################################
     def __add__(self,other):
         cself=copy.deepcopy(self)
+        other=copy.deepcopy(other)
         t=other.__class__.__name__
         if t==self.__class__.__name__:
             cto=other.componentTypes
@@ -255,12 +256,22 @@ class Tensor(object):
                 raise(ArgumentSizeError("+",(len(cto),len(ctc))))
             if cto==ctc:
                 cc=cself.components
+                cck=cc.keys()
                 co=other.components
                 cok=co.keys()
-                for k in cc.keys():
-                    if not(k in cok):
-                        co[k]=0
-                    cc[k]+=co[k]
+                for k in set(cck).union(cok):
+                    #if k in cck and not(k in cok): 
+                        #do nothing
+                    if (k in cck) and (k in cok): 
+                        # sum components
+                        cc[k]+=co[k]
+                    elif (not(k in cck)) and (k in cok): 
+                        # add new component 
+                        cc[k]=co[k]
+                    #elif k in cck and not(k in cok): 
+                        #do nothing because cc[k] does not change
+                   
+                cself.components=cc
                 return(cself)    
             else:        
                 str="adding tensors has up to now only been implemented for "\
@@ -652,7 +663,6 @@ class Tensor(object):
         # to the tensor.
         csc=self.coords
         gr=csc.t_gr
-        i=0
         #            i
         # nabla v = g * v,i (* = "direct Product")
         f=lambda i :Tensor(csc,["cellar"],{(i,):1})*self.partder(i)

@@ -80,10 +80,45 @@ class TensorTest(unittest.TestCase):
         sp=Spherical()
         u=Tensor(sp,["roof"],{(1,):1})
         v=Tensor(sp,["roof"],{(1,):2})
+        # make a copy for later comparisons
+        cu=copy.deepcopy(u)
+        cv=copy.deepcopy(v)
         ref=Tensor(sp,["roof"],{(1,):3})
         res=u+v
         self.assertEqual(res,ref)
-        res=v+u
+        # test that we do not modyfy the ingredients inadvertatly
+        # so u=cu and v=cv should still hold
+        self.assertEqual(u,cu)
+        self.assertEqual(v,cv)
+        # now use __radd__ by changing the order of the parts
+        res_reverse=v+u
+        self.assertEqual(res_reverse,ref)
+        # test that we do not modyfy the ingredients inadvertatly
+        # so u=cu and v=cv should still hold
+        self.assertEqual(u,cu)
+        self.assertEqual(v,cv)
+        
+        u=Tensor(Cartesian(),['cellar', 'roof'],{(0, 2): 1})
+        v=Tensor(Cartesian(),['cellar', 'roof'],{(1, 2): 1})
+
+        cu=copy.deepcopy(u)
+        cv=copy.deepcopy(v)
+        ref=Tensor(Cartesian(),['cellar', 'roof'],{(1, 2): 1, (0, 2): 1})
+        res=u+v
+        self.assertEqual(res,ref)
+        # test that we do not modyfy the ingredients inadvertatly
+        # so u=cu and v=cv should still hold
+        self.assertEqual(u,cu)
+        self.assertEqual(v,cv)
+        # now use __radd__ by changing the order of the parts
+        res_reverse=v+u
+        self.assertEqual(res_reverse,ref)
+        # test that we do not modyfy the ingredients inadvertatly
+        # so u=cu and v=cv should still hold
+        self.assertEqual(u,cu)
+        self.assertEqual(v,cv)
+
+
         self.assertEqual(res,ref)
         u=Tensor(sp,["cart"],{(1,):1})
         v=Tensor(sp,["cart"],{(1,):2})
@@ -399,22 +434,16 @@ class TensorTest(unittest.TestCase):
 
 ###########################################################
     def test_vec_grad_cart(self):  
-        # we first veryfy that our implementation 
+        # we first verify that our implementation 
         # works for the comparativly simple case
         # of cartisian coordinates. Here the base vectors are constant
         # so the derivative of a vector has only to take into account
         # the components. Also roof and cellar base vectors are 
         # indistinguishable in this case
         
-        c=Cartesian()
-        x,y,z=c.U
-        # we start with the following vector valued function f given in 
-        # cartesian coordinates
-        #                                         z       
-        F=Tensor(c,["roof"],{(2,):x}) #=x*e   =xe   (roof and cellar base
-        vect 
-        #                                   z
-        # The vector of change of f delta_F according to a change of position
+        # Consider a vector valued function F at positon X.
+        # If we change X by delta_X also F will change by delta_F
+        # The vector of change delta_F according to a change of position
         # delta_X can be expressend by a linear function A acting on 
         # delta_X and a remainder. We call the linear part dF
         #
@@ -427,28 +456,68 @@ class TensorTest(unittest.TestCase):
         #
         # d_F=A|delta_X
         #
-        # is the second order tensor to represent the 
+        # where A is the second order tensor to represent the 
         # gradient of v and | is the scalar product 
+        # To test our implementation we choose a linear function
+        # F which then coincides with its own derivative.
+        # we then have 
         # 
-        # To check if we implemented A correctly 
-        # we compute the vector of change directly starting
-        # from the definition of the derivative
+        # delta_F=d_F
         #
+        c=Cartesian()
+        x,y,z=c.U
+        # for F we chose
+        #                                         z       
+        F=Tensor(c,["roof"],{(2,):x}) #=x*e   =x*e   (roof and cellar base vectors are equal in this case) 
+        #                                  z
+        # for X0 we chose the origin
+        x0=0;y0=0;z0=0
+        # for X1 we chose 
+        x1=1;y1=0;z1=0
+        # which means that  delta_X =X1-X1
+        # which in cartesian coordinates can be expressed very easily
+        delta_X=Tensor(c,["roof"],{(0,):x1-x0,(1,):y1-y0,(2,):z1-z0})
         #
-        #            dF             dF              dF        
-        # delta_F= ---- delta_x + ---- delta_y  + ---- delta_z
-        #            dx             dx              dz        
+        # now we first compute F0=F(X0)=F(x0,y0,z0)
+        F0=F.subs({x:x0,y:y0,z:z0})
+        F1=F.subs({x:x1,y:y1,z:z1})
+        delta_F=F1-F0
 
-
-
-        Aref=Tensor(c,["roof","cellar"],{(2,0):1})
+        # now we compute the same result using the grad operator 
+        A=F.grad()
+        d_F=A|delta_X
+        
+        self.assertEqual(d_F,delta_F)
         
         
-        An=fX.nabla()
-        Ag=fX.grad()
-        self.assertEqual(Ag,Aref)
-        pp("Ag",locals())
-        pp("An",locals())
+        # we now do this for several examles for F and delta_X
+        # where the common property is that F is linear
+        # for F we chose
+        F=Tensor(c,["roof"],{(2,):x+y}) 
+        # for X0 we chose the origin
+        x0=1;y0=0;z0=0
+        # for X1 we chose 
+        x1=2;y1=2;z1=1
+        # which means that  delta_X =X1-X1
+        # which in cartesian coordinates can be expressed very easily
+        delta_X=Tensor(c,["roof"],{(0,):x1-x0,(1,):y1-y0,(2,):z1-z0})
+        pp("delta_X",locals())
+        #
+        # now we first compute F0=F(X0)=F(x0,y0,z0)
+        F0=F.subs({x:x0,y:y0,z:z0})
+        F1=F.subs({x:x1,y:y1,z:z1})
+        delta_F=F1-F0
+        pp("delta_F",locals())
+
+        # now we compute the same result using the grad operator 
+        A=F.grad()
+        pp("A",locals())
+        d_F=A|delta_X
+        pp("d_F",locals())
+        
+        self.assertEqual(d_F,delta_F)
+
+
 
 ###########################################################
     def test_vec_grad(self):  
