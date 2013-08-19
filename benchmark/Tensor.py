@@ -79,7 +79,6 @@ def components2vec(components):
        ind=(i,)
        if (ind in components.keys()): 
 	   vec[i]=components[ind]
-    print(vec)	   
     return(vec)
 
 ###########################################################
@@ -528,7 +527,6 @@ class Tensor(object):
             cc=self.roof2cart.invTransform(cc,1) # transform the second component 
             
         
-        
         return(cs)
     
 ###########################################################
@@ -569,6 +567,8 @@ class Tensor(object):
         return(description)
 ###########################################################
     def __eq__(self,other):
+        self.purge()
+        other.purge()
         boolval=\
         type(self.coords)==type(other.coords) and \
         self.componentTypes==other.componentTypes and\

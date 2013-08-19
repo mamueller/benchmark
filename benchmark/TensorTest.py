@@ -482,6 +482,7 @@ class TensorTest(unittest.TestCase):
         F0=F.subs({x:x0,y:y0,z:z0})
         F1=F.subs({x:x1,y:y1,z:z1})
         delta_F=F1-F0
+        pp("delta_F",locals())
 
         # now we compute the same result using the grad operator 
         A=F.grad()
@@ -501,7 +502,41 @@ class TensorTest(unittest.TestCase):
         # which means that  delta_X =X1-X1
         # which in cartesian coordinates can be expressed very easily
         delta_X=Tensor(c,["roof"],{(0,):x1-x0,(1,):y1-y0,(2,):z1-z0})
-        pp("delta_X",locals())
+        #
+        # now we first compute F0=F(X0)=F(x0,y0,z0)
+        F0=F.subs({x:x0,y:y0,z:z0})
+        F1=F.subs({x:x1,y:y1,z:z1})
+        delta_F=F1-F0
+
+        # now we compute the same result using the grad operator 
+        A=F.grad()
+        d_F=A|delta_X
+        
+        self.assertEqual(d_F,delta_F)
+
+###########################################################
+    def test_vec_grad_lin(self):  
+        # we now adapt the result of test_vec_grad_cart to the 
+        # case of spherical coordinates
+        sp=Spherical()
+        x,y,z=sp.X
+        # for F we chose
+        #                                         z       
+        F=Tensor(sp,["cart"],{(2,):x}) #=x*e   =x*e   
+        # we first express the vector function by its cartesian coordinates as 
+        # above but this time using the fact that every instance of Tensor can 
+        # convert its components to the cartesian coordinate system regardless 
+        # of its own coordinate frame. This is posible since all coordinate frame
+        # objects  contain information about the cartesian components of 
+        # their bases.
+        #                                  z
+        # for X0 we chose the origin
+        x0=0;y0=0;z0=0
+        # for X1 we chose 
+        x1=1;y1=0;z1=0
+        # which means that  delta_X =X1-X1
+        # which in cartesian coordinates can be expressed very easily
+        delta_X=Tensor(sp,["cart"],{(0,):x1-x0,(1,):y1-y0,(2,):z1-z0})
         #
         # now we first compute F0=F(X0)=F(x0,y0,z0)
         F0=F.subs({x:x0,y:y0,z:z0})
@@ -510,61 +545,66 @@ class TensorTest(unittest.TestCase):
         pp("delta_F",locals())
 
         # now we compute the same result using the grad operator 
+        # but in order to do so we have to convert it to eihter 
+        # roof or cellar components. (we will chose roof here) 
+        # Note that the conversions will consist of  2 steps
+        # 1) express x,y,z by the new variables
+        # 2) express ex, ey, ez by the cellar base vectors
+        XofU=sp.XofU
+        # 1):
+        F=F.subs({x:XofU[0],y:XofU[1],z:XofU[2]}) 
+        # 2):
+        F=F.transform2(["roof"])                   
+        pp("F",locals())
         A=F.grad()
-        pp("A",locals())
         d_F=A|delta_X
         pp("d_F",locals())
+        # to be able to compare this result to delta_F
+        # we have to express delta_F in the new coordinates too
+        delta_F=delta_F.subs({x:XofU[0],y:XofU[1],z:XofU[2]}) 
+        delta_F=delta_F.transform2(["roof"])                   
+        pp("delta_F",locals())
+        self.assertEqual(d_F,delta_F)
         
+        
+        # we now do this for other examles for F and delta_X
+        # where the common property is that F is linear
+        # for F we chose
+        F=Tensor(sp,["cart"],{(2,):x+y}) 
+        # for X0 we chose the origin
+        x0=1;y0=0;z0=0
+        # for X1 we chose 
+        x1=2;y1=2;z1=1
+        # which means that  delta_X =X1-X0
+        # which in cartesian coordinates can be expressed very easily
+        delta_X=Tensor(sp,["cart"],{(0,):x1-x0,(1,):y1-y0,(2,):z1-z0})
+        #
+        # now we first compute F0=F(X0)=F(x0,y0,z0)
+        F0=F.subs({x:x0,y:y0,z:z0})
+        F1=F.subs({x:x1,y:y1,z:z1})
+        delta_F=F1-F0
+        pp("delta_F",locals())
+
+        pp("delta_X",locals())
+        #
+        XofU=sp.XofU
+        # 1):
+        F=F.subs({x:XofU[0],y:XofU[1],z:XofU[2]}) 
+        # 2):
+        F=F.transform2(["roof"])                   
+        pp("F",locals())
+        A=F.grad()
+        d_F=A|delta_X
+        pp("d_F",locals())
+        # to be able to compare this result to delta_F
+        # we have to express delta_F in the new coordinates too
+        delta_F=delta_F.subs({x:XofU[0],y:XofU[1],z:XofU[2]}) 
+        delta_F=delta_F.transform2(["roof"])                   
+        pp("delta_F",locals())
         self.assertEqual(d_F,delta_F)
 
 
 
-###########################################################
-    def test_vec_grad(self):  
-        sp=Spherical()
-        x,y,z=sp.X
-        xu,yu,zu=sp.XofU
-        r,phi,theta=sp.U
-        # we start with the following vector valued function f given in 
-        # cartesian coordinates
-        fX=Tensor(sp,["cart"],{(2,):x}) #=x*e
-        #                                    z
-        
-        # Althouhg it is simple to derive A in this case we 
-        #                                              i
-        # compute it with Simmonds eq(4.10): nabla v= g v,i
-        # where nabla v is the transposed gradient
-        #            x       x            x     x          
-        # nabla v = e  v,x =e  (x*e ),x =e e  =e e  =Tensor(sp,["cart","cart"],{(0,2):1})
-        #                          z        z     z
-        # since 
-        Aref=Tensor(sp,["cart","cart"],{(2,0):1})
-        # we now chose a value for delta_X
-        delta_X=Tensor(sp,["cart"],{(0,):1}) #unit vector in x direction
-        d_fX=Aref|delta_X
-        print(d_fX)
-
-
-
-
-        ## first we express the (cartesian) components of f as functions of r,phi and theta
-        #cx=fX.components    
-        #cu={}
-        #for k in cx.keys():
-        #    cu[k]=simplify(cx[k].subs({x:xu,y:yu,z:zu}).subs(cos(phi)**2,(1-sin(phi)**2)))
-        #fUc=Tensor(sp,["cart"],cu)
-        ## the vector f is still given with respect to the cartesian basis
-        ## since the vectorgradient is very easy to define if the vector is given
-        ## in roof components we compute these first
-        #fUr=fUc.transform2(["roof"])
-        #cr=fUr.nabla()
-        #
-        ##cr=sp.cellarComponentsOfNablaOnRoofComponents(fUr)
-        ### transform into roofroof
-        ##rr=sp.cr2rr(cr)
-        ### transform back to cartesian basis
-        ##cartcart=sp.rr2CartCart(rr)
-        ##print(cartcart)
 ###########################################################
     def test_transpose(self):
         c=Cartesian()
