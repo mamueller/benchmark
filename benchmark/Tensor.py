@@ -132,10 +132,6 @@ class Tensor(object):
         self.componentTypes=componentTypes
         r=range(0,coords.n)
         self.r=r
-        # initialize coordinate transformations
-        self.roof2cart=CoordsTransform("roof","cart",coords.J)
-        self.cellar2cart=CoordsTransform("cellar","cart",coords.Jinv.transpose())
-        # remove zero entries
         self.purge()
 ###########################################################
     def purge(self):
@@ -509,22 +505,22 @@ class Tensor(object):
         csT=cs.componentTypes
         cc=cs.components
         if (csT==["roof"] and newComponentTypes==["cart"]):
-            res=self.roof2cart.transform(self,0)
+            res=c.roof2cart.transform(self,0)
             return(res)
         if (csT==["cart"] and newComponentTypes==["roof"]):
-            res=self.roof2cart.invTransform(self,0)
+            res=c.roof2cart.invTransform(self,0)
             return(res)
         if (csT==["cellar"] and newComponentTypes==["cart"]):
-            res=self.cellar2cart.transform(self,0)
+            res=c.cellar2cart.transform(self,0)
             return(res)
         if (csT==["cart"] and newComponentTypes==["cellar"]):
-            res=self.cellar2cart.invTransform(self,0)
+            res=c.cellar2cart.invTransform(self,0)
             return(res)
         
         if (csT==["cart","cart"] and newComponentTypes==["roof","roof"]):
             # for conviniece
-            cc=self.roof2cart.invTransform(cs,0) #transform the first component, the result of this operation is the representation of mixed components, that is the result is given in the new basis while acting on vectors given in the old basis  
-            cc=self.roof2cart.invTransform(cc,1) # transform the second component 
+            cc=c.roof2cart.invTransform(cs,0) #transform the first component, the result of this operation is the representation of mixed components, that is the result is given in the new basis while acting on vectors given in the old basis  
+            cc=c.roof2cart.invTransform(cc,1) # transform the second component 
             
         
         return(cs)

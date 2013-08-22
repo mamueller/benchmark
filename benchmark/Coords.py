@@ -4,6 +4,7 @@ from sympy import *
 from Tensor import *
 import unittest 
 import numpy as np
+#from CoordsTransform import *
 
 class Coords(object):
     def __init__(self,X,U,XofU):
@@ -97,6 +98,9 @@ class Coords(object):
                  for k in range(0,self.n):
                      self.Gamma[k,i,j]=simplify(dgc[i,j].dot(self.gr[k]))
         
+        self.roof2cart=CoordsTransform("roof","cart",self.J)
+        self.cellar2cart=CoordsTransform("cellar","cart",self.Jinv.transpose())
+
     def part_der_v(self,i,r_tup):
         # this function assumes a tupel r_tup representing the roof_components of a vector v
         # (these are the components of v with respect to the >>cellar<< base vectors since v=vr[i]gc[i])
