@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # vim: set expandtab ts=4
 # from sympy import *
-from Coords import *
+#from Coords import *
+from Tensor import *
 import unittest 
 import numpy as np
 class Spherical(Coords):
