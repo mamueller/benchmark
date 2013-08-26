@@ -1,16 +1,18 @@
 #!/usr/bin/python
 # vim: set expandtab ts=4
-from Coords import *
+#from Tensor import *
+import Tensor 
+import sympy
 
-class Cartesian(Coords):
+class Cartesian(Tensor.Coords):
     def __init__(self):
         # cartesian part
        
         # every general coordinate system is related to the cartesian basis
-        x,y,z=symbols("x,y,z")
+        x,y,z=sympy.symbols("x,y,z")
         X=x,y,z
 	# the "new" coordinates are:
-        ux,uy,uz=symbols("ux,uy,uz")
+        ux,uy,uz=sympy.symbols("ux,uy,uz")
         U=ux,uy,uz
 	# they are related to the "old" cartesian one by the identity transformation 
         x  =  ux

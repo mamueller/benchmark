@@ -9,28 +9,28 @@ class TensorTest(unittest.TestCase):
     def test_Tensor_initialization(self):
         sp=Spherical()
         # test some allowed use cases
-        u=Tensor(sp,["cellar"],{})#empty tensor (or null)
-        u=Tensor(sp,["cellar"],{0:1})
-        u=Tensor(sp,["cart"],{0:1})
-        u=Tensor(sp,["cellar","roof"],{(0,0):1,(1,1):1,(2,2):1}) #identitytensor
+        u=Tensor.Tensor(sp,["cellar"],{})#empty tensor (or null)
+        u=Tensor.Tensor(sp,["cellar"],{0:1})
+        u=Tensor.Tensor(sp,["cart"],{0:1})
+        u=Tensor.Tensor(sp,["cellar","roof"],{(0,0):1,(1,1):1,(2,2):1}) #identitytensor
         # retrieve values from the tensor
         #ucr=u.components(["cellar","roof"])
         
         #test if the correct exception is raised for wrong input
         with self.assertRaises(UnknownComponentType):
         # typo
-            Tensor(sp,["cellarr"],{(1,):1})
+            Tensor.Tensor(sp,["cellarr"],{(1,):1})
         with self.assertRaises(ComponentTypesTupelMismatch):
             # wrong number of component types
-             Tensor(sp,["cellar"],{(1,1):1})
+             Tensor.Tensor(sp,["cellar"],{(1,1):1})
 
 ###########################################################
     def test_Vector_initialization(self):
         sp=Spherical()
         # test some allowed use cases
-        u=Tensor(sp,["cellar"],{0:1})
-        u=Tensor(sp,["cart"],{0:1})
-        u=Tensor(sp,["cellar","roof"],{(0,0):1}) 
+        u=Tensor.Tensor(sp,["cellar"],{0:1})
+        u=Tensor.Tensor(sp,["cart"],{0:1})
+        u=Tensor.Tensor(sp,["cellar","roof"],{(0,0):1}) 
         
 
 ###########################################################
@@ -38,28 +38,28 @@ class TensorTest(unittest.TestCase):
         # we test if a==b behaves like expected
         sp=Spherical()
         sp2=Spherical()
-        u=Tensor(sp,["cellar"],{(1,):1})
-        v=Tensor(sp2,["cellar"],{(1,):1})
+        u=Tensor.Tensor(sp,["cellar"],{(1,):1})
+        v=Tensor.Tensor(sp2,["cellar"],{(1,):1})
         self.assertTrue(u==v)
-        u=Tensor(sp,["cellar"],{(1,):1})
-        v=Tensor(sp,["cellar"],{(1,):1})
+        u=Tensor.Tensor(sp,["cellar"],{(1,):1})
+        v=Tensor.Tensor(sp,["cellar"],{(1,):1})
         self.assertTrue(u==v)
-        w=Tensor(sp,["cellar"],{(1,):2})
+        w=Tensor.Tensor(sp,["cellar"],{(1,):2})
         self.assertTrue(not(u==w))
-        w=Tensor(sp,["cellar"],{(2,):1})
+        w=Tensor.Tensor(sp,["cellar"],{(2,):1})
         self.assertTrue(not(u==w))
-        w=Tensor(sp,["roof"],{(1,):1})
+        w=Tensor.Tensor(sp,["roof"],{(1,):1})
         self.assertTrue(not(u==w))
 
         # test if a zero component is treated like a missing one
-        u=Tensor(sp,["cellar"],{})
-        v=Tensor(sp2,["cellar"],{(0,):0,(1,):0,(2,):0})
+        u=Tensor.Tensor(sp,["cellar"],{})
+        v=Tensor.Tensor(sp2,["cellar"],{(0,):0,(1,):0,(2,):0})
         self.assertTrue(u==v)
 ###########################################################
 
     def test_raise_and_lower(self):
         sp=Spherical()
-        u=Tensor(sp,["cellar"],{(1,):1})
+        u=Tensor.Tensor(sp,["cellar"],{(1,):1})
         v=u.raise_first_index().lower_first_index()
         self.assertTrue(u==v)
         v=u.raise_last_index().lower_first_index()
@@ -68,9 +68,9 @@ class TensorTest(unittest.TestCase):
 ###########################################################
     def test_ScalarMul(self):
         sp=Spherical()
-        u=Tensor(sp,["roof"],{(1,):1})
+        u=Tensor.Tensor(sp,["roof"],{(1,):1})
         v=u*5
-        w=Tensor(sp,["roof"],{(1,):5})
+        w=Tensor.Tensor(sp,["roof"],{(1,):5})
         self.assertEqual(v,w)
         v=5*u
         self.assertEqual(v,w)
@@ -78,12 +78,12 @@ class TensorTest(unittest.TestCase):
 ###########################################################
     def testAdd(self):
         sp=Spherical()
-        u=Tensor(sp,["roof"],{(1,):1})
-        v=Tensor(sp,["roof"],{(1,):2})
+        u=Tensor.Tensor(sp,["roof"],{(1,):1})
+        v=Tensor.Tensor(sp,["roof"],{(1,):2})
         # make a copy for later comparisons
         cu=copy.deepcopy(u)
         cv=copy.deepcopy(v)
-        ref=Tensor(sp,["roof"],{(1,):3})
+        ref=Tensor.Tensor(sp,["roof"],{(1,):3})
         res=u+v
         self.assertEqual(res,ref)
         # test that we do not modyfy the ingredients inadvertatly
@@ -98,12 +98,12 @@ class TensorTest(unittest.TestCase):
         self.assertEqual(u,cu)
         self.assertEqual(v,cv)
         
-        u=Tensor(Cartesian(),['cellar', 'roof'],{(0, 2): 1})
-        v=Tensor(Cartesian(),['cellar', 'roof'],{(1, 2): 1})
+        u=Tensor.Tensor(Cartesian(),['cellar', 'roof'],{(0, 2): 1})
+        v=Tensor.Tensor(Cartesian(),['cellar', 'roof'],{(1, 2): 1})
 
         cu=copy.deepcopy(u)
         cv=copy.deepcopy(v)
-        ref=Tensor(Cartesian(),['cellar', 'roof'],{(1, 2): 1, (0, 2): 1})
+        ref=Tensor.Tensor(Cartesian(),['cellar', 'roof'],{(1, 2): 1, (0, 2): 1})
         res=u+v
         self.assertEqual(res,ref)
         # test that we do not modyfy the ingredients inadvertatly
@@ -120,18 +120,18 @@ class TensorTest(unittest.TestCase):
 
 
         self.assertEqual(res,ref)
-        u=Tensor(sp,["cart"],{(1,):1})
-        v=Tensor(sp,["cart"],{(1,):2})
-        ref=Tensor(sp,["cart"],{(1,):3})
+        u=Tensor.Tensor(sp,["cart"],{(1,):1})
+        v=Tensor.Tensor(sp,["cart"],{(1,):2})
+        ref=Tensor.Tensor(sp,["cart"],{(1,):3})
         res=u+v
         self.assertEqual(res,ref)
         res=v+u
-        u=Tensor(sp,["roof"],{(1,):1})
-        v=Tensor(sp,["cart"],{(1,):2})
+        u=Tensor.Tensor(sp,["roof"],{(1,):1})
+        v=Tensor.Tensor(sp,["cart"],{(1,):2})
         with self.assertRaises(NotImplementedError):
             u+v
-        u=Tensor(sp,["roof","roof"],{(1,1):1})
-        v=Tensor(sp,["cart"],{(1,):2})
+        u=Tensor.Tensor(sp,["roof","roof"],{(1,1):1})
+        v=Tensor.Tensor(sp,["cart"],{(1,):2})
         with self.assertRaises(ArgumentSizeError):
            u+v
         
@@ -141,53 +141,53 @@ class TensorTest(unittest.TestCase):
 ###########################################################
     def testSub(self):
         sp=Spherical()
-        u=Tensor(sp,["roof"],{(1,):1})
-        v=Tensor(sp,["roof"],{(1,):2})
-        ref=Tensor(sp,["roof"],{(1,):-1})
+        u=Tensor.Tensor(sp,["roof"],{(1,):1})
+        v=Tensor.Tensor(sp,["roof"],{(1,):2})
+        ref=Tensor.Tensor(sp,["roof"],{(1,):-1})
         res=u-v
         self.assertEqual(res,ref)
     
 ###########################################################
     def test_extractVector(self):
         sp=Spherical()
-        u  =Tensor(sp,["cart","cart"],{(0,0):1,(0,1):2})
-        self.assertEqual(u.extractVector((0,"*")),Tensor(sp,["cart"],{(0,):1,(1,):2}))
-        self.assertEqual(u.extractVector(("*",0)),Tensor(sp,["cart"],{(0,):1}))
-        self.assertEqual(u.extractVector(("*",1)),Tensor(sp,["cart"],{(0,):2}))
-        self.assertEqual(u.extractVector(("*",2)),Tensor(sp,["cart"],{}))
+        u  =Tensor.Tensor(sp,["cart","cart"],{(0,0):1,(0,1):2})
+        self.assertEqual(u.extractVector((0,"*")),Tensor.Tensor(sp,["cart"],{(0,):1,(1,):2}))
+        self.assertEqual(u.extractVector(("*",0)),Tensor.Tensor(sp,["cart"],{(0,):1}))
+        self.assertEqual(u.extractVector(("*",1)),Tensor.Tensor(sp,["cart"],{(0,):2}))
+        self.assertEqual(u.extractVector(("*",2)),Tensor.Tensor(sp,["cart"],{}))
         
-        u  =Tensor(sp,["roof","cart","cellar"],{(0,0,0):1,(0,1,0):2})
-        self.assertEqual(u.extractVector((0,"*",0)),Tensor(sp,["cart"],{(0,):1,(1,):2}))
-        self.assertEqual(u.extractVector(("*",0,0)),Tensor(sp,["roof"],{(0,):1}))
+        u  =Tensor.Tensor(sp,["roof","cart","cellar"],{(0,0,0):1,(0,1,0):2})
+        self.assertEqual(u.extractVector((0,"*",0)),Tensor.Tensor(sp,["cart"],{(0,):1,(1,):2}))
+        self.assertEqual(u.extractVector(("*",0,0)),Tensor.Tensor(sp,["roof"],{(0,):1}))
         
         with self.assertRaises(ArgumentSizeError):
-            u  =Tensor(sp,["cart"],{(0,):1,(1,):2})
+            u  =Tensor.Tensor(sp,["cart"],{(0,):1,(1,):2})
             u.extractVector(("*",1))
-        #self.assertEqual(u.extractVector(("*",2)),Tensor(sp,["cart"],{}))
+        #self.assertEqual(u.extractVector(("*",2)),Tensor.Tensor(sp,["cart"],{}))
 
 ###########################################################
     def test_outerProduct(self):
         sp=Spherical()
-        u=Tensor(sp,["cellar"],{(1,):1})
-        v=Tensor(sp,["roof"],{(1,):1})
+        u=Tensor.Tensor(sp,["cellar"],{(1,):1})
+        v=Tensor.Tensor(sp,["roof"],{(1,):1})
         res=u*v
-        self.assertEqual(res,Tensor(sp,["cellar","roof"],{(1,1):1}))
+        self.assertEqual(res,Tensor.Tensor(sp,["cellar","roof"],{(1,1):1}))
 
-        u=Tensor(sp,["cellar","cellar"],{(0,1):3,(1,1):4})
-        v=Tensor(sp,["roof","cellar"],{(1,0):2})
-        self.assertEqual(u*v,Tensor(sp,["cellar","cellar","roof","cellar"],{(0,1,1,0):6,(1,1,1,0):8}))
+        u=Tensor.Tensor(sp,["cellar","cellar"],{(0,1):3,(1,1):4})
+        v=Tensor.Tensor(sp,["roof","cellar"],{(1,0):2})
+        self.assertEqual(u*v,Tensor.Tensor(sp,["cellar","cellar","roof","cellar"],{(0,1,1,0):6,(1,1,1,0):8}))
         
         # test that res=a*b does not change when we modify a or b later on 
         # this ensures that we did not forget to copy the igredients instead of referencing them 
-        a=Tensor(sp,["cellar"],{(1,):1})
-        b=Tensor(sp,["roof"],{(1,):1})
+        a=Tensor.Tensor(sp,["cellar"],{(1,):1})
+        b=Tensor.Tensor(sp,["roof"],{(1,):1})
         res=a*b
-        self.assertEqual(res,Tensor(sp,["cellar","roof"],{(1,1):1}))
+        self.assertEqual(res,Tensor.Tensor(sp,["cellar","roof"],{(1,1):1}))
 
         sp2=Spherical()
-        a=Tensor(sp2,["roof"],{(2,):2})
-        b=Tensor(sp2,["cellar"],{(0,):2})
-        self.assertEqual(res,Tensor(sp,["cellar","roof"],{(1,1):1}))
+        a=Tensor.Tensor(sp2,["roof"],{(2,):2})
+        b=Tensor.Tensor(sp2,["cellar"],{(0,):2})
+        self.assertEqual(res,Tensor.Tensor(sp,["cellar","roof"],{(1,1):1}))
 
 
 ###########################################################
@@ -195,41 +195,41 @@ class TensorTest(unittest.TestCase):
         sp=Spherical()
 
         # second order Tensor times vector
-        u  =Tensor(sp,["cart","cart"],{(0,0):1})
-        w  =Tensor(sp,["cart","cart"],{(1,1):1})
-        v  =Tensor(sp,["cart"],{(1,):1})
+        u  =Tensor.Tensor(sp,["cart","cart"],{(0,0):1})
+        w  =Tensor.Tensor(sp,["cart","cart"],{(1,1):1})
+        v  =Tensor.Tensor(sp,["cart"],{(1,):1})
         
-        ref=Tensor(sp,["cart"],{})
+        ref=Tensor.Tensor(sp,["cart"],{})
         self.assertEqual(u|v,ref)
         self.assertEqual(v|u,ref)
         
         self.assertEqual(u|u,u)
-        self.assertEqual(u|w,Tensor(sp,["cart","cart"],{}))
+        self.assertEqual(u|w,Tensor.Tensor(sp,["cart","cart"],{}))
         # roof and cellar components 
-        u  =Tensor(sp,["roof","cellar"],{(0,0):1})
+        u  =Tensor.Tensor(sp,["roof","cellar"],{(0,0):1})
         self.assertEqual(u|u,u)
         
-        v  =Tensor(sp,["roof"],{(1,):1})
-        self.assertEqual(v|u,Tensor(sp,["roof"],{}))
+        v  =Tensor.Tensor(sp,["roof"],{(1,):1})
+        self.assertEqual(v|u,Tensor.Tensor(sp,["roof"],{}))
         # mixed with cartesian components 
         # (We allow this although it is very unusual 
         # e.g. e_x e_phi is a valid dyadic product 
         # the components in this form thus refer to roof and cartesian base
         # vectors. Usually the whole component set would be either cartesian
         # or some combination of roof and cellar
-        w  =Tensor(sp,["roof","cellar"],{(1,1):1})
-        v  =Tensor(sp,["roof"],{(1,):1})
+        w  =Tensor.Tensor(sp,["roof","cellar"],{(1,1):1})
+        v  =Tensor.Tensor(sp,["roof"],{(1,):1})
         
         # test that res=a!b does not change when we modify a or b later on 
         # this ensures that we did not forget to copy the igredients instead of referencing them 
-        a=Tensor(sp,["cellar"],{(1,):2})
-        b=Tensor(sp,["roof"],{(1,):3})
+        a=Tensor.Tensor(sp,["cellar"],{(1,):2})
+        b=Tensor.Tensor(sp,["roof"],{(1,):3})
         res=a|b
         self.assertEqual(res,6)
 
         sp2=Spherical()
-        a=Tensor(sp2,["roof"],{(2,):2})
-        b=Tensor(sp2,["cellar"],{(0,):2})
+        a=Tensor.Tensor(sp2,["roof"],{(2,):2})
+        b=Tensor.Tensor(sp2,["cellar"],{(0,):2})
         self.assertEqual(res,6)
 
 
@@ -239,27 +239,27 @@ class TensorTest(unittest.TestCase):
     def test_Vector_innerProduct(self):
         sp=Spherical()
         
-        u=Tensor(sp,["cellar"],{(1):1})
-        v=Tensor(sp,["roof"],{(1):1})
+        u=Tensor.Tensor(sp,["cellar"],{(1):1})
+        v=Tensor.Tensor(sp,["roof"],{(1):1})
         self.assertEqual(u|v,1)
         self.assertEqual(v|u,1)
         
-        u=Tensor(sp,["cellar"],{(1,):1})
-        v=Tensor(sp,["cellar"],{(1,):1})
+        u=Tensor.Tensor(sp,["cellar"],{(1,):1})
+        v=Tensor.Tensor(sp,["cellar"],{(1,):1})
         self.assertEqual(u|v,sp.g_rr()[1,1])
         
-        u=Tensor(sp,["roof"],{(1,):1})
-        v=Tensor(sp,["roof"],{(1,):1})
+        u=Tensor.Tensor(sp,["roof"],{(1,):1})
+        v=Tensor.Tensor(sp,["roof"],{(1,):1})
         self.assertEqual(u|v,sp.g_cc()[1,1])
        
         #orthogonal
-        u=Tensor(sp,["roof"],{(1,):1})
-        v=Tensor(sp,["roof"],{(2,):1})
+        u=Tensor.Tensor(sp,["roof"],{(1,):1})
+        v=Tensor.Tensor(sp,["roof"],{(2,):1})
         self.assertEqual(u|v,0)
         
         ###test transformation invariance ####
-        eur=Tensor(sp,["cellar"],{(0,):1}) 
-        eor=Tensor(sp,["roof"],{(0,):1})
+        eur=Tensor.Tensor(sp,["cellar"],{(0,):1}) 
+        eor=Tensor.Tensor(sp,["roof"],{(0,):1})
         self.assertEqual(eur|eor,1)
         eur_cart=eur.transform2(["cart"])
         eor_cart=eor.transform2(["cart"])
@@ -339,24 +339,24 @@ class TensorTest(unittest.TestCase):
     def test_transform2_vector(self):
         sp=Spherical()
         
-        X=Tensor(sp,["roof"],{(0,):1})
+        X=Tensor.Tensor(sp,["roof"],{(0,):1})
         Y=X.transform2(["cart"])
         self.assertEqual(Y,sp.t_gc[0])
         
         X=sp.t_gc[0] #the first cellar base vector in cartesian components
         Y=X.transform2(["roof"])
-        zero=Y-Tensor(sp,["roof"],{(0,):1})
+        zero=Y-Tensor.Tensor(sp,["roof"],{(0,):1})
         zc=zero.components	
         sp.testnumshell(zc[(0,)],0.1,2,1e-7)
         
             
-        X=Tensor(sp,["cellar"],{(0,):1})
+        X=Tensor.Tensor(sp,["cellar"],{(0,):1})
         Y=X.transform2(["cart"])
         self.assertEqual(Y,sp.t_gr[0])
         
         X=sp.t_gr[0] #the first roof base vector in cartesian components
         Y=X.transform2(["cellar"]) # the cellar components must be 1,0,0
-        zero=Y-Tensor(sp,["cellar"],{(0,):1})
+        zero=Y-Tensor.Tensor(sp,["cellar"],{(0,):1})
         zc=zero.components	
         sp.testnumshell(zc[(0,)],0.1,2,1e-7)
     
@@ -364,7 +364,7 @@ class TensorTest(unittest.TestCase):
     def test_transform2_secondOrderTensors(self):
         
         ##  construct a two dimensional testcase
-        #X=Tensor(sp,["cart","cart"],{(0,0):1})
+        #X=Tensor.Tensor(sp,["cart","cart"],{(0,0):1})
         #Y=X.transform2(["roof","roof"])
         
         ## we first define a linear mapping P_x that acts as a projector of any vector to the 
@@ -387,7 +387,7 @@ class TensorTest(unittest.TestCase):
         # the result P_x(v) expressed in cartesian coordinates is given by the
         # matrix multiplication res=P_x v
         sp=Spherical()
-        Pcartcart=Tensor(sp,["cart","cart"],{(0,0):1})
+        Pcartcart=Tensor.Tensor(sp,["cart","cart"],{(0,0):1})
         # we chose the cartesian components of the first roof base vector
         v_cart=sp.t_gr[0]
         res_cart=Pcartcart|v_cart
@@ -427,7 +427,7 @@ class TensorTest(unittest.TestCase):
         # cartesian coordinates
         c=Cartesian()
         x,y,z=c.U
-        fX=Tensor(c,["roof"],{(2,):x}) #=x*e_z
+        fX=Tensor.Tensor(c,["roof"],{(2,):x}) #=x*e_z
         pp("fX",locals())
         fXn=fX.nabla()
 
@@ -468,7 +468,7 @@ class TensorTest(unittest.TestCase):
         x,y,z=c.U
         # for F we chose
         #                                         z       
-        F=Tensor(c,["roof"],{(2,):x}) #=x*e   =x*e   (roof and cellar base vectors are equal in this case) 
+        F=Tensor.Tensor(c,["roof"],{(2,):x}) #=x*e   =x*e   (roof and cellar base vectors are equal in this case) 
         #                                  z
         # for X0 we chose the origin
         x0=0;y0=0;z0=0
@@ -476,7 +476,7 @@ class TensorTest(unittest.TestCase):
         x1=1;y1=0;z1=0
         # which means that  delta_X =X1-X1
         # which in cartesian coordinates can be expressed very easily
-        delta_X=Tensor(c,["roof"],{(0,):x1-x0,(1,):y1-y0,(2,):z1-z0})
+        delta_X=Tensor.Tensor(c,["roof"],{(0,):x1-x0,(1,):y1-y0,(2,):z1-z0})
         #
         # now we first compute F0=F(X0)=F(x0,y0,z0)
         F0=F.subs({x:x0,y:y0,z:z0})
@@ -494,14 +494,14 @@ class TensorTest(unittest.TestCase):
         # we now do this for several examles for F and delta_X
         # where the common property is that F is linear
         # for F we chose
-        F=Tensor(c,["roof"],{(2,):x+y}) 
+        F=Tensor.Tensor(c,["roof"],{(2,):x+y}) 
         # for X0 we chose the origin
         x0=1;y0=0;z0=0
         # for X1 we chose 
         x1=2;y1=2;z1=1
         # which means that  delta_X =X1-X1
         # which in cartesian coordinates can be expressed very easily
-        delta_X=Tensor(c,["roof"],{(0,):x1-x0,(1,):y1-y0,(2,):z1-z0})
+        delta_X=Tensor.Tensor(c,["roof"],{(0,):x1-x0,(1,):y1-y0,(2,):z1-z0})
         #
         # now we first compute F0=F(X0)=F(x0,y0,z0)
         F0=F.subs({x:x0,y:y0,z:z0})
@@ -522,7 +522,7 @@ class TensorTest(unittest.TestCase):
         x,y,z=sp.X
         # for F we chose
         #                                         z       
-        F=Tensor(sp,["cart"],{(2,):x}) #=x*e   =x*e   
+        F=Tensor.Tensor(sp,["cart"],{(2,):x}) #=x*e   =x*e   
         # we first express the vector function by its cartesian coordinates as 
         # above but this time using the fact that every instance of Tensor can 
         # convert its components to the cartesian coordinate system regardless 
@@ -536,7 +536,7 @@ class TensorTest(unittest.TestCase):
         x1=1;y1=0;z1=0
         # which means that  delta_X =X1-X1
         # which in cartesian coordinates can be expressed very easily
-        delta_X=Tensor(sp,["cart"],{(0,):x1-x0,(1,):y1-y0,(2,):z1-z0})
+        delta_X=Tensor.Tensor(sp,["cart"],{(0,):x1-x0,(1,):y1-y0,(2,):z1-z0})
         #
         # now we first compute F0=F(X0)=F(x0,y0,z0)
         F0=F.subs({x:x0,y:y0,z:z0})
@@ -570,14 +570,14 @@ class TensorTest(unittest.TestCase):
         # we now do this for other examles for F and delta_X
         # where the common property is that F is linear
         # for F we chose
-        F=Tensor(sp,["cart"],{(2,):x+y}) 
+        F=Tensor.Tensor(sp,["cart"],{(2,):x+y}) 
         # for X0 we chose the origin
         x0=1;y0=0;z0=0
         # for X1 we chose 
         x1=2;y1=2;z1=1
         # which means that  delta_X =X1-X0
         # which in cartesian coordinates can be expressed very easily
-        delta_X=Tensor(sp,["cart"],{(0,):x1-x0,(1,):y1-y0,(2,):z1-z0})
+        delta_X=Tensor.Tensor(sp,["cart"],{(0,):x1-x0,(1,):y1-y0,(2,):z1-z0})
         #
         # now we first compute F0=F(X0)=F(x0,y0,z0)
         F0=F.subs({x:x0,y:y0,z:z0})
@@ -611,9 +611,9 @@ class TensorTest(unittest.TestCase):
         # note that roof and cellar
         # components are equal in this case
         x,y,z=c.U
-        A=Tensor(c,["roof","cellar"],{(2,0):1})
-        a=Tensor(c,["cellar"],{(2,):x})
-        b=Tensor(c,["roof"],{(2,):x})
+        A=Tensor.Tensor(c,["roof","cellar"],{(2,0):1})
+        a=Tensor.Tensor(c,["cellar"],{(2,):x})
+        b=Tensor.Tensor(c,["roof"],{(2,):x})
         res=a|A|b        
         res_trans=b|A.transpose()|a  #definition of the transposed Tensor       
         self.assertEqual(res,res_trans)
@@ -621,23 +621,23 @@ class TensorTest(unittest.TestCase):
         sp=Spherical()
         r,phi,theta=sp.U
         
-        A=Tensor(sp,["roof","cellar"],{(2,0):1})
-        a=Tensor(sp,["cellar"],{(0,):r,(1,):phi,(2,):r*phi})
-        b=Tensor(sp,["roof"],{(2,):phi})
+        A=Tensor.Tensor(sp,["roof","cellar"],{(2,0):1})
+        a=Tensor.Tensor(sp,["cellar"],{(0,):r,(1,):phi,(2,):r*phi})
+        b=Tensor.Tensor(sp,["roof"],{(2,):phi})
         res=a|A|b        
         res_trans=b|A.transpose()|a  #definition of the transposed Tensor       
         self.assertEqual(res,res_trans)
 
-        A=Tensor(sp,["cart","cart"],{(2,0):1})
-        a=Tensor(sp,["cellar"],{(1,):r})
-        b=Tensor(sp,["roof"],{(2,):phi})
+        A=Tensor.Tensor(sp,["cart","cart"],{(2,0):1})
+        a=Tensor.Tensor(sp,["cellar"],{(1,):r})
+        b=Tensor.Tensor(sp,["roof"],{(2,):phi})
         res=a|A|b        
         res_trans=b|A.transpose()|a  #definition of the transposed Tensor       
         self.assertEqual(res,res_trans)
 
-        A=Tensor(sp,["roof","roof"],{(2,0):1})
-        a=Tensor(sp,["cellar"],{(0,):r})
-        b=Tensor(sp,["cellar"],{(2,):phi})
+        A=Tensor.Tensor(sp,["roof","roof"],{(2,0):1})
+        a=Tensor.Tensor(sp,["cellar"],{(0,):r})
+        b=Tensor.Tensor(sp,["cellar"],{(2,):phi})
         res=a|A|b        
         res_trans=b|A.transpose()|a  #definition of the transposed Tensor       
         self.assertEqual(res,res_trans)
@@ -647,25 +647,25 @@ class TensorTest(unittest.TestCase):
         x,y,z=sp.X
         r,phi,theta=sp.U
         
-        v=Tensor(sp,["roof"],{(0,):1})
+        v=Tensor.Tensor(sp,["roof"],{(0,):1})
         drv=v.partder(0)#with respect to r
-        ref=Tensor(sp,["roof"],{(0,):0,(1,):0,(2,):0})
+        ref=Tensor.Tensor(sp,["roof"],{(0,):0,(1,):0,(2,):0})
         self.assertEqual(drv,ref)
         
-        v=Tensor(sp,["cellar"],{(0,):1})
+        v=Tensor.Tensor(sp,["cellar"],{(0,):1})
         # this is the roof base vector e^r
         drv=v.partder(0)#with respect to r
-        ref=Tensor(sp,["cellar"],{})
+        ref=Tensor.Tensor(sp,["cellar"],{})
         self.assertEqual(drv,ref)
        
-        v=Tensor(sp,["roof"],{(1,):1}) #e_phi
+        v=Tensor.Tensor(sp,["roof"],{(1,):1}) #e_phi
         drv=v.partder(0)#with respect to r
-        ref=Tensor(sp,["roof"],{(0,):0,(1,):1/r,(2,):0})
+        ref=Tensor.Tensor(sp,["roof"],{(0,):0,(1,):1/r,(2,):0})
         self.assertEqual(drv,ref)
         
-        v=Tensor(sp,["cellar"],{(1,):1}) #e_phi
+        v=Tensor.Tensor(sp,["cellar"],{(1,):1}) #e_phi
         drv=v.partder(0)#with respect to r
-        ref=Tensor(sp,["cellar"],{(0,):0,(1,):-1/r,(2,):0})
+        ref=Tensor.Tensor(sp,["cellar"],{(0,):0,(1,):-1/r,(2,):0})
         self.assertEqual(drv,ref)
         
         
