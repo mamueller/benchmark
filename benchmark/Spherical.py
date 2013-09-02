@@ -1,10 +1,11 @@
 #!/usr/bin/python
 # vim: set expandtab ts=4
-# from sympy import *
-#import unittest 
-from Tensor import *
+
+import Tensor 
+from sympy import pi,sin,cos,trigsimp,symbols,Abs,simplify
 import numpy as np
-class Spherical(Coords):
+
+class Spherical(Tensor.Coords):
     def __init__(self):
         x,y,z=symbols("x,y,z")
         X=x,y,z

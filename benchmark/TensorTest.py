@@ -1,8 +1,13 @@
 #!/usr/bin/python
 # vim:set ff=unix expandtab ts=4 sw=4:
 import unittest 
-from Spherical import *
-from Cartesian import *
+from Spherical import Spherical 
+from Cartesian import Cartesian
+import Tensor
+import copy
+import Exceptions
+from helperFunctions import pp
+#from sympy import pi
 
 class TensorTest(unittest.TestCase):
 ###########################################################
@@ -17,10 +22,10 @@ class TensorTest(unittest.TestCase):
         #ucr=u.components(["cellar","roof"])
         
         #test if the correct exception is raised for wrong input
-        with self.assertRaises(UnknownComponentType):
+        with self.assertRaises(Exceptions.UnknownComponentType):
         # typo
             Tensor.Tensor(sp,["cellarr"],{(1,):1})
-        with self.assertRaises(ComponentTypesTupelMismatch):
+        with self.assertRaises(Exceptions.ComponentTypesTupelMismatch):
             # wrong number of component types
              Tensor.Tensor(sp,["cellar"],{(1,1):1})
 
@@ -128,14 +133,14 @@ class TensorTest(unittest.TestCase):
         res=v+u
         u=Tensor.Tensor(sp,["roof"],{(1,):1})
         v=Tensor.Tensor(sp,["cart"],{(1,):2})
-        with self.assertRaises(NotImplementedError):
+        with self.assertRaises(Exceptions.NotImplementedError):
             u+v
         u=Tensor.Tensor(sp,["roof","roof"],{(1,1):1})
         v=Tensor.Tensor(sp,["cart"],{(1,):2})
-        with self.assertRaises(ArgumentSizeError):
+        with self.assertRaises(Exceptions.ArgumentSizeError):
            u+v
         
-        with self.assertRaises(ArgumentTypeError):
+        with self.assertRaises(Exceptions.ArgumentTypeError):
            u+3 
         
 ###########################################################
@@ -160,7 +165,7 @@ class TensorTest(unittest.TestCase):
         self.assertEqual(u.extractVector((0,"*",0)),Tensor.Tensor(sp,["cart"],{(0,):1,(1,):2}))
         self.assertEqual(u.extractVector(("*",0,0)),Tensor.Tensor(sp,["roof"],{(0,):1}))
         
-        with self.assertRaises(ArgumentSizeError):
+        with self.assertRaises(Exceptions.ArgumentSizeError):
             u  =Tensor.Tensor(sp,["cart"],{(0,):1,(1,):2})
             u.extractVector(("*",1))
         #self.assertEqual(u.extractVector(("*",2)),Tensor.Tensor(sp,["cart"],{}))
@@ -269,11 +274,11 @@ class TensorTest(unittest.TestCase):
         self.assertEqual(eur_cart|eor_cart,1)
 ###########################################################
     def test_indextupel(self):
-        t=indextupel(1)
+        t=Tensor.indextupel(1)
         self.assertEqual(t,{(0,),(1,),(2,)})
-        t=indextupel(2)
+        t=Tensor.indextupel(2)
         self.assertEqual(t,{(0,0),(0,1),(0,2),(1,0),(1,1),(1,2),(2,0),(2,1),(2,2)})
-        t=indextupel(3)
+        t=Tensor.indextupel(3)
         self.assertEqual(t,{(0,0,0),(0,0,1),(0,0,2),(0,1,0),(0,1,1),(0,1,2),(0,2,0),(0,2,1),(0,2,2),\
 	                  (1,0,0),(1,0,1),(1,0,2),(1,1,0),(1,1,1),(1,1,2),(1,2,0),(1,2,1),(1,2,2),\
 	                  (2,0,0),(2,0,1),(2,0,2),(2,1,0),(2,1,1),(2,1,2),(2,2,0),(2,2,1),(2,2,2),\
@@ -281,57 +286,57 @@ class TensorTest(unittest.TestCase):
               
 ###########################################################
     def test_add_index(self):
-        t=indextupel(1)
-        res=add_index(t,0)
+        t=Tensor.indextupel(1)
+        res=Tensor.add_index(t,0)
         self.assertEqual(res,t)
         
-        res=add_index(t,1)
-        self.assertEqual(res,indextupel(2))
+        res=Tensor.add_index(t,1)
+        self.assertEqual(res,Tensor.indextupel(2))
         
-        res=add_index(t)
-        self.assertEqual(res,indextupel(2))
+        res=Tensor.add_index(t)
+        self.assertEqual(res,Tensor.indextupel(2))
 
 
 ###########################################################
     def test_del_index(self):
-        t=indextupel(1)
-        with self.assertRaises(ToShortTupelError):
-            res=del_index(t,0)
+        t=Tensor.indextupel(1)
+        with self.assertRaises(Exceptions.ToShortTupelError):
+            res=Tensor.del_index(t,0)
         t={}
-        with self.assertRaises(EmptyIndexSetError):
-            res=del_index(t,0)
+        with self.assertRaises(Exceptions.EmptyIndexSetError):
+            res=Tensor.del_index(t,0)
         
-        t=indextupel(2)
-        res=del_index(t,0)
-        self.assertEqual(res,indextupel(1))
+        t=Tensor.indextupel(2)
+        res=Tensor.del_index(t,0)
+        self.assertEqual(res,Tensor.indextupel(1))
         
-        t=indextupel(2)
-        res=del_index(t,1)
-        self.assertEqual(res,indextupel(1))
+        t=Tensor.indextupel(2)
+        res=Tensor.del_index(t,1)
+        self.assertEqual(res,Tensor.indextupel(1))
         
-        t=indextupel(2)
-        res=del_index(t,-1)
-        self.assertEqual(res,indextupel(1))
+        t=Tensor.indextupel(2)
+        res=Tensor.del_index(t,-1)
+        self.assertEqual(res,Tensor.indextupel(1))
         
 
-        t=indextupel(3)
-        res=del_index(t,0)
-        self.assertEqual(res,indextupel(2))
+        t=Tensor.indextupel(3)
+        res=Tensor.del_index(t,0)
+        self.assertEqual(res,Tensor.indextupel(2))
 
-        t=indextupel(3)
-        res=del_index(t,1)
-        self.assertEqual(res,indextupel(2))
+        t=Tensor.indextupel(3)
+        res=Tensor.del_index(t,1)
+        self.assertEqual(res,Tensor.indextupel(2))
 
-        t=indextupel(3)
-        res=del_index(t,2)
-        self.assertEqual(res,indextupel(2))
+        t=Tensor.indextupel(3)
+        res=Tensor.del_index(t,2)
+        self.assertEqual(res,Tensor.indextupel(2))
 
-        t=indextupel(3)
-        res=del_index(t,-1)
-        self.assertEqual(res,indextupel(2))
+        t=Tensor.indextupel(3)
+        res=Tensor.del_index(t,-1)
+        self.assertEqual(res,Tensor.indextupel(2))
 
         t={(1,2,3)}
-        res=del_index(t,1)
+        res=Tensor.del_index(t,1)
         self.assertEqual(res,{(1,3)})
 
 

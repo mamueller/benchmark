@@ -1,11 +1,11 @@
 #!/usr/bin/python
 # vim:set ff=unix expandtab ts=4 sw=4:
+
 import copy 
 from sympy import *
 from helperFunctions import *
-from Exceptions import *
-#from Coords import *
-#from CoordsTransform import *
+import Exceptions 
+
 ###########################################################
 def indextupel(dim):
    keyset={(0,),(1,),(2,)}
@@ -17,10 +17,10 @@ def indextupel(dim):
 def del_index(keyset,pos):
     keyset=list(keyset)
     if len(keyset)==0:
-        raise(EmptyIndexSetError)
+        raise(Exceptions.EmptyIndexSetError)
     l=len(keyset[0]) #length of first tupol in the set
     if l <2 :
-        raise(ToShortTupelError)
+        raise(Exceptions.ToShortTupelError)
     newset=set()
     pos=pos%l
     for key in keyset:
@@ -103,7 +103,7 @@ class CoordsTransform(object):
         cT=T.componentTypes
         cc=T.components
         if cT[n]!=self.source:
-            raise(TransformError(self.source,self.dest,cT,n))
+            raise(Exceptions.TransformError(self.source,self.dest,cT,n))
 	
         vec=components2vec(cc)
         resvec=self.mat*vec
@@ -118,7 +118,7 @@ class CoordsTransform(object):
         cT=T.componentTypes
         cc=T.components
         if cT[n]!=self.dest:
-            raise(TransformError(self.dest,self.source,cT,n))
+            raise(Exceptions.TransformError(self.dest,self.source,cT,n))
 	
         vec=components2vec(cc)
         resvec=self.mat.inv()*vec
@@ -232,7 +232,7 @@ class Coords(object):
         s=r_tup.shape
         # insist on a vector since 
         if s[1]!=1: 
-            raise(BaseException)
+            raise(Exceptions.BaseException)
         res=zeros(s)
         for k in range(0,self.n):
             res[k]=self.cov_der_v(i,k,r_tup)
@@ -670,7 +670,7 @@ class Tensor(object):
     def __init__(self,coords,componentTypes,components):
         # test if we can handle the component types 
         if not(set(componentTypes).issubset({"roof","cellar","cart","phys"})):
-            raise(UnknownComponentType(componentTypes))
+            raise(Exceptions.UnknownComponentType(componentTypes))
         
         self.components={} # initialize empty (Null Tensor)
 
@@ -685,21 +685,21 @@ class Tensor(object):
                 wrongtype=lambda y:not(isinstance(y,int))
                 # make sure that all other indeces are integers to
                 if any(map(wrongtype,indextupels)):
-                    raise(IndexTupelError(indextupels))
+                    raise(Exceptions.IndexTupelError(indextupels))
                 # make sure that it really is a first order Tensor
                 if len(componentTypes)!=1:
-                    raise(ComponentTypesTupelMismatch(componentTypes,t0))
+                    raise(Exceptions.ComponentTypesTupelMismatch(componentTypes,t0))
             # for higher order tensors we expect tuples as indeces    
             # we test if all indextupels have the same length and type
             elif isinstance(t0,tuple):
                 l0=len(t0)
                 wronglength=lambda y:len(y)!=l0
                 if any(map(wronglength,indextupels)):
-                    raise(IndexTupelError(indextupels))
+                    raise(Exceptions.IndexTupelError(indextupels))
                 if len(componentTypes)!=l0:
-                    raise(ComponentTypesTupelMismatch(componentTypes,t0))
+                    raise(Exceptions.ComponentTypesTupelMismatch(componentTypes,t0))
             else:
-               raise(IndexTupelTypeError(indextupels))
+               raise(Exceptions.IndexTupelTypeError(indextupels))
             # if the tests were successful copy the components
             for it in indextupels:
                self.components[it]=components[it]
@@ -740,7 +740,7 @@ class Tensor(object):
         sc=self.componentTypes
         Res=self
         if sc[pos]!="cellar":
-            raise(RaiseError(self))
+            raise(Exceptions.RaiseError(self))
         # e.g:
         #  j       ij
         # v   = v g
@@ -783,7 +783,7 @@ class Tensor(object):
         sc=self.componentTypes
         Res=self
         if sc[pos]!="roof":
-            raise(LowerError(self))
+            raise(Exceptions.LowerError(self))
         # e.g:
         #        i  
         # v   = v  g
@@ -824,7 +824,7 @@ class Tensor(object):
             cto=other.componentTypes
             ctc=cself.componentTypes
             if len(cto)!=len(ctc):
-                raise(ArgumentSizeError("+",(len(cto),len(ctc))))
+                raise(Exceptions.ArgumentSizeError("+",(len(cto),len(ctc))))
             if cto==ctc:
                 cc=cself.components
                 cck=cc.keys()
@@ -849,9 +849,9 @@ class Tensor(object):
                       +"Tensors with the same component types. It could of course "\
                       +"be implemented by a implicit conversion to a common"\
                       +"component Type sequence"
-                raise(NotImplementedError(str))
+                raise(Exceptions.NotImplementedError(str))
         else:
-            raise(ArgumentTypeError(self.__class__.__name__,t,"+"))
+            raise(Exceptions.ArgumentTypeError(self.__class__.__name__,t,"+"))
 ############################################################
     def __radd__(self,other):
         cs= copy.deepcopy(self)
@@ -893,7 +893,7 @@ class Tensor(object):
             scoords=self.coords
             ocoords=other.coords
             if scoords!=ocoords:
-                raise(CoordsMissMatchError( scoords, ocoords))
+                raise(Exceptions.CoordsMissMatchError( scoords, ocoords))
             
             co=copy.deepcopy(other)
             sc=cs.components
@@ -915,7 +915,7 @@ class Tensor(object):
             return(res)
         else:
             str="the outer product is not implemented yet"
-            raise(NotImplementedError(str)) 
+            raise(Exceptions.NotImplementedError(str)) 
 
 ###########################################################
     
@@ -933,7 +933,7 @@ class Tensor(object):
         if not(ns==1 and no==1):
             print("ns="+str(ns))
             print("no="+str(no))
-            raise(NotImplementedError) 
+            raise(Exceptions.NotImplementedError) 
         else:
             ll=scT[-1] #last left 
             fr=ocT[0]  #first right
@@ -959,7 +959,7 @@ class Tensor(object):
         if not(ns>1 and no==1):
             print("ns="+str(ns))
             print("no="+str(no))
-            raise(NotImplementedError) 
+            raise(Exceptions.NotImplementedError) 
         left_keys=del_index(sck,-1)
         resComponents={}
         for lk in left_keys:
@@ -990,7 +990,7 @@ class Tensor(object):
         if not(ns>1 and no>1):
             print("ns="+str(ns))
             print("no="+str(no))
-            raise(NotImplementedError) 
+            raise(Exceptions.NotImplementedError) 
         left_keys=del_index(sck,-1)
         right_keys=del_index(ock,0)
         resComponents={}
@@ -1019,7 +1019,7 @@ class Tensor(object):
         scT=self.componentTypes
         l=len(scT)
         if l <2:
-            raise(ArgumentSizeError(s=(l),op="extractVector"))
+            raise(Exceptions.ArgumentSizeError(s=(l),op="extractVector"))
         sc=self.components
         sck=sc.keys()
         pos=tup.index("*")
@@ -1044,7 +1044,7 @@ class Tensor(object):
         scoords=self.coords
         ocoords=other.coords
         if type(scoords)!=type(ocoords):
-            raise(NotImplementedError) 
+            raise(Exceptions.NotImplementedError) 
         else:
             scT=self.componentTypes
             ocT=other.componentTypes
@@ -1070,7 +1070,7 @@ class Tensor(object):
             elif (ns>1 and no>1):
                 res=self.tensorTensorScalarProduct(other)
             else: 
-                raise(NotImplementedError) 
+                raise(Exceptions.NotImplementedError) 
             return(res)
 
     
