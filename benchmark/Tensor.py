@@ -665,8 +665,34 @@ class Coords(object):
     
 ###########################################################
 ###########################################################
-class Tensor(object):
+class Scalar(object):
+    # zero order tensors are tensors too 
+    # Unlike the arguments of an arbitrary function 
+    # the arguments of a scalar have a spatial meaning 
+    # they describe a >>location<<.
+    # If the representation of this location (the coordinates) 
+    # is changed then the way the Scalar is computed from the coordinates
+    # has to change too to make it only dependent on >>location<<
+
+    def __init__(self,coords,definition):
+        self.coords=coords
+        self.definition=definition
+   ###########################################################
+    def nabla(self):
+        # This function applies the Nabla operator (always from left) 
+        # to the tensor.
+        csc=self.coords
+        gr=csc.t_gr
+        #            i
+        # nabla v = g * v,i (* = "direct Product")
+        f=lambda i :Tensor(csc,["cellar"],{(i,):1})*diff(self.definition,csc.U[i])
+        res=sum(map(f,range(0,csc.n)))
+        return(res)
+        
 ###########################################################
+###########################################################
+class Tensor(object):
+    ##########################################################
     def __init__(self,coords,componentTypes,components):
         # test if we can handle the component types 
         if not(set(componentTypes).issubset({"roof","cellar","cart","phys"})):
@@ -709,7 +735,7 @@ class Tensor(object):
         r=range(0,coords.n)
         self.r=r
         self.purge()
-###########################################################
+    ##########################################################
     def purge(self):
         # If a component is zero it can be safely erased
         # this is important to  make vectors and tensors
@@ -719,11 +745,11 @@ class Tensor(object):
             if c[k]==0:
                del(self.components[k])
 
-###########################################################
+    ##########################################################
     def __str__(self):
         res="class:"+self.__class__.__name__+"\n"+"componentTypes="+str(self.componentTypes)+"\ncomponents="+str(self.components)+"\n"
         return(res)
-###########################################################
+    ##########################################################
     def __repr__(self):
         # this function should return an expression that when passed to eval
         # creates an identical copy of the object
@@ -731,7 +757,7 @@ class Tensor(object):
         return(res)
         
     
-###########################################################
+    ##########################################################
     def raise_index(self,pos):
         # raise index pos of the tensor
         # simmonds P39 2.9
@@ -762,19 +788,19 @@ class Tensor(object):
         Res.componentTypes[pos]="roof"
         return(Res)
     
-###########################################################
+    ##########################################################
     def raise_first_index(self):
         # raise index ind of the tensor
         # simmonds P39 2.9
         return(self.raise_index(0))
         
-###########################################################
+    ##########################################################
     def raise_last_index(self):
         # raise index ind of the tensor
         # simmonds P39 2.9
         return(self.raise_index(-1))
     
-###########################################################
+    ##########################################################
     def lower_index(self,pos):
         # lower index ind of the tensor self
         # simmonds P39 2.9
@@ -805,17 +831,17 @@ class Tensor(object):
         Res.componentTypes[pos]="cellar"
         return(Res)
     
-###########################################################
+    ##########################################################
     def lower_first_index(self):
         # lower index ind of the tensor self
         # simmonds P39 2.9
         return(self.lower_index(0))
-###########################################################
+    ##########################################################
     def lower_last_index(self):
         # lower index ind of the tensor self
         # simmonds P39 2.9
         return(self.lower_index(-1))
-###########################################################
+    ##########################################################
     def __add__(self,other):
         cself=copy.deepcopy(self)
         other=copy.deepcopy(other)
@@ -852,7 +878,7 @@ class Tensor(object):
                 raise(Exceptions.NotImplementedError(str))
         else:
             raise(Exceptions.ArgumentTypeError(self.__class__.__name__,t,"+"))
-############################################################
+    ###########################################################
     def __radd__(self,other):
         cs= copy.deepcopy(self)
         # this is necessary to make sum() work
@@ -866,30 +892,25 @@ class Tensor(object):
         else:    
             return(cs.__add__(other))
     
-##########################################################
+    #########################################################
     def __sub__(self,other):
        return(self+(-1)*other) 
     
                     
     
-###########################################################
+    ##########################################################
     def __rmul__(self,lf):
         cself=copy.deepcopy(self)
         # in case that the left factor lf in a product of the form lf*rf
         # does not belong to this class we swap the order
         return(cself.__mul__(lf))
     
-###########################################################
+    ##########################################################
     def __mul__(self,other):
         t=type(other)
         #print("t="+str(t))
         cs=copy.deepcopy(self)
-        if t==int or t==float or t==complex:
-            res=cs
-            d=self.components
-            res.components={k:other*d[k] for k in d.keys()}
-            return(res)
-        elif t==type(self):
+        if t==type(self):
             scoords=self.coords
             ocoords=other.coords
             if scoords!=ocoords:
@@ -914,10 +935,13 @@ class Tensor(object):
             res=Tensor(cs.coords,nct,nc)
             return(res)
         else:
-            str="the outer product is not implemented yet"
-            raise(Exceptions.NotImplementedError(str)) 
+            # one of the factor is a number or an expression
+            res=cs
+            d=self.components
+            res.components={k:other*d[k] for k in d.keys()}
+            return(res)
 
-###########################################################
+    ##########################################################
     
     def vectorScalarProduct(self,other): #(scalar Product | )
         sco=self.coords
@@ -946,7 +970,7 @@ class Tensor(object):
                 res=scart.vectorScalarProduct(ocart)
         return(sco.scalarSimp(res))
 
-###########################################################
+    ##########################################################
     def tensorVectorScalarProduct(self,other): #(scalar Product | )
         # self is a tensor of arbitrary order
         # other is a vector (a tensor of first order)
@@ -975,7 +999,7 @@ class Tensor(object):
         res=Tensor(self.coords,resComponentTypes,resComponents)
         return(res)
 
-###########################################################
+    ##########################################################
     def tensorTensorScalarProduct(self,other): #(scalar Product | )
         # self is a tensor of arbitrary order
         # other is a tensor of arbitrary order
@@ -1013,7 +1037,7 @@ class Tensor(object):
         res=Tensor(self.coords,resComponentTypes,resComponents)
         return(res)
 
-###########################################################
+    ##########################################################
     def extractVector(self,tup):
         #use in scalar product
         scT=self.componentTypes
@@ -1031,7 +1055,7 @@ class Tensor(object):
         vec=Tensor(self.coords,[scT[pos]],vec_components)
         return(vec)
 
-###########################################################
+    ##########################################################
     def simp(self):
         c=self.components
         co=self.coords
@@ -1039,7 +1063,7 @@ class Tensor(object):
             c[k]=co.scalarSimp(c[k])
         self.purge()    
 
-###########################################################
+    ##########################################################
     def __or__(self,other): #(scalar Product | )
         scoords=self.coords
         ocoords=other.coords
@@ -1074,7 +1098,7 @@ class Tensor(object):
             return(res)
 
     
-###########################################################
+    ##########################################################
     def transform2(self,newComponentTypes):
         cs=copy.deepcopy(self)
         c=cs.coords
@@ -1101,7 +1125,7 @@ class Tensor(object):
         
         return(cs)
     
-###########################################################
+    ##########################################################
     def div(self):
         sc=copy.deepcopy(self)
         cT=sc.componentTypes
@@ -1114,7 +1138,7 @@ class Tensor(object):
                 f=lambda j:sc.covder(j,(j,k))
                 n[(k,)]=sum(map(f,range(0,3)))
             return(Tensor(co,[cT[1]],n))
-###########################################################
+    ##########################################################
     def transpose(self):
         #switch the component types
         ct=copy.deepcopy(self.componentTypes)
@@ -1131,13 +1155,13 @@ class Tensor(object):
             nc[newkey]=c[k]
         new=Tensor(self.coords,ct,nc) 
         return(new)
-###########################################################
+    ##########################################################
     def str(self):
         description="coords="+str(self.coords)\
                 +"componentTypes="+str(self.componentTypes)\
                 +"components="+str(self.components)
         return(description)
-###########################################################
+    ##########################################################
     def __eq__(self,other):
         self.purge()
         other.purge()
@@ -1147,7 +1171,7 @@ class Tensor(object):
         self.components==other.components
         return(boolval)
     
-###########################################################
+    ##########################################################
     def subs(self,*args):
         sc=copy.deepcopy(self)
         c=sc.components
@@ -1158,7 +1182,7 @@ class Tensor(object):
         return(sc)
 
 
-###########################################################
+    ##########################################################
     def partder(self,i):
         sct=self.componentTypes
         sco=self.coords
@@ -1169,7 +1193,7 @@ class Tensor(object):
         
         res=Tensor(sco,sct,rc)
         return(res)
-###########################################################
+    ##########################################################
     def covder(self,i,k):
         # this function computes the covariant derivative of a tensor
         # where i is the index of the partial derivative and k is an index tupel
@@ -1229,7 +1253,7 @@ class Tensor(object):
         
         return(simplify(sco.scalarSimp(s)))
             
-###########################################################
+    ##########################################################
     def nabla(self):
         # This function applies the Nabla operator (always from left) 
         # to the tensor.
@@ -1241,7 +1265,7 @@ class Tensor(object):
         res=sum(map(f,range(0,csc.n)))
         return(res)
 
-###########################################################
+    ##########################################################
     def grad(self):
         cs=copy.deepcopy(self)
         return((cs.nabla()).transpose())

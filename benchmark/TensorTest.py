@@ -6,6 +6,7 @@ from Cartesian import Cartesian
 import Tensor
 import copy
 import Exceptions
+import sympy
 from helperFunctions import pp
 #from sympy import pi
 
@@ -37,6 +38,12 @@ class TensorTest(unittest.TestCase):
         u=Tensor.Tensor(sp,["cart"],{0:1})
         u=Tensor.Tensor(sp,["cellar","roof"],{(0,0):1}) 
         
+###########################################################
+    def test_scalar_initialization(self):
+        C=Cartesian()
+        ux,uy,uz=C.U
+	    # an example scalar function
+        fU=Tensor.Scalar(C,ux**2+uy**2) 
 
 ###########################################################
     def test_equal(self):
@@ -173,6 +180,12 @@ class TensorTest(unittest.TestCase):
 ###########################################################
     def test_outerProduct(self):
         sp=Spherical()
+        r,phi,theta=sp.U
+        ex=r**2
+        u=Tensor.Tensor(sp,["cellar"],{(1,):1})
+        res=ex*u
+        self.assertEqual(res,Tensor.Tensor(sp,["cellar"],{(1,):ex}))
+        #########################
         u=Tensor.Tensor(sp,["cellar"],{(1,):1})
         v=Tensor.Tensor(sp,["roof"],{(1,):1})
         res=u*v
@@ -609,6 +622,18 @@ class TensorTest(unittest.TestCase):
         self.assertEqual(d_F,delta_F)
 
 
+###########################################################
+    def test_nabla_f(self):
+        ##################
+        # cartesian part #
+     	################## 
+        C=Cartesian()
+        ux,uy,uz=C.U
+	    # an example scalar function
+        fU=Tensor.Scalar(C,ux**2+uy**2) 
+	    # compute the cellar components of the nabla f and compare them to the expected result
+        #self.assertEqual(C.cellar_nab(fU),Matrix([2*ux,2*uy,0]))
+        self.assertEqual(fU.nabla(),Tensor.Tensor(C,["cellar"],{(0,):2*ux,(1,):2*uy,(2,):0}))
 
 ###########################################################
     def test_transpose(self):

@@ -1,8 +1,12 @@
 #!/usr/bin/python
 # vim: set expandtab ts=4
 import unittest 
-from Cartesian import *
-from Spherical import *
+from Spherical import Spherical 
+from Cartesian import Cartesian
+import Tensor
+import copy
+import Exceptions
+from helperFunctions import pp
 
 class OperatorTest(unittest.TestCase):
     def setUp(self):
@@ -14,16 +18,18 @@ class OperatorTest(unittest.TestCase):
 	self.S=Spherical()
 
 
+
+###########################################################
     def test_grad_v(self):
         ##################
         # cartesian part #
-	################## 
+     	################## 
         C=self.C
         ux,uy,uz=C.U
-	# an example scalar function
+	    # an example scalar function
         fU=ux**2+uy**2 
-	# compute the cellar components of the nabla f and compare them to the expected result
-	self.assertEqual(C.cellar_nab(fU),Matrix([2*ux,2*uy,0]))
+	    # compute the cellar components of the nabla f and compare them to the expected result
+        self.assertEqual(C.cellar_nab(fU),Matrix([2*ux,2*uy,0]))
 
         sp=self.S
         x,y,z=sp.X
@@ -50,6 +56,8 @@ class OperatorTest(unittest.TestCase):
         res5=sp.roof2phys(res3)
         res6=sp.phys2cart(res5)
         self.assertTrue(gradfU-res6==zeros([3,1]))
+
+###########################################################
     def test_grad_v_sym(self):
         sp=Spherical()
         r,phi,theta=sp.U

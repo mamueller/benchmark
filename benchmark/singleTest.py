@@ -10,6 +10,9 @@ from TensorTest import *
 
 def suite():
     s=unittest.TestSuite()
+    #s.addTest(TensorTest("test_scalar_initialization"))
+    #s.addTest(TensorTest("test_grad_f"))
+    s.addTest(TensorTest("test_nabla_f"))
     #s.addTest(OperatorTest("test_grad_v_sym"))
     #s.addTest(OperatorTest("test_roofCellar_transpose"))
     #s.addTest(TensorTest("test_transform2_secondOrderTensors"))
@@ -17,12 +20,12 @@ def suite():
     #s.addTest(TensorTest("test_vec_grad_cart"))
     #s.addTest(TensorTest("test_vec_grad_lin"))
     #s.addTest(TensorTest("test_nabla"))
-    s.addTest(TensorTest("test_transpose"))
+    #s.addTest(TensorTest("test_transpose"))
     #s.addTest(TensorTest("test_partder"))
 
    #  s.addTest(TensorTest("test_Tensor_initialization"))
     #s.addTest(TensorTest("test_innerProduct"))
-    #s.addTest(TensorTest("test_outerProduct"))
+    s.addTest(TensorTest("test_outerProduct"))
     #s.addTest(TensorTest("test_Vector_innerProduct"))
     #s.addTest(TensorTest("test_transform2_vector"))
     #s.addTest(TensorTest("test_extractVector"))
