@@ -20,44 +20,6 @@ class OperatorTest(unittest.TestCase):
 
 
 ###########################################################
-    def test_grad_v(self):
-        ##################
-        # cartesian part #
-     	################## 
-        C=self.C
-        ux,uy,uz=C.U
-	    # an example scalar function
-        fU=ux**2+uy**2 
-	    # compute the cellar components of the nabla f and compare them to the expected result
-        self.assertEqual(C.cellar_nab(fU),Matrix([2*ux,2*uy,0]))
-
-        sp=self.S
-        x,y,z=sp.X
-        xu,yu,zu=sp.XofU
-        r,phi,theta=sp.U
-        fX=x**2+y**2
-        # compute gradient in cartesian coordinates
-        gradf=Matrix([2*x,2*y,0])
-
-        # express f in terms of r phi and theta 
-        fU=simplify(fX.subs({x:xu,y:yu,z:zu}).subs(cos(phi)**2,(1-sin(phi)**2)))
-        res1=sp.cellar_nab(fU)
-        res2=sp.cellar2cart(res1)
-        # express gradf  in terms of r phi and theta
-        gradfU=zeros([3,1])
-        for i in range(0,3):
-            gradfU[i]=simplify(gradf[i].subs({x:xu,y:yu,z:zu}))
-        self.assertTrue(gradfU-res2==zeros([3,1]))
-        # compute the roof components of the gradient
-        res3=sp.cellar2roof(res1)
-        res4=sp.roof2cart(res3)
-        self.assertTrue(gradfU-res4==zeros([3,1]))
-        # compute the physical components of the gradient
-        res5=sp.roof2phys(res3)
-        res6=sp.phys2cart(res5)
-        self.assertTrue(gradfU-res6==zeros([3,1]))
-
-###########################################################
     def test_grad_v_sym(self):
         sp=Spherical()
         r,phi,theta=sp.U

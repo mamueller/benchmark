@@ -544,7 +544,7 @@ class TensorTest(unittest.TestCase):
         # we first express the vector function by its cartesian coordinates as 
         # above but this time using the fact that every instance of Tensor can 
         # convert its components to the cartesian coordinate system regardless 
-        # of its own coordinate frame. This is posible since all coordinate frame
+        # of its own coordinate frame. This is possible since all coordinate frame
         # objects  contain information about the cartesian components of 
         # their bases.
         #                                  z
@@ -622,18 +622,62 @@ class TensorTest(unittest.TestCase):
         self.assertEqual(d_F,delta_F)
 
 
+
 ###########################################################
-    def test_nabla_f(self):
+    def test_scalar_nabla_cart(self):
         ##################
         # cartesian part #
      	################## 
         C=Cartesian()
         ux,uy,uz=C.U
 	    # an example scalar function
-        fU=Tensor.Scalar(C,ux**2+uy**2) 
+        fX=Tensor.Scalar(C,ux**2+uy**2) 
 	    # compute the cellar components of the nabla f and compare them to the expected result
-        #self.assertEqual(C.cellar_nab(fU),Matrix([2*ux,2*uy,0]))
-        self.assertEqual(fU.nabla(),Tensor.Tensor(C,["cellar"],{(0,):2*ux,(1,):2*uy,(2,):0}))
+        nfX=fX.nabla()
+        self.assertEqual(nfX,Tensor.Tensor(C,["cellar"],{(0,):2*ux,(1,):2*uy,(2,):0}))
+        
+###########################################################
+    def test_scalar_nabla_cart_vs_spher(self):
+        C=Cartesian()
+        ux,uy,uz=C.U
+        sp=Spherical()
+        xu,yu,zu=sp.XofU
+        r,phi,theta=sp.U
+        
+        # define a zero order tensor f in cartesian coordinates
+        # and compute the application of nabla to it
+        # expressed according to the cartesian base vectors
+        fxcomp=ux**2+uy**2
+        fX=Tensor.Scalar(C,fxcomp)
+        nfX=fX.nabla()
+        pp("nfX",locals())
+        # for later comparison express the cartesian components 
+        # in terms of r phi and theta
+        nfX_spher=nfX.subs({ux:xu,uy:yu,uz:zu})
+        pp("nfX_spher",locals())
+
+        # now express the same tensor f in terms of r phi and theta 
+        # and compute the application of nabla to it
+        # expressed according to the spherical base vectors
+        fucomp=sympy.simplify(fxcomp.subs({ux:xu,uy:yu,uz:zu}))
+        pp("fucomp",locals())
+        fU=Tensor.Scalar(sp,fucomp)
+        nfU=fU.nabla()
+        pp("nfU",locals())
+        # now transform back to cartesian base vectors
+        nfU_cart=nfU.transform2(["cart"])
+        pp("nfU_cart",locals())
+        
+        #now show that both ways to compute nabla f yield the same result
+        self.assertTrue(nfX_spher,nfU_cart)
+
+###########################################################
+    def test_scalar_nabla_phys(self):
+         raise 
+#        # compute the physical components of the gradient
+#        res5=sp.roof2phys(res3)
+#        res6=sp.phys2cart(res5)
+#        self.assertTrue(gradfU-res6==zeros([3,1]))
 
 ###########################################################
     def test_transpose(self):
