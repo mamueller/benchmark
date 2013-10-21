@@ -377,6 +377,14 @@ class TensorTest(unittest.TestCase):
         zero=Y-Tensor.Tensor(sp,["cellar"],{(0,):1})
         zc=zero.components	
         sp.testnumshell(zc[(0,)],0.1,2,1e-7)
+        
+        # test phys components
+        X=Tensor.Tensor(sp,["roof"],{(0,):1})
+        Y=X.transform2(["phys"]) 
+        pp("Y",locals())
+        # for spherical coordinates the |hr|==1
+        self.assertEqual(Y.components,X.components) 
+        self.assertEqual(Y.componentTypes,"phys") 
     
 ###########################################################
     def test_transform2_secondOrderTensors(self):
@@ -670,14 +678,6 @@ class TensorTest(unittest.TestCase):
         
         #now show that both ways to compute nabla f yield the same result
         self.assertTrue(nfX_spher,nfU_cart)
-
-###########################################################
-    def test_scalar_nabla_phys(self):
-         raise 
-#        # compute the physical components of the gradient
-#        res5=sp.roof2phys(res3)
-#        res6=sp.phys2cart(res5)
-#        self.assertTrue(gradfU-res6==zeros([3,1]))
 
 ###########################################################
     def test_transpose(self):
