@@ -1104,6 +1104,12 @@ class Tensor(object):
         c=cs.coords
         csT=cs.componentTypes
         cc=cs.components
+        # we iterate over the pairs of src and target component types
+        # and treat every pair separately
+        for i in range(0,len(csT)):
+            caseString=csT[i]+"2"+newComponentTypes[i]
+            print(caseString)
+
         if (csT==["roof"] and newComponentTypes==["cart"]):
             res=c.roof2cart.transform(self,0)
             return(res)

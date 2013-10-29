@@ -27,6 +27,7 @@ def suite():
     #s.addTest(TensorTest("test_outerProduct"))
     #s.addTest(TensorTest("test_Vector_innerProduct"))
     s.addTest(TensorTest("test_transform2_vector"))
+    s.addTest(TensorTest("test_transform2_secondOrderTensors"))
     #s.addTest(TensorTest("test_extractVector"))
     #s.addTest(TensorTest("test_toVector"))
     #s.addTest(TensorTest("test_Vector_initialization"))
