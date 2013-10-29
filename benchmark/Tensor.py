@@ -1110,25 +1110,17 @@ class Tensor(object):
             caseString=csT[i]+"2"+newComponentTypes[i]
             print(caseString)
 
-        if (csT==["roof"] and newComponentTypes==["cart"]):
-            res=c.roof2cart.transform(self,0)
-            return(res)
-        if (csT==["cart"] and newComponentTypes==["roof"]):
-            res=c.roof2cart.invTransform(self,0)
-            return(res)
-        if (csT==["cellar"] and newComponentTypes==["cart"]):
-            res=c.cellar2cart.transform(self,0)
-            return(res)
-        if (csT==["cart"] and newComponentTypes==["cellar"]):
-            res=c.cellar2cart.invTransform(self,0)
-            return(res)
-        
-        if (csT==["cart","cart"] and newComponentTypes==["roof","roof"]):
-            # for conviniece
-            cc=c.roof2cart.invTransform(cs,0) #transform the first component, the result of this operation is the representation of mixed components, that is the result is given in the new basis while acting on vectors given in the old basis  
-            cc=c.roof2cart.invTransform(cc,1) # transform the second component 
+            if caseString=="roof2cart":
+                cs=c.roof2cart.transform(cs,i)
+            if caseString=="cart2roof":
+                cs=c.roof2cart.invTransform(cs,i)
+            if caseString=="cellar2cart":
+                cs=c.cellar2cart.transform(cs,i)
+            if caseString=="cart2cellar":
+                cs=c.cellar2cart.invTransform(cs,i)
+            if caseString=="roof2phys":
+                cs=c.roof2phys.transform(cs,i)
             
-        
         return(cs)
     
     ##########################################################
