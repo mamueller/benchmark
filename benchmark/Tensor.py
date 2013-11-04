@@ -195,6 +195,17 @@ class Coords(object):
         
 
         # the scale factors (lengts of the basevectors)
+        # roof
+        self.Hroof=zeros(self.n,self.n)
+        for i in range(0,self.n):
+            self.Hroof[i,i]=self.gr[i].norm(2)
+        #pp("self.Hroof",locals())
+        # cellar
+        self.Hcellar=zeros(self.n,self.n)
+        for i in range(0,self.n):
+            self.Hcellar[i,i]=self.gc[i].norm(2)
+
+
 
         # the cristoffel symbols
         # 1.) compute the derivatives of the cellar base vectos
@@ -222,7 +233,9 @@ class Coords(object):
         
         self.roof2cart=CoordsTransform("roof","cart",self.J)
         self.cellar2cart=CoordsTransform("cellar","cart",self.Jinv.transpose())
-        self.roof2phys=CoordsTransform("roof","phys",self.D)
+        # note that for the physical roof components the length of the cellar base is needed and vice versa
+        self.roof2roof_phys=CoordsTransform("roof","roof_phys",self.Hcellar)
+        self.cellar2cellar_phys=CoordsTransform("cellar","cellar_phys",self.Hroof)
 
     def part_der_v(self,i,r_tup):
         # this function assumes a tupel r_tup representing the roof_components of a vector v
@@ -243,9 +256,9 @@ class Coords(object):
         if(self.g_rr_):
             return(self.g_rr_)
         self.g_rr_={}
-	r=range(0,self.n)
-	for i in r:
-	   for j in r:
+        r=range(0,self.n)
+        for i in r:
+            for j in r:
                 self.g_rr_[(i,j)]=self.scalarSimp(self.gr[i].dot(self.gr[j]))
         return(self.g_rr_)
     def g_cc(self):
@@ -253,9 +266,9 @@ class Coords(object):
         if(self.g_cc_):
             return(self.g_cc_)
         self.g_cc_={}
-	r=range(0,self.n)
-	for i in r:
-	   for j in r:
+        r=range(0,self.n)
+        for i in r:
+            for j in r:
                 self.g_cc_[(i,j)]=self.scalarSimp(self.gc[i].dot(self.gc[j]))
         return(self.g_cc_)
 
@@ -1112,14 +1125,23 @@ class Tensor(object):
 
             if caseString=="roof2cart":
                 cs=c.roof2cart.transform(cs,i)
-            if caseString=="cart2roof":
+            elif  caseString=="cart2roof":
                 cs=c.roof2cart.invTransform(cs,i)
-            if caseString=="cellar2cart":
+            
+            elif caseString=="cellar2cart":
                 cs=c.cellar2cart.transform(cs,i)
-            if caseString=="cart2cellar":
+            elif caseString=="cart2cellar":
                 cs=c.cellar2cart.invTransform(cs,i)
-            if caseString=="roof2phys":
-                cs=c.roof2phys.transform(cs,i)
+            
+            elif caseString=="roof2roof_phys":
+                cs=c.roof2roof_phys.transform(cs,i)
+            elif caseString=="roof_phys2roof":
+                cs=c.roof2roof_phys.invTransform(cs,i)
+            
+            elif caseString=="cellar2cellar_phys":
+                cs=c.cellar2cellar_phys.transform(cs,i)
+            elif caseString=="cellar_phys2cellar":
+                cs=c.cellar2cellar_phys.invTransform(cs,i)
             
         return(cs)
     

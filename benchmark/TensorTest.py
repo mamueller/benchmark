@@ -380,11 +380,22 @@ class TensorTest(unittest.TestCase):
         
         # test phys components
         X=Tensor.Tensor(sp,["roof"],{(0,):1})
-        Y=X.transform2(["phys"]) 
+        Y=X.transform2(["roof_phys"])
+        Y.purge()
         pp("Y",locals())
         # for spherical coordinates the |hr|==1
         self.assertEqual(Y.components,X.components) 
-        self.assertEqual(Y.componentTypes,"phys") 
+        self.assertEqual(Y.componentTypes,["roof_phys"]) 
+        
+        X=Tensor.Tensor(sp,["roof"],{(1,):1})
+        Y=X.transform2(["roof_phys"])
+        r,phi,theta=sp.U
+        Y.purge()
+        pp("Y",locals())
+        # for spherical coordinates the |hphi|==r
+        self.assertEqual(Y.components,[{(1,):r*sympy.Abs(sympy.sin(theta))}]) 
+        self.assertEqual(Y.componentTypes,["roof_phys"]) 
+    
     
 ###########################################################
     def test_transform2_secondOrderTensors(self):

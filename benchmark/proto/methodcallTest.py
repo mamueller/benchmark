@@ -7,8 +7,10 @@ class A:
         print("I am bfunc, and i got "+str(arg))
        
 inst=A()
-call=getattr(inst,"afunc")
+caseStr="afunc"
+call=getattr(inst,caseStr)
 call(5)
-call=getattr(inst,"bfunc")
+caseStr="bfunc"
+call=getattr(inst,caseStr)
 call(6)
 
