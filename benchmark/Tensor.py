@@ -163,16 +163,15 @@ class Coords(object):
         # cellar Base vectors:
         self.gc={}
         self.t_gc={}
-        self.t_gcart={}
         for i in range(0,self.n):
             self.gc[i]=self.J[:,i]
             self.t_gc[i]=Tensor(self,["cart"],vec2components(self.gc[i]))
+
 	    #define the cartesian base vectors e_x e_y and e_z
-	    self.t_gcart[i]=Tensor(self,["cart"],{(i,):1})
         
-        #e_r_c    =self.gc[0]
-        #e_phi_c  =self.gc[1]
-        #e_theta_c=self.gc[2]
+        #e_r_c    =self.t_gc[0]
+        #e_phi_c  =self.t_gc[1]
+        #e_theta_c=self.t_gc[2]
         
         
         # Jacobian (Determinant) of Jacobi Matrix
@@ -223,6 +222,7 @@ class Coords(object):
         
         self.roof2cart=CoordsTransform("roof","cart",self.J)
         self.cellar2cart=CoordsTransform("cellar","cart",self.Jinv.transpose())
+        self.roof2phys=CoordsTransform("roof","phys",self.D)
 
     def part_der_v(self,i,r_tup):
         # this function assumes a tupel r_tup representing the roof_components of a vector v
