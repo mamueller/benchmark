@@ -356,6 +356,7 @@ class TensorTest(unittest.TestCase):
 ###########################################################
     def test_transform2_vector(self):
         sp=Spherical()
+        r,phi,theta=sp.U
         
         X=Tensor.Tensor(sp,["roof"],{(0,):1})
         Y=X.transform2(["cart"])
@@ -378,23 +379,80 @@ class TensorTest(unittest.TestCase):
         zc=zero.components	
         sp.testnumshell(zc[(0,)],0.1,2,1e-7)
         
+        ###################################################
+        ###################################################
         # test phys components
+        ###################################################
+        # roof_phys
         X=Tensor.Tensor(sp,["roof"],{(0,):1})
         Y=X.transform2(["roof_phys"])
         Y.purge()
-        pp("Y",locals())
-        # for spherical coordinates the |hr|==1
+        #pp("Y",locals())
+        # for spherical coordinates the |hr|=1
         self.assertEqual(Y.components,X.components) 
         self.assertEqual(Y.componentTypes,["roof_phys"]) 
+        # transform back
+        X_new=Y.transform2(["roof"])
+        X_new.purge()
+        self.assertEqual(X,X_new) 
         
         X=Tensor.Tensor(sp,["roof"],{(1,):1})
         Y=X.transform2(["roof_phys"])
-        r,phi,theta=sp.U
         Y.purge()
-        pp("Y",locals())
-        # for spherical coordinates the |hphi|==r
-        self.assertEqual(Y.components,[{(1,):r*sympy.Abs(sympy.sin(theta))}]) 
-        self.assertEqual(Y.componentTypes,["roof_phys"]) 
+        #pp("Y",locals())
+        # for spherical coordinates the |hphi|=r*sin(theta)
+        self.assertEqual(Y.components,{(1,):r*sympy.Abs(sympy.sin(theta))}) 
+        # transform back
+        X_new=Y.transform2(["roof"])
+        X_new.purge()
+        self.assertEqual(X,X_new) 
+        
+        X=Tensor.Tensor(sp,["roof"],{(2,):1})
+        Y=X.transform2(["roof_phys"])
+        Y.purge()
+        #pp("Y",locals())
+        # for spherical coordinates the |h_theta|=r
+        self.assertEqual(Y.components,{(2,):r}) 
+        # transform back
+        X_new=Y.transform2(["roof"])
+        X_new.purge()
+        self.assertEqual(X,X_new) 
+        ###################################################
+        # cellar_phys
+        # cellar_phys
+        X=Tensor.Tensor(sp,["cellar"],{(0,):1})
+        Y=X.transform2(["cellar_phys"])
+        Y.purge()
+        #pp("Y",locals())
+        # for spherical coordinates the |hr|=1
+        self.assertEqual(Y.components,X.components) 
+        self.assertEqual(Y.componentTypes,["cellar_phys"]) 
+        # transform back
+        X_new=Y.transform2(["cellar"])
+        X_new.purge()
+        self.assertEqual(X,X_new) 
+        
+        X=Tensor.Tensor(sp,["cellar"],{(1,):1})
+        Y=X.transform2(["cellar_phys"])
+        Y.purge()
+        #pp("Y",locals())
+        # for spherical coordinates the |hphi|=r*sin(theta)
+        self.assertEqual(Y.components,{(1,):1/(r*sympy.Abs(sympy.sin(theta)))}) 
+        # transform back
+        X_new=Y.transform2(["cellar"])
+        X_new.purge()
+        self.assertEqual(X,X_new) 
+        
+        X=Tensor.Tensor(sp,["cellar"],{(2,):1})
+        Y=X.transform2(["cellar_phys"])
+        Y.purge()
+        #pp("Y",locals())
+        # for spherical coordinates the |h_theta|=r
+        self.assertEqual(Y.components,{(2,):1/r}) 
+        # transform back
+        X_new=Y.transform2(["cellar"])
+        X_new.purge()
+        self.assertEqual(X,X_new) 
     
     
 ###########################################################
