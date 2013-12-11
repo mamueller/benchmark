@@ -352,7 +352,31 @@ class TensorTest(unittest.TestCase):
         res=Tensor.del_index(t,1)
         self.assertEqual(res,{(1,3)})
 
+###########################################################
+    def test_extract_keys(self):
+        t=Tensor.indextupel(2)
+        res=Tensor.extract_keys(t,0,0)
+        self.assertEqual(res,Tensor.indextupel(1))
+        
+        res=Tensor.extract_keys(t,1,1)
+        self.assertEqual(res,Tensor.indextupel(1))
 
+        t=Tensor.indextupel(3)
+        res=Tensor.extract_keys(t,0,1)
+        self.assertEqual(res,Tensor.indextupel(2))
+
+        t=Tensor.indextupel(3)
+        res=Tensor.extract_keys(t,1,2)
+        self.assertEqual(res,Tensor.indextupel(2))
+        
+        with self.assertRaises(Exception):
+            res=Tensor.extract(t,2,3)
+        
+        with self.assertRaises(Exception):
+            res=Tensor.extract(t,2,1)
+        
+        
+        
 ###########################################################
     def test_transform2_vector(self):
         sp=Spherical()
@@ -483,20 +507,45 @@ class TensorTest(unittest.TestCase):
         # matrix multiplication res=P_x v
         sp=Spherical()
         Pcartcart=Tensor.Tensor(sp,["cart","cart"],{(0,0):1})
-        # we chose the cartesian components of the first roof base vector
-        v_cart=sp.t_gr[0]
-        res_cart=Pcartcart|v_cart
+        # we now chose arbitrary vectors to apply P to and check that the result
+        # is  always the desired projection. To be rigoruos we choose a base
+
+        for v_cart in { Tensor.Tensor(sp,["cart"],{(0,):1}),
+                       Tensor.Tensor(sp,["cart"],{(1,):1}),
+                       Tensor.Tensor(sp,["cart"],{(2,):1})}:
+            res_cart=Pcartcart|v_cart
+            self.assertEqual(res_cart.component((0,)),v_cart.component((0,)))
+            self.assertEqual(res_cart.component((1,)),0)
+            self.assertEqual(res_cart.component((2,)),0)
         
-#        # now we want to express the same Projection in terms of 
-#        # spherical roof components 
-#        Prr=sp.cart_cart2rr(Pcartcart)
-#        # If v is expressed in cellar components 
-#        v_c=sp.cart2cellar(v_cart)
-#        # the application of 
-#        # P can again be expressed by a matrix multiplication 
-#        #                      i           i
-#        # using the fact that g * g  =delta
-#        #                          j       j
+        # This must remain true if we change bases
+        # e.g if we want to express the same Projection in terms of 
+        # spherical roof components 
+        
+        Proofroof=Pcartcart.transform2(["roof","roof"])
+        pp("Proofroof",locals())
+        
+       # for v_cart in { Tensor.Tensor(sp,["cart"],{(0,):1}),
+       #                Tensor.Tensor(sp,["cart"],{(1,):1}),
+       #                Tensor.Tensor(sp,["cart"],{(2,):1})}:
+       #     v_roof=v_cart.transform2(["roof"])
+
+       #     res_roof=Proofroof|v_roof
+       #     res_cart=res_roof.transform2(["cart"])
+       #     self.assertEqual(res_cart.component((0,)),v_cart.component((0,)))
+       #     self.assertEqual(res_cart.component((1,)),0)
+       #     self.assertEqual(res_cart.component((2,)),0)
+        # the cartesian components of the first roof base vector
+        #v_cart=sp.t_gr[0]
+        #Prr=sp.cart_cart2rr(Pcartcart)
+        # If v is expressed in cellar components 
+        # v_c=sp.cart2cellar(v_cart)
+        v_c=v_cart.transform2(["cellar"])
+        # the application of 
+        # P can again be expressed by a matrix multiplication 
+        #                      i           i
+        # using the fact that g * g  =delta
+        #                          j       j
 #        res_r=Prr*v_c
 #        # however the result is given in terms of the cellar base vectors 
 #        # (in it its roof components) 
@@ -511,8 +560,8 @@ class TensorTest(unittest.TestCase):
 #        Pcartcart_new=sp.rr2CartCart(Prr)
 #        #print("2Pcartcart_new="+str(Pcartcart_new))
 #        self.assertTrue(Pcartcart==Pcartcart_new)
-#
-#        #print("new="+str(res_cart_new.subs({phi:pi/4,theta:pi/4,r:3})))
+
+        #print("new="+str(res_cart_new.subs({phi:pi/4,theta:pi/4,r:3})))
 
 
 ###########################################################

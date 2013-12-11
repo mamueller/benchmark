@@ -18,7 +18,7 @@ def del_index(keyset,pos):
     keyset=list(keyset)
     if len(keyset)==0:
         raise(Exceptions.EmptyIndexSetError)
-    l=len(keyset[0]) #length of first tupol in the set
+    l=len(keyset[0]) #length of first tupel in the set
     if l <2 :
         raise(Exceptions.ToShortTupelError)
     newset=set()
@@ -31,6 +31,21 @@ def del_index(keyset,pos):
         newset.add(newkey)
     return(newset)   
 
+###########################################################
+def extract_keys(keyset,start,stop):
+    if start > stop:
+        raise(Exception,"start should not be larger than stop")
+    keyset=list(keyset)
+    if len(keyset)==0:
+        raise(Exceptions.EmptyIndexSetError)
+    l=len(keyset[0]) #length of first tupel in the set
+    if stop > (l-1): 
+        raise(Exception,"stop should not be larger than the length of the tupels")
+    newset=set()
+    for key in keyset:
+        newkey=key[start:stop+1]
+        newset.add(newkey)
+    return(newset)   
 ###########################################################
 def add_index(keyset,n=1):
     if n==0:
@@ -97,36 +112,62 @@ class CoordsTransform(object):
         self.source=source
         self.dest=dest
         self.mat=mat
-    def transform(self,tens,n):
+    def transform(self,tens,pos):
         T=copy.deepcopy(tens)
         c=T.coords
         cT=T.componentTypes
+        lcT=len(cT)
+        pp("lcT",locals())
         cc=T.components
-        if cT[n]!=self.source:
-            raise(Exceptions.TransformError(self.source,self.dest,cT,n))
+        if cT[pos]!=self.source:
+            raise(Exceptions.TransformError(self.source,self.dest,cT,pos))
 	
-        vec=components2vec(cc)
-        resvec=self.mat*vec
-        resvec=c.matSimp(resvec)
-        rescomponents=vec2components(resvec)
-        T.components=rescomponents
-        T.componentTypes[n]=self.dest
-	return(T)
-    def invTransform(self,tens,n):
+        if len(cT)==1:
+            vec=components2vec(cc)
+            resvec=self.mat*vec
+            resvec=c.matSimp(resvec)
+            rescomponents=vec2components(resvec)
+            T.components=rescomponents
+            T.componentTypes[pos]=self.dest
+            return(T)
+            
+            
+###########################################################
+    def invTransform(self,tens,pos):
         T=copy.deepcopy(tens)
+
         c=T.coords
         cT=T.componentTypes
+        lcT=len(cT)
+        pp("lcT",locals())
         cc=T.components
-        if cT[n]!=self.dest:
-            raise(Exceptions.TransformError(self.dest,self.source,cT,n))
+        if cT[pos]!=self.dest:
+            raise(Exceptions.TransformError(self.dest,self.source,cT,pos))
 	
-        vec=components2vec(cc)
-        resvec=self.mat.inv()*vec
-        resvec=c.matSimp(resvec)
-        rescomponents=vec2components(resvec)
-        T.components=rescomponents
-        T.componentTypes[n]=self.source
-	return(T)
+        if len(cT)==1:
+            vec=components2vec(cc)
+            resvec=self.mat.inv()*vec
+            resvec=c.matSimp(resvec)
+            rescomponents=vec2components(resvec)
+            T.components=rescomponents
+            T.componentTypes[pos]=self.source
+            return(T)
+        elif len(cT)==2:
+            cck=cc.keys()
+            if pos==0: 
+                right_keys=extract_keys(cck,1,1)
+                pp("right_keys",locals())
+                newComponenst={}
+                for k in right_keys:
+                    v=tens.extractVector(k+("*",))
+                    vec=components2vec(v.Components)
+
+                    for l in range(0,c.n):
+                        newComponents[(k+(l,))]=mat.row(l)
+                return()        
+            elif pos==1:
+                left_keys=extract_keys(cck,0,0)
+                pp("left_keys",locals())
 ###########################################################
 ###########################################################
 class Coords(object):
@@ -748,6 +789,15 @@ class Tensor(object):
         r=range(0,coords.n)
         self.r=r
         self.purge()
+    ##########################################################
+    def component(self,tupel):
+        c=self.components
+        if (tupel in c.keys()):
+            return(c[tupel])
+        else:
+            return(0)
+
+
     ##########################################################
     def purge(self):
         # If a component is zero it can be safely erased
