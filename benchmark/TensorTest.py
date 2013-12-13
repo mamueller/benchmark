@@ -480,6 +480,51 @@ class TensorTest(unittest.TestCase):
     
     
 ###########################################################
+    def test_CoordsTransformNew(self):
+        # We assume a change of base from "long" base vectors
+        # to short base vectors
+        # The colums of the matrix represent the old ("long") base vectors
+        # in terms of the new ("short") ones.
+        # ~e1=2e1
+        # ~e2=3e2
+        # ~e3=4e3
+        M=sympy.Matrix(3,3,[2,0,0, 0,3,0, 0,0,4])
+        T=Tensor.CoordsTransformNew(source="long",dest="short",mat=M)
+        # Note that to specify the  transformation it is  >> not << necessary 
+        # to specify the base vectors exactly, only how they transform into each
+        # other.
+        # But to make the example easier to read we can assume the 
+        # "short" base to consist of the cartesian base vectors ex ey and ez
+        # while the "long" base is a stretched version (with different
+        # stretching for each base vector).
+        
+        # we start by transforming the components of a vector
+        longComp={(0,):1,(1,):1,(2,):1}
+        shortComp=T.transform(longComp,0)
+        self.assertEqual(shortComp,{(0,):2,(1,):3,(2,):4})
+
+        longCompBack=T.invTransform(shortComp,0)
+        self.assertEqual(longCompBack,longComp)
+        
+        # now we transform the components of the identity tensor
+        # If we assume the short base to be the cartesian one then
+        # the components of the identity tensor with respect to 
+        # the short base are the common ones: 
+        shortShortComp={(0,0):1,(1,1):1,(2,2):1}
+        
+        # we first compute the mixed components with regard to 
+        # the dyads elong_i e_short_j
+        longShortComp=T.invTransform(shortShortComp,0)
+        self.assertEqual(shortComp,{(0,0):1./2,(1,1):1./3,(2,2):1./4})
+        
+        
+        
+        #shortLongComp=T.invTransform(shortShortComp,1)
+        #longLongComp=T.invTransform(short
+
+        
+
+###########################################################
     def test_transform2_secondOrderTensors(self):
         
         ##  construct a two dimensional testcase

@@ -102,7 +102,65 @@ def vec2components(vec):
     for i in range(0,len(vec)):
         comp[(i,)]=vec[i]
     return(comp)
+##########################################################
+def extractVectorComponents(components,tup):
+    #use in scalar product
+    components
+    ck=components.keys()
+    pos=tup.index("*")
+    matchfun=lambda testtup: (testtup[0:pos]==tup[0:pos] and testtup[pos+1:]==tup[pos+1:])
+    matchingKeys=filter(matchfun,ck)
+    vec_components={}
+    for m in matchingKeys:
+        vec_components[(m[pos],)]=components[m]
+    return(vec_components)
 ###########################################################
+###########################################################
+class CoordsTransformNew(object):
+    '''This class represents a change of basis'''
+    '''It is needed to compute the components of vectors and Tensors in a new
+    coordinate frame'''
+    def __init__(self,source,dest,mat):
+        self.mat=mat
+        self.dest=dest
+        nr,nc=mat.shape
+        if nr !=nc:
+            raise(Exception,"a coordinate Transformation always has to be quadratic")
+        self.mat=mat
+        self.n=nr
+    def transform(self,TensorComponents,pos):
+        vec=components2vec(TensorComponents)
+        resvec=self.mat*vec
+        rescomponents=vec2components(resvec)
+        return(rescomponents)
+            
+            
+#############################################################
+    def invTransform(self,TensorComponents,pos):
+        #pp("TensorComponents",locals())
+        tupelLength=len(TensorComponents.keys()[0])
+        if tupelLength==1:
+            vec=components2vec(TensorComponents)
+            resvec=self.mat.inv()*vec
+            rescomponents=vec2components(resvec)
+            return(rescomponents)
+        elif tupelLength==2:
+            cck=TensorComponents.keys()
+            if pos==0: 
+                right_keys=extract_keys(cck,1,1)
+                pp("right_keys",locals())
+                newComponents={}
+                for k in right_keys:
+                    v=extractVectorComponents(TensorComponents,k+("*",))
+                    vec=components2vec(v)
+
+                    for l in range(0,self.n):
+                        newComponents[(k+(l,))]=self.mat.row(l)
+                return()        
+            elif pos==1:
+                left_keys=extract_keys(cck,0,0)
+                #pp("left_keys",locals())
+############################################################
 ###########################################################
 class CoordsTransform(object):
     '''This class represents a change of basis'''
@@ -157,7 +215,7 @@ class CoordsTransform(object):
             if pos==0: 
                 right_keys=extract_keys(cck,1,1)
                 pp("right_keys",locals())
-                newComponenst={}
+                newComponents={}
                 for k in right_keys:
                     v=tens.extractVector(k+("*",))
                     vec=components2vec(v.Components)
@@ -1099,6 +1157,7 @@ class Tensor(object):
             resComponentTypes=scT[0:-1]+ocT[1:]
         res=Tensor(self.coords,resComponentTypes,resComponents)
         return(res)
+
 
     ##########################################################
     def extractVector(self,tup):
