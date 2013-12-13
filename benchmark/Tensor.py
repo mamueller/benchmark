@@ -138,10 +138,11 @@ class CoordsTransformNew(object):
 #############################################################
     def invTransform(self,TensorComponents,pos):
         #pp("TensorComponents",locals())
+        invMat=self.mat.inv()
         tupelLength=len(TensorComponents.keys()[0])
         if tupelLength==1:
             vec=components2vec(TensorComponents)
-            resvec=self.mat.inv()*vec
+            resvec=invMat*vec
             rescomponents=vec2components(resvec)
             return(rescomponents)
         elif tupelLength==2:
@@ -155,10 +156,23 @@ class CoordsTransformNew(object):
                     vec=components2vec(v)
 
                     for l in range(0,self.n):
-                        newComponents[(k+(l,))]=self.mat.row(l)
-                return()        
+                        val=(invMat.row(l)).dot(vec)
+                        if val !=0:
+                            newComponents[(k+(l,))]=val
+                return(newComponents)        
             elif pos==1:
                 left_keys=extract_keys(cck,0,0)
+                pp("left_keys",locals())
+                newComponents={}
+                for k in left_keys:
+                    v=extractVectorComponents(TensorComponents,k+("*",))
+                    vec=components2vec(v)
+
+                    for l in range(0,self.n):
+                        val=(invMat.row(l)).dot(vec)
+                        if val !=0:
+                            newComponents[(k+(l,))]=val
+                return(newComponents)        
                 #pp("left_keys",locals())
 ############################################################
 ###########################################################

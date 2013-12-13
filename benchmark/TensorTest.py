@@ -515,12 +515,18 @@ class TensorTest(unittest.TestCase):
         # we first compute the mixed components with regard to 
         # the dyads elong_i e_short_j
         longShortComp=T.invTransform(shortShortComp,0)
-        self.assertEqual(shortComp,{(0,0):1./2,(1,1):1./3,(2,2):1./4})
+        self.assertEqual(longShortComp,{(0,0):0.5,(1,1):1.0/3.0,(2,2):1/4.0})
         
+        # we also compute the mixed components with regard to 
+        # the dyads eshort_i elong_j
+        shortLongComp=T.invTransform(shortShortComp,1)
+        # the result is the same because of the structure of the identety tensor
+        self.assertEqual(shortLongComp,{(0,0):1./2,(1,1):1./3,(2,2):1./4})
         
-        
-        #shortLongComp=T.invTransform(shortShortComp,1)
-        #longLongComp=T.invTransform(short
+        # now we test the full conversion to the long base
+        # which is the typical use case in the Tensor class 
+        longLongComp=T.invTransform(shortLongComp,0)
+        self.assertEqual(longLongComp,{(0,0):1./4,(1,1):1./9,(2,2):1./16})
 
         
 
