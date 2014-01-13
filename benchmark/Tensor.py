@@ -116,24 +116,68 @@ def extractVectorComponents(components,tup):
     return(vec_components)
 ###########################################################
 ###########################################################
-class CoordsTransformNew(object):
+class CoordsTransform(object):
     '''This class represents a change of basis'''
     '''It is needed to compute the components of vectors and Tensors in a new
     coordinate frame'''
     def __init__(self,source,dest,mat):
         self.mat=mat
         self.dest=dest
+        self.source=source
         nr,nc=mat.shape
         if nr !=nc:
             raise(Exception,"a coordinate Transformation always has to be quadratic")
         self.mat=mat
         self.n=nr
-    def transform(self,TensorComponents,pos):
-        vec=components2vec(TensorComponents)
-        resvec=self.mat*vec
-        rescomponents=vec2components(resvec)
-        return(rescomponents)
+    def transform(self,tens,pos):
+    # transform a tensor to another base in the pos th component
+        T=copy.deepcopy(tens)
+        c=T.coords
+        cT=T.componentTypes
+        if cT[pos]!=self.source:
+            raise(Exceptions.TransformError(self.source,self.dest,cT,pos))
+        lcT=len(cT)
+        pp("lcT",locals())
+        Tc=T.components
+        mat=self.mat
+        tupelLength=len(Tc.keys()[0])
+        if tupelLength==1:
+            vec=components2vec(Tc)
+            resvec=mat*vec
+            rescomponents=vec2components(resvec)
+            raise("return a tensor")
             
+        elif tupelLength==2:
+            Tck=Tc.keys()
+            if pos==0: 
+                right_keys=extract_keys(Tck,1,1)
+                pp("right_keys",locals())
+                newComponents={}
+                for k in right_keys:
+                    v=extractVectorComponents(Tc,k+("*",))
+                    vec=components2vec(v)
+
+                    for l in range(0,self.n):
+                        val=(mat.row(l)).dot(vec)
+                        if val !=0:
+                            newComponents[(k+(l,))]=val
+                raise("return a tensor")
+                return(newComponents)        
+            elif pos==1:
+                left_keys=extract_keys(Tck,0,0)
+                pp("left_keys",locals())
+                newComponents={}
+                for k in left_keys:
+                    v=extractVectorComponents(Tc,k+("*",))
+                    vec=components2vec(v)
+
+                    for l in range(0,self.n):
+                        val=(mat.row(l)).dot(vec)
+                        if val !=0:
+                            newComponents[(k+(l,))]=val
+                raise("return a tensor")
+                return(newComponents)        
+	
             
 #############################################################
     def invTransform(self,TensorComponents,pos):
@@ -144,6 +188,7 @@ class CoordsTransformNew(object):
             vec=components2vec(TensorComponents)
             resvec=invMat*vec
             rescomponents=vec2components(resvec)
+            raise("return a tensor")
             return(rescomponents)
         elif tupelLength==2:
             cck=TensorComponents.keys()
@@ -159,6 +204,7 @@ class CoordsTransformNew(object):
                         val=(invMat.row(l)).dot(vec)
                         if val !=0:
                             newComponents[(k+(l,))]=val
+                raise("return a tensor")
                 return(newComponents)        
             elif pos==1:
                 left_keys=extract_keys(cck,0,0)
@@ -172,11 +218,12 @@ class CoordsTransformNew(object):
                         val=(invMat.row(l)).dot(vec)
                         if val !=0:
                             newComponents[(k+(l,))]=val
+                raise("return a tensor")
                 return(newComponents)        
                 #pp("left_keys",locals())
 ############################################################
 ###########################################################
-class CoordsTransform(object):
+class CoordsTransformOld(object):
     '''This class represents a change of basis'''
     '''It is needed to compute the components of vectors and Tensors in a new
     coordinate frame'''
@@ -194,14 +241,23 @@ class CoordsTransform(object):
         if cT[pos]!=self.source:
             raise(Exceptions.TransformError(self.source,self.dest,cT,pos))
 	
-        if len(cT)==1:
-            vec=components2vec(cc)
-            resvec=self.mat*vec
-            resvec=c.matSimp(resvec)
-            rescomponents=vec2components(resvec)
-            T.components=rescomponents
-            T.componentTypes[pos]=self.dest
-            return(T)
+        #vec=T.extractVector(n)
+        vec=components2vec(cc)
+        resvec=self.mat*vec
+        resvec=c.matSimp(resvec)
+        rescomponents=vec2components(resvec)
+        T.components=rescomponents
+        T.componentTypes[pos]=self.dest
+	return(T)
+    #def invTransform(self,tens,n):
+    #    if len(cT)==1:
+    #        vec=components2vec(cc)
+    #        resvec=self.mat*vec
+    #        resvec=c.matSimp(resvec)
+    #        rescomponents=vec2components(resvec)
+    #        T.components=rescomponents
+    #        T.componentTypes[pos]=self.dest
+    #        return(T)
             
             
 ###########################################################
@@ -1239,7 +1295,6 @@ class Tensor(object):
         cs=copy.deepcopy(self)
         c=cs.coords
         csT=cs.componentTypes
-        cc=cs.components
         # we iterate over the pairs of src and target component types
         # and treat every pair separately
         for i in range(0,len(csT)):

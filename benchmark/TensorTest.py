@@ -911,6 +911,22 @@ class TensorTest(unittest.TestCase):
         ref=Tensor.Tensor(sp,["cellar"],{(0,):0,(1,):-1/r,(2,):0})
         self.assertEqual(drv,ref)
         
+###########################################################
+    def test_ChangeOfBase(self):
+        sp=Spherical()
+        Prr=Tensor.Tensor(sp,["roof","roof"],{(0,0):1})
+        Prc=sp.roof2cart.transform(Prr,1)
+        pp("Prc",locals())
+        Pcr=sp.roof2cart.transform(Prr,0)
+        pp("Pcr",locals())
+        Pcc1=sp.roof2cart.transform(Prc,0)
+        pp("Pcc1",locals())
+        Pcc2=sp.roof2cart.transform(Pcr,1)
+        pp("Pcc2",locals())
+        self.assertEqual(Pcc1,Pcc2)
+        # the transformation up to now only works on vectors not higher order 
+        # tensors
+        # raise
         
         
 
