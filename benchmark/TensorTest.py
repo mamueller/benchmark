@@ -914,16 +914,35 @@ class TensorTest(unittest.TestCase):
 ###########################################################
     def test_ChangeOfBase(self):
         sp=Spherical()
-        Prr=Tensor.Tensor(sp,["roof","roof"],{(0,0):1})
-        Prc=sp.roof2cart.transform(Prr,1)
-        pp("Prc",locals())
-        Pcr=sp.roof2cart.transform(Prr,0)
-        pp("Pcr",locals())
-        Pcc1=sp.roof2cart.transform(Prc,0)
-        pp("Pcc1",locals())
-        Pcc2=sp.roof2cart.transform(Pcr,1)
-        pp("Pcc2",locals())
-        self.assertEqual(Pcc1,Pcc2)
+        P_r=Tensor.Tensor(sp,["roof"],{(0,):1})
+        mat=sympy.eye(3)*1./2.
+        # The matrix columns describe the source base (roof) in terms of the 
+        # (new) target basis (doubleRoof)  
+        # Since the doubleRoof base vectors are twice as long the roof base
+        # vectors a roof base vector is half the size of a doubleRoof vector
+        # hence the 1/2 on the main diagonal
+        roof2doubleRoof= Tensor.CoordsTransform("roof","doubleRoof",mat)
+        P_dr=roof2doubleRoof.transform(P_r,0)
+        self.assertEqual(P_dr,Tensor.Tensor(sp,["doubleRoof"],{(0,):1./2.}))
+        
+        P_r_r=Tensor.Tensor(sp,["roof","roof"],{(0,0):1})
+        P_dr_r=roof2doubleRoof.transform(P_r_r,0)
+        self.assertEqual(P_dr_r,Tensor.Tensor(sp,["doubleRoof","roof"],{(0,0):1./2.}))
+        P_dr_dr=roof2doubleRoof.transform(P_dr_r,1)
+        self.assertEqual(P_dr_dr,Tensor.Tensor(sp,["doubleRoof","doubleRoof"],{(0,0):1./4.}))
+        
+        
+        #Pc=sp.roof2cart.transform(P_r,0)
+        #Prr=Tensor.Tensor(sp,["roof","roof"],{(0,0):1})
+        #Prc=sp.roof2cart.transform(Prr,1)
+        #pp("Prc",locals())
+        #Pcr=sp.roof2cart.transform(Prr,0)
+        #pp("Pcr",locals())
+        #Pcc1=sp.roof2cart.transform(Prc,0)
+        #pp("Pcc1",locals())
+        #Pcc2=sp.roof2cart.transform(Pcr,1)
+        #pp("Pcc2",locals())
+        #self.assertEqual(Pcc1,Pcc2)
         # the transformation up to now only works on vectors not higher order 
         # tensors
         # raise

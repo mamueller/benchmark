@@ -129,6 +129,7 @@ class CoordsTransform(object):
             raise(Exception,"a coordinate Transformation always has to be quadratic")
         self.mat=mat
         self.n=nr
+    ###########################################################
     def transform(self,tens,pos):
     # transform a tensor to another base in the pos th component
         T=copy.deepcopy(tens)
@@ -145,7 +146,9 @@ class CoordsTransform(object):
             vec=components2vec(Tc)
             resvec=mat*vec
             rescomponents=vec2components(resvec)
-            raise("return a tensor")
+            T.components=rescomponents
+            T.componentTypes=[self.dest]
+            return(T)
             
         elif tupelLength==2:
             Tck=Tc.keys()
@@ -161,8 +164,6 @@ class CoordsTransform(object):
                         val=(mat.row(l)).dot(vec)
                         if val !=0:
                             newComponents[(k+(l,))]=val
-                raise("return a tensor")
-                return(newComponents)        
             elif pos==1:
                 left_keys=extract_keys(Tck,0,0)
                 pp("left_keys",locals())
@@ -175,8 +176,9 @@ class CoordsTransform(object):
                         val=(mat.row(l)).dot(vec)
                         if val !=0:
                             newComponents[(k+(l,))]=val
-                raise("return a tensor")
-                return(newComponents)        
+            T.components=newComponents
+            T.componentTypes[pos]=self.dest
+            return(T)        
 	
             
 #############################################################
@@ -223,80 +225,80 @@ class CoordsTransform(object):
                 #pp("left_keys",locals())
 ############################################################
 ###########################################################
-class CoordsTransformOld(object):
-    '''This class represents a change of basis'''
-    '''It is needed to compute the components of vectors and Tensors in a new
-    coordinate frame'''
-    def __init__(self,source,dest,mat):
-        self.source=source
-        self.dest=dest
-        self.mat=mat
-    def transform(self,tens,pos):
-        T=copy.deepcopy(tens)
-        c=T.coords
-        cT=T.componentTypes
-        lcT=len(cT)
-        pp("lcT",locals())
-        cc=T.components
-        if cT[pos]!=self.source:
-            raise(Exceptions.TransformError(self.source,self.dest,cT,pos))
-	
-        #vec=T.extractVector(n)
-        vec=components2vec(cc)
-        resvec=self.mat*vec
-        resvec=c.matSimp(resvec)
-        rescomponents=vec2components(resvec)
-        T.components=rescomponents
-        T.componentTypes[pos]=self.dest
-	return(T)
-    #def invTransform(self,tens,n):
-    #    if len(cT)==1:
-    #        vec=components2vec(cc)
-    #        resvec=self.mat*vec
-    #        resvec=c.matSimp(resvec)
-    #        rescomponents=vec2components(resvec)
-    #        T.components=rescomponents
-    #        T.componentTypes[pos]=self.dest
-    #        return(T)
-            
-            
-###########################################################
-    def invTransform(self,tens,pos):
-        T=copy.deepcopy(tens)
-
-        c=T.coords
-        cT=T.componentTypes
-        lcT=len(cT)
-        pp("lcT",locals())
-        cc=T.components
-        if cT[pos]!=self.dest:
-            raise(Exceptions.TransformError(self.dest,self.source,cT,pos))
-	
-        if len(cT)==1:
-            vec=components2vec(cc)
-            resvec=self.mat.inv()*vec
-            resvec=c.matSimp(resvec)
-            rescomponents=vec2components(resvec)
-            T.components=rescomponents
-            T.componentTypes[pos]=self.source
-            return(T)
-        elif len(cT)==2:
-            cck=cc.keys()
-            if pos==0: 
-                right_keys=extract_keys(cck,1,1)
-                pp("right_keys",locals())
-                newComponents={}
-                for k in right_keys:
-                    v=tens.extractVector(k+("*",))
-                    vec=components2vec(v.Components)
-
-                    for l in range(0,c.n):
-                        newComponents[(k+(l,))]=mat.row(l)
-                return()        
-            elif pos==1:
-                left_keys=extract_keys(cck,0,0)
-                pp("left_keys",locals())
-###########################################################
+#class CoordsTransformOld(object):
+#    '''This class represents a change of basis'''
+#    '''It is needed to compute the components of vectors and Tensors in a new
+#    coordinate frame'''
+#    def __init__(self,source,dest,mat):
+#        self.source=source
+#        self.dest=dest
+#        self.mat=mat
+#    def transform(self,tens,pos):
+#        T=copy.deepcopy(tens)
+#        c=T.coords
+#        cT=T.componentTypes
+#        lcT=len(cT)
+#        pp("lcT",locals())
+#        cc=T.components
+#        if cT[pos]!=self.source:
+#            raise(Exceptions.TransformError(self.source,self.dest,cT,pos))
+#	
+#        #vec=T.extractVector(n)
+#        vec=components2vec(cc)
+#        resvec=self.mat*vec
+#        resvec=c.matSimp(resvec)
+#        rescomponents=vec2components(resvec)
+#        T.components=rescomponents
+#        T.componentTypes[pos]=self.dest
+#	return(T)
+#    #def invTransform(self,tens,n):
+#    #    if len(cT)==1:
+#    #        vec=components2vec(cc)
+#    #        resvec=self.mat*vec
+#    #        resvec=c.matSimp(resvec)
+#    #        rescomponents=vec2components(resvec)
+#    #        T.components=rescomponents
+#    #        T.componentTypes[pos]=self.dest
+#    #        return(T)
+#            
+#            
+############################################################
+#    def invTransform(self,tens,pos):
+#        T=copy.deepcopy(tens)
+#
+#        c=T.coords
+#        cT=T.componentTypes
+#        lcT=len(cT)
+#        pp("lcT",locals())
+#        cc=T.components
+#        if cT[pos]!=self.dest:
+#            raise(Exceptions.TransformError(self.dest,self.source,cT,pos))
+#	
+#        if len(cT)==1:
+#            vec=components2vec(cc)
+#            resvec=self.mat.inv()*vec
+#            resvec=c.matSimp(resvec)
+#            rescomponents=vec2components(resvec)
+#            T.components=rescomponents
+#            T.componentTypes[pos]=self.source
+#            return(T)
+#        elif len(cT)==2:
+#            cck=cc.keys()
+#            if pos==0: 
+#                right_keys=extract_keys(cck,1,1)
+#                pp("right_keys",locals())
+#                newComponents={}
+#                for k in right_keys:
+#                    v=tens.extractVector(k+("*",))
+#                    vec=components2vec(v.Components)
+#
+#                    for l in range(0,c.n):
+#                        newComponents[(k+(l,))]=mat.row(l)
+#                return()        
+#            elif pos==1:
+#                left_keys=extract_keys(cck,0,0)
+#                pp("left_keys",locals())
+############################################################
 ###########################################################
 class Coords(object):
     def __init__(self,X,U,XofU):
@@ -877,8 +879,8 @@ class Tensor(object):
     ##########################################################
     def __init__(self,coords,componentTypes,components):
         # test if we can handle the component types 
-        if not(set(componentTypes).issubset({"roof","cellar","cart","phys"})):
-            raise(Exceptions.UnknownComponentType(componentTypes))
+        #if not(set(componentTypes).issubset({"roof","cellar","cart","phys"})):
+        #    raise(Exceptions.UnknownComponentType(componentTypes))
         
         self.components={} # initialize empty (Null Tensor)
 
