@@ -11,11 +11,11 @@ from helperFunctions import pp
 class OperatorTest(unittest.TestCase):
     def setUp(self):
         # for all tests we create 2 instances of a general coordinate system
-	# a cartesian and a spherical one
+    # a cartesian and a spherical one
         
         
-	self.C=Cartesian()
-	self.S=Spherical()
+        self.C=Cartesian()
+        self.S=Spherical()
 
 
 
@@ -24,13 +24,13 @@ class OperatorTest(unittest.TestCase):
         sp=Spherical()
         r,phi,theta=sp.U
         u_r,u_phi,u_theta=symbols("u_r,u_phi,u_theta")
-	# we define a symbolic velocity field by its phyical components
+    # we define a symbolic velocity field by its phyical components
         u_phys=Matrix(3,1,[u_r(r,phi,theta),u_phi(r,phi,theta),u_theta(r,phi,theta)])
-	# we translate it to roof components
+    # we translate it to roof components
         u_roof=sp.phys2roof(u_phys)
-	print("u_roof="+str(u_roof))
-	du_roof_dr=sp.part_der_v(0,u_roof) 
-	print("u_roof,r="+str(du_roof_dr))
+        print("u_roof="+str(u_roof))
+        du_roof_dr=sp.part_der_v(0,u_roof) 
+        print("u_roof,r="+str(du_roof_dr))
 
         
 
@@ -191,7 +191,7 @@ class OperatorTest(unittest.TestCase):
         self.assertTrue(sp.roof2cellar(Matrix(3,1,[0,1,0]))==Matrix(3,1,[0,r**2*sin(theta)**2,0]))
         
         self.assertTrue(sp.roof2cellar(Matrix(3,1,[0,0,1]))==Matrix(3,1,[0,0,r**2]))
-	#
+    #
 
     def test_normal_stress(self):
         # we compute the normal viscous stress at a spherical surface
@@ -224,15 +224,15 @@ class OperatorTest(unittest.TestCase):
         sp=self.S
         # we check the definition of the transposed tensor
         vr,vphi,vtheta,ur,uphi,utheta=symbols("vr,vphi,vtheta,ur,uphi,utheta",real=True)
-	T11,T12,T13,T21,T22,T23,T31,T32,T33=symbols("T11,T12,T13,T21,T22,T23,T31,T32,T33",real=True)
-	T=Tensor(sp,["cellar","roof"],{(1,1):T11,(1,2):T12,(1,3):T13,(2,1):T21,(2,2):T22,(2,3):T23,(3,1):T31,(3,2):T32,(3,3):T33})
-	print("T=",T)
+        T11,T12,T13,T21,T22,T23,T31,T32,T33=symbols("T11,T12,T13,T21,T22,T23,T31,T32,T33",real=True)
+        T=Tensor(sp,["cellar","roof"],{(1,1):T11,(1,2):T12,(1,3):T13,(2,1):T21,(2,2):T22,(2,3):T23,(3,1):T31,(3,2):T32,(3,3):T33})
+        print("T=",T)
         #u_c=Matrix(3,1,[ur,uphi,utheta])
-	u=Tensor(sp,["cellar"],{(1,):ur})
-	v=Tensor(sp,["roof"],{(2,):vphi})
+        u=Tensor(sp,["cellar"],{(1,):ur})
+        v=Tensor(sp,["roof"],{(2,):vphi})
         res1=v|(T|u)
         ## the definition of the transposed Tensor
-	    ## for all u,v : v | A |u =u |A^t| v
+        ## for all u,v : v | A |u =u |A^t| v
         TT=T.transpose()
         res2=u|(TT|v)
         print("res1-res2=",sp.scalarSimp(res1-res2))

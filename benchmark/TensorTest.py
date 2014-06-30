@@ -915,16 +915,16 @@ class TensorTest(unittest.TestCase):
     def test_ChangeOfBase(self):
         sp=Spherical()
         # as a first example we look at a vector
-        v_r=Tensor.Tensor(sp,["src"],{(0,):1})
+        v_src=Tensor.Tensor(sp,["src"],{(0,):1})
         mat=sympy.eye(3)*1./2.
+        src2doubleSrc= Tensor.CoordsTransform("src","doubleSrc",mat)
         # The matrix columns describe the source base (src) in terms of the 
         # (new) target basis (doubleSrc)  
         # Since the doubleSrc base vectors are twice as long the src base
         # vectors a src base vector is half the size of a doubleSrc vector
         # hence the 1/2 on the main diagonal
-        src2doubleSrc= Tensor.CoordsTransform("src","doubleSrc",mat)
-        P_dr=src2doubleSrc.transform(v_r,0)
-        self.assertEqual(P_dr,Tensor.Tensor(sp,["doubleSrc"],{(0,):1./2.}))
+        v_doubleSrc=src2doubleSrc.transform(v_src,0)
+        self.assertEqual(v_doubleSrc,Tensor.Tensor(sp,["doubleSrc"],{(0,):1./2.}))
         
         # now we look at a projection tensor which in (src) coordinates preserves the first component of a vector.
         P_r_r=Tensor.Tensor(sp,["src","src"],{(0,0):1})

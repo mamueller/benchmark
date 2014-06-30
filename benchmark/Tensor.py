@@ -86,14 +86,14 @@ def exchangeEnds(origTupel):
     l[0]=le
     l[-1]=fe
     return(tuple(l))
-	   
+       
 ###########################################################
 def components2vec(components):
-    vec=zeros((3,1))
+    vec=zeros(3,1)
     for i in range(0,3):
-       ind=(i,)
-       if (ind in components.keys()): 
-	   vec[i]=components[ind]
+        ind=(i,)
+        if (ind in components.keys()): 
+            vec[i]=components[ind]
     return(vec)
 
 ###########################################################
@@ -143,7 +143,7 @@ class CoordsTransform(object):
         pp("lcT",locals())
         Tc=T.components
         mat=self.mat
-        tupelLength=len(Tc.keys()[0])
+        tupelLength=len(list(Tc.keys())[0])
         if tupelLength==1:
             vec=components2vec(Tc)
             resvec=mat*vec
@@ -181,7 +181,7 @@ class CoordsTransform(object):
             T.components=newComponents
             T.componentTypes[pos]=self.dest
             return(T)        
-	
+    
             
 #############################################################
     def invTransform(self,TensorComponents,pos):
@@ -244,7 +244,7 @@ class CoordsTransform(object):
 #        cc=T.components
 #        if cT[pos]!=self.source:
 #            raise(Exceptions.TransformError(self.source,self.dest,cT,pos))
-#	
+#    
 #        #vec=T.extractVector(n)
 #        vec=components2vec(cc)
 #        resvec=self.mat*vec
@@ -252,7 +252,7 @@ class CoordsTransform(object):
 #        rescomponents=vec2components(resvec)
 #        T.components=rescomponents
 #        T.componentTypes[pos]=self.dest
-#	return(T)
+#    return(T)
 #    #def invTransform(self,tens,n):
 #    #    if len(cT)==1:
 #    #        vec=components2vec(cc)
@@ -275,7 +275,7 @@ class CoordsTransform(object):
 #        cc=T.components
 #        if cT[pos]!=self.dest:
 #            raise(Exceptions.TransformError(self.dest,self.source,cT,pos))
-#	
+#    
 #        if len(cT)==1:
 #            vec=components2vec(cc)
 #            resvec=self.mat.inv()*vec
@@ -313,11 +313,11 @@ class Coords(object):
         self.sf_=False
         self.setup()
     def scalarSimp(self,exp):
-    	return(exp) #do nothing but return the input
+        return(exp) #do nothing but return the input
 
     def matSimp(self,Mat):
         s=Mat.shape
-        res=zeros(s)
+        res=zeros(s[0],s[1])
         for i in range (s[0]):
             for j in range (s[1]): 
                 res[i,j]=self.scalarSimp(Mat[i,j])
@@ -340,7 +340,7 @@ class Coords(object):
             self.gc[i]=self.J[:,i]
             self.t_gc[i]=Tensor(self,["cart"],vec2components(self.gc[i]))
 
-	    #define the cartesian base vectors e_x e_y and e_z
+        #define the cartesian base vectors e_x e_y and e_z
         
         #e_r_c    =self.t_gc[0]
         #e_phi_c  =self.t_gc[1]
@@ -386,7 +386,7 @@ class Coords(object):
         # first create a function that differentiates matrices
         def mdiff(Mat,sym):
             s=Mat.shape
-            res=zeros(s)
+            res=zeros(s[0],s[1])
             for i in range(0,s[0]):
                 for j in range(0,s[1]):
                     res[i,j]=diff(Mat[i,j],sym)
@@ -591,7 +591,7 @@ class Coords(object):
     def cellar_nab(self,f):
         # This function computes the cellar components of the gradient of the
         # scalar function f
-        g=zeros([self.n,1])
+        g=zeros(self.n,1)
         for i in range(0,self.n):
             g[i]=diff(f,self.U[i])
         return(g)
@@ -612,7 +612,7 @@ class Coords(object):
     def cart2cellar(self,cartComponents):
         r,theta, phi = self.U
         # compute the cellar components with respect to the reciproke basis 
-	# from the cartesian components
+    # from the cartesian components
         res=self.J.transpose()*cartComponents
         res=self.matSimp(res)
         return(res)
@@ -622,12 +622,12 @@ class Coords(object):
         #                                             i             i
         # This function computes the roof components v of a vector v g
         #                                                             i
-	# from its cartesian components
-	# 
+    # from its cartesian components
+    # 
         res=self.Jinv*cartComponents
         res=self.matSimp(res)
         return(res)
-	
+    
 
 
 
@@ -662,22 +662,22 @@ class Coords(object):
 
     def roof2phys(self,roofComponents):
         s=self.scale_factors()
-        rc=zeros([self.n,1])
+        rc=zeros(self.n,1)
         for i in range(0,self.n):
             rc[i]=roofComponents[i]*s[i]
         return(rc)
 
     def phys2roof(self,physComponents):
         s=self.scale_factors()
-        rc=zeros([self.n,1])
+        rc=zeros(self.n,1)
         for i in range(0,self.n):
             rc[i]=physComponents[i]/s[i]
         return(rc)
     
     def phys2cellar(self,physComp):
         rC=self.phys2roof(physComp)
-	cC=self.roof2cellar(rC)
-	return(cC)
+        cC=self.roof2cellar(rC)
+        return(cC)
 
 
     def scale_factors(self):
@@ -685,7 +685,7 @@ class Coords(object):
             return(self.sf_)
         #compute the lengths of the cellar base vectors
         r,theta, phi = self.U
-        s=zeros([self.n,1])
+        s=zeros(self.n,1)
         for i in range(0,self.n):
             s[i]=sqrt(self.g_cc()[i,i])
         s=self.matSimp(s)
@@ -719,44 +719,40 @@ class Coords(object):
         # products g  g
         #              j
         # Nv={}
-	#print("rc="+str(rc))
+        #print("rc="+str(rc))
         Nv=zeros(3,3)
         for i in range(0,self.n):
             for j in range(0,self.n):
                 Nv[i,j]=self.cov_der_v(i,j,rc)
                 #print("Nv["+str(i)+","+str(j)+"]="+str(Nv[i,j]))
-	i=0;j=0
-	#print("cov_der_v("+str(i)+","+str(j)+","+str(rc)+")="+str(self.cov_der_v(i,j,rc)))
+        i=0;j=0
+        #print("cov_der_v("+str(i)+","+str(j)+","+str(rc)+")="+str(self.cov_der_v(i,j,rc)))
         return(Nv)
-
-
-
-
-
-    def roof_div(self,vr):		
-	# compute the divergence of a vector given by its roof_components 
-    # (these are the component with respect to the cellar base vectors since v=vr[i]*gc[i]
-	res=0
-	for i in range(0,self.n):
-	    res+=self.cov_der_v(i,i,vr)
-	return(simplify(res))    
     
-#    def roofroof_div_T(self,Trr):		
-#	# compute the divergence of a tensor T given by its roofroof_components Trr
+    def roof_div(self,vr):        
+    # compute the divergence of a vector given by its roof_components 
+    # (these are the component with respect to the cellar base vectors since v=vr[i]*gc[i]
+        res=0
+        for i in range(0,self.n):
+            res+=self.cov_der_v(i,i,vr)
+        return(simplify(res))    
+    
+#    def roofroof_div_T(self,Trr):        
+#    # compute the divergence of a tensor T given by its roofroof_components Trr
 #        # (these are the component with respect to the cellar base vectors since 
-#	# T=Trr[i,j] gc[i] gc[j])
-#	# (The result are the roof components of a vector 
-#	# (with resprect to the cellar basis))
-#	res=zeros([3,1])
-#	for k in range(0,self.n):
-#	    rv=0 # the value of the row of the result
-#	    for i in range(0,self.n):
-#	        rv+=self.cov_der_T(i,i,k,Trr)
-#		rv=simplify(rv)
-#	    res[k]=rv	
-#	return(res)    
+#    # T=Trr[i,j] gc[i] gc[j])
+#    # (The result are the roof components of a vector 
+#    # (with resprect to the cellar basis))
+#    res=zeros(3,1)
+#    for k in range(0,self.n):
+#        rv=0 # the value of the row of the result
+#        for i in range(0,self.n):
+#            rv+=self.cov_der_T(i,i,k,Trr)
+#        rv=simplify(rv)
+#        res[k]=rv    
+#    return(res)    
 #
-    def phys_div(self,vr):		
+    def phys_div(self,vr):        
     # compute the divergence of a vector given by its physical componets 
         # compute the roof components
         rc=self.phys2roof(vr)
@@ -768,8 +764,8 @@ class Coords(object):
 
     
 
-	
-	
+    
+    
 #    def cov_der_v(self,i,k,vr):
 #        # this function computes the covariant derivative of the roof components of a vector v
 #        # (these are the components of v with respect to the >>cellar<< base vectors since v=vr[i]gc[i])
@@ -891,7 +887,7 @@ class Tensor(object):
         # if any indextuples are given then perform some compatibility tests
         # otherwise proceed with the initialization of the Null tensor
         if len(indextupels)!=0:
-            t0=indextupels[0]
+            t0=list(indextupels)[0]
             # for first order Tensors we allow itegers as indeces instead of tuples
             if isinstance(t0,int): 
                 wrongtype=lambda y:not(isinstance(y,int))
@@ -936,7 +932,7 @@ class Tensor(object):
         # this is important to  make vectors and tensors
         # with zero components compareable
         c=self.components
-        for k in c.keys():
+        for k in list(c.keys()):
             if c[k]==0:
                del(self.components[k])
 

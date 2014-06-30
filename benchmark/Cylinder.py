@@ -11,7 +11,7 @@ class Cylinder:
         self.etha=etha
         self.l=l
         self.rootlist=self.alphafinder(l,etha,startset)
-	self.coords=coord
+    self.coords=coord
 
     def compute_matrix(self,Cl):    
         rootlist=self.rootlist
@@ -97,8 +97,8 @@ class Cylinder:
     def cprime_maker(self,alpha):
         etha=self.etha
         l=self.l
-	S=self.coords
-	r,phi,theta=S.U
+    S=self.coords
+    r,phi,theta=S.U
         alpha_cyl=self.cyl_maker(alpha)
         expr=1.0/alpha*diff(alpha_cyl(r),r)
         def f(arg):
@@ -182,8 +182,8 @@ class Cylinder:
     def radialpart(self):
         # We construct the solutions for F an W according to (eq. 143,146)
         #r=Symbol("r")
-	S=self.coords
-	r,phi,theta=S.U
+    S=self.coords
+    r,phi,theta=S.U
         rootlist=self.rootlist
         l=self.l
         etha=self.etha
@@ -257,8 +257,8 @@ class Cylinder:
         etha=self.etha
         l=self.l
         #r=Symbol("r")
-	S=self.coords
-	r,phi,theta=S.U
+    S=self.coords
+    r,phi,theta=S.U
         co=l+Rational(1,2)
         c1=besselj(-co,alpha*etha)
         c2=besselj(+co,alpha*etha)
@@ -272,8 +272,8 @@ class Cylinder:
     def Dl(self,w):
         l=self.l
         #r= Symbol("r")
-	S=self.coords
-	r,phi,theta=S.U
+    S=self.coords
+    r,phi,theta=S.U
         res=diff(w,r,2)+2/r*diff(w,r)+-l*(l+1)/r**2*w
         return(res)
     def alphafinder(self,l,etha,startset):
@@ -294,8 +294,8 @@ class Cylinder:
         return(rootlist)
     def cyl_one_half_nu_maker(self,l,nu,alpha,etha):
         # r=Symbol("r")
-	S=self.coords
-	r,phi,theta=S.U
+        S=self.coords
+        r,phi,theta=S.U
         co=l+Rational(1,2)
         c1=besselj(-co,alpha*etha)
         c2=besselj(+co,alpha*etha)
