@@ -914,22 +914,24 @@ class TensorTest(unittest.TestCase):
 ###########################################################
     def test_ChangeOfBase(self):
         sp=Spherical()
-        P_r=Tensor.Tensor(sp,["roof"],{(0,):1})
+        # as a first example we look at a vector
+        v_r=Tensor.Tensor(sp,["src"],{(0,):1})
         mat=sympy.eye(3)*1./2.
-        # The matrix columns describe the source base (roof) in terms of the 
-        # (new) target basis (doubleRoof)  
-        # Since the doubleRoof base vectors are twice as long the roof base
-        # vectors a roof base vector is half the size of a doubleRoof vector
+        # The matrix columns describe the source base (src) in terms of the 
+        # (new) target basis (doubleSrc)  
+        # Since the doubleSrc base vectors are twice as long the src base
+        # vectors a src base vector is half the size of a doubleSrc vector
         # hence the 1/2 on the main diagonal
-        roof2doubleRoof= Tensor.CoordsTransform("roof","doubleRoof",mat)
-        P_dr=roof2doubleRoof.transform(P_r,0)
-        self.assertEqual(P_dr,Tensor.Tensor(sp,["doubleRoof"],{(0,):1./2.}))
+        src2doubleSrc= Tensor.CoordsTransform("src","doubleSrc",mat)
+        P_dr=src2doubleSrc.transform(v_r,0)
+        self.assertEqual(P_dr,Tensor.Tensor(sp,["doubleSrc"],{(0,):1./2.}))
         
-        P_r_r=Tensor.Tensor(sp,["roof","roof"],{(0,0):1})
-        P_dr_r=roof2doubleRoof.transform(P_r_r,0)
-        self.assertEqual(P_dr_r,Tensor.Tensor(sp,["doubleRoof","roof"],{(0,0):1./2.}))
-        P_dr_dr=roof2doubleRoof.transform(P_dr_r,1)
-        self.assertEqual(P_dr_dr,Tensor.Tensor(sp,["doubleRoof","doubleRoof"],{(0,0):1./4.}))
+        # now we look at a projection tensor which in (src) coordinates preserves the first component of a vector.
+        P_r_r=Tensor.Tensor(sp,["src","src"],{(0,0):1})
+        P_dr_r=src2doubleSrc.transform(P_r_r,0)
+        self.assertEqual(P_dr_r,Tensor.Tensor(sp,["doubleSrc","src"],{(0,0):1./2.}))
+        P_dr_dr=src2doubleSrc.transform(P_dr_r,1)
+        self.assertEqual(P_dr_dr,Tensor.Tensor(sp,["doubleSrc","doubleSrc"],{(0,0):1./4.}))
         
         
         #Pc=sp.roof2cart.transform(P_r,0)

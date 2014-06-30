@@ -121,6 +121,8 @@ class CoordsTransform(object):
     '''It is needed to compute the components of vectors and Tensors in a new
     coordinate frame'''
     def __init__(self,source,dest,mat):
+        # The matrix columns describe the source base  in terms of the 
+        #  target basis 
         self.mat=mat
         self.dest=dest
         self.source=source
