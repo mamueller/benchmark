@@ -1,0 +1,70 @@
+diff -r ea875663746d benchmark/TensorTest.py
+--- a/benchmark/TensorTest.py	Fri Dec 13 21:02:05 2013 +0100
++++ b/benchmark/TensorTest.py	Mon Jan 13 09:12:26 2014 +0100
+@@ -251,6 +251,9 @@
+         self.assertEqual(res,6)
+ 
+ 
++        Prr=Tensor.Tensor(sp,["roof","roof"],{(2,1):1})
++        v_c=Tensor.Tensor(sp,["cellar"],{(0,):1})
++        res_r=Prr|v_c
+ 
+         
+ ###########################################################
+@@ -555,7 +558,7 @@
+         #
+         # Thus if v is expressed in cartesian components 
+         # the result P_x(v) expressed in cartesian coordinates is given by the
+-        # matrix multiplication res=P_x v
++        # scalar product res=P_x|v
+         sp=Spherical()
+         Pcartcart=Tensor.Tensor(sp,["cart","cart"],{(0,0):1})
+         # we now chose arbitrary vectors to apply P to and check that the result
+@@ -569,9 +572,17 @@
+             self.assertEqual(res_cart.component((1,)),0)
+             self.assertEqual(res_cart.component((2,)),0)
+         
++        # now we want to express the same Projection in terms of 
+         # This must remain true if we change bases
+         # e.g if we want to express the same Projection in terms of 
++        Prr=Pcartcart.transform2(["roof","roof"])
++        pp("Prr",locals())
+         
+         Proofroof=Pcartcart.transform2(["roof","roof"])
+         pp("Proofroof",locals())
+@@ -589,17 +600,27 @@
+         # the cartesian components of the first roof base vector
+         #v_cart=sp.t_gr[0]
+         #Prr=sp.cart_cart2rr(Pcartcart)
+         # v_c=sp.cart2cellar(v_cart)
+         v_c=v_cart.transform2(["cellar"])
+         # the application of 
+         # P can again be expressed by a matrix multiplication 
+         #                      i           i
+         # using the fact that g * g  =delta
+         #                          j       j
++        res_r=Prr|v_c
++#        # however the result is given with respect to the cellar base vectors 
++#        # (in its roof components) 
+ #        res_r=Prr*v_c
+ #        # however the result is given in terms of the cellar base vectors 
+ #        # (in it its roof components) 
+ #        # We have to transform the result back to cartesian coordinates
+ #        res_cart_new=sp.roof2cart(res_r)
+ #        #print("new="+str(res_cart_new))
+@@ -912,6 +933,15 @@
+         self.assertEqual(drv,ref)
+         
+         
++###########################################################
++    def test_ChangeOfBase(self):
++        sp=Spherical()
++        Pcartcart=Tensor.Tensor(sp,["cart","cart"],{(0,0):1})
++        res=sp.roof2cart.transform(cs,i)
++        pp("res",locals())
++        # the transformation up to now only works on vectors not higher order 
++        # tensors
++        raise
+         
+ 
+ 

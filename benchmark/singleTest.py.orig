@@ -7,7 +7,6 @@ from OperatorTest import *
 #from CylinderTest import *
 #from SplineTest import *
 from TensorTest import *
-from TensorTest2 import *
 
 def suite():
     s=unittest.TestSuite()
@@ -26,12 +25,14 @@ def suite():
     #s.addTest(TensorTest("test_outerProduct"))
     #s.addTest(TensorTest("test_Vector_innerProduct"))
     #s.addTest(TensorTest("test_transform2_vector"))
-    #s.addTest(TensorTest("test_ChangeOfBase"))
-    s.addTest(TensorTest2("test_ChangeOfBase"))
-  #  s.addTest(TensorTest("test_transform2_secondOrderTensors"))
-  #  s.addTest(TensorTest("test_extract_keys"))
-  #  s.addTest(TensorTest("test_CoordsTransformNew"))
+<<<<<<< local
+    s.addTest(TensorTest("test_ChangeOfBase"))
+    s.addTest(TensorTest("test_transform2_secondOrderTensors"))
+=======
+    s.addTest(TensorTest("test_extract_keys"))
+    s.addTest(TensorTest("test_CoordsTransformNew"))
     #s.addTest(TensorTest("test_transform2_secondOrderTensors"))
+>>>>>>> other
     #s.addTest(TensorTest("test_extractVector"))
     #s.addTest(TensorTest("test_toVector"))
     #s.addTest(TensorTest("test_Vector_initialization"))
