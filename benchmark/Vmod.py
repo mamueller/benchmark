@@ -5,7 +5,6 @@ from sympy import symbols, default_sort_key,Expr
 from sympy.tensor import IndexedBase, Idx, Indexed
 from helperFunctions import pp
 from sympy.core import Expr, Tuple, Symbol, sympify, S
-
 class VIB(IndexedBase):
     def __new__(cls, label,data,shape=None,**kw_args):
         if isinstance(label, string_types):
@@ -40,7 +39,27 @@ class VI(Indexed):
         
         return(4)
 
+class Singleton(type):
+    def __init__(cls, name, bases, dict):
+        super(Singleton, cls).__init__(name, bases, dict)
+        cls.instance = None 
+        
+    def __call__(cls,*args,**kw):
+        if cls.instance is None:
+            cls.instance = super(Singleton, cls).__call__(*args, **kw)
+        return cls.instance
+        
+class VectorFieldBase(object):
+    __metaclass__ = Singleton
+    def __init__(self,partner=None):
+        self.dual=dual
+class OneFormFieldBase(VectorFieldBase):
+
+class B1(VectorFieldBase):
+    pass
+
 def tt():
+    b1=B1()
     i=Idx('i',2)
     x=VIB("x",{(0,):2,(1,):2})
     y=VIB("y",{(0,):2,(1,):2})
