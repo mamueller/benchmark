@@ -4,6 +4,7 @@ import copy
 from helperFunctions import pp
 import Exceptions 
 from sympy.matrices import zeros
+from sympy.tensor import IndexedBase, Idx, Indexed
 
 def components2vec(components):
     vec=zeros(3,1)
@@ -20,7 +21,7 @@ def vec2components(vec):
     return(comp)
 
 ###########################################################
-class Tensor2(object):
+class Tensor2(Indexed):
     
     def __init__(self,coords,baseNames,components):
         

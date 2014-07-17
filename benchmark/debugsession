@@ -1,0 +1,1205 @@
+In [17]: pdb.runcall(Vmod.tt)
+> /home/mm/benchmarkPaper/benchmark/Vmod.py(10)tt()
+-> i=Idx('i',2)
+(Pdb) n
+> /home/mm/benchmarkPaper/benchmark/Vmod.py(11)tt()
+-> x=V("x")
+(Pdb) n
+> /home/mm/benchmarkPaper/benchmark/Vmod.py(12)tt()
+-> x.data=[1,1]
+(Pdb) n
+> /home/mm/benchmarkPaper/benchmark/Vmod.py(13)tt()
+-> y=V("y")
+(Pdb) n
+> /home/mm/benchmarkPaper/benchmark/Vmod.py(14)tt()
+-> y.data=[2,2]
+(Pdb) n
+> /home/mm/benchmarkPaper/benchmark/Vmod.py(15)tt()
+-> x[i]
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(364)__getitem__()
+-> def __getitem__(self, indices, **kw_args):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(365)__getitem__()
+-> if is_sequence(indices):
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/compatibility.py(247)is_sequence()
+-> def is_sequence(i, include=None):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/compatibility.py(281)is_sequence()
+-> return (hasattr(i, '__getitem__') and
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/compatibility.py(283)is_sequence()
+-> bool(include) and
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/compatibility.py(283)is_sequence()->False
+-> bool(include) and
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(371)__getitem__()
+-> if self.shape and len(self.shape) != 1:
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(375)shape()
+-> @property
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(400)shape()
+-> return self._shape
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(400)shape()->None
+-> return self._shape
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(373)__getitem__()
+-> return Indexed(self, indices, **kw_args)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(137)__new__()
+-> def __new__(cls, base, *args, **kw_args):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(138)__new__()
+-> from sympy.utilities.misc import filldedent
+(Pdb) s
+--Call--
+> <frozen importlib._bootstrap>(1594)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1604)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()
+(Pdb) s
+--Return--
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()-><module 'symp...ties/misc.py'>
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(140)__new__()
+-> if not args:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(142)__new__()
+-> if isinstance(base, (string_types, Symbol)):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(144)__new__()
+-> elif not isinstance(base, IndexedBase):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(147)__new__()
+-> args = list(map(sympify, args))
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/sympify.py(53)sympify()
+-> def sympify(a, locals=None, convert_xor=True, strict=False, rational=False,
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/sympify.py(233)sympify()
+-> if evaluate is None:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/sympify.py(234)sympify()
+-> evaluate = global_evaluate[0]
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/sympify.py(235)sympify()
+-> try:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/sympify.py(236)sympify()
+-> cls = a.__class__
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/sympify.py(239)sympify()
+-> if cls in sympy_classes:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/sympify.py(240)sympify()
+-> return a
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/sympify.py(240)sympify()->i
+-> return a
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(148)__new__()
+-> return Expr.__new__(cls, base, *args, **kw_args)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(75)__new__()
+-> def __new__(cls, *args):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(76)__new__()
+-> obj = object.__new__(cls)
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(77)__new__()
+-> obj._assumptions = cls.default_assumptions
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(78)__new__()
+-> obj._mhash = None  # will be set by __hash__ method.
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(80)__new__()
+-> obj._args = args  # all items in args must be Basic objects
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(81)__new__()
+-> return obj
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(81)__new__()->x[i]
+-> return obj
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(148)__new__()->x[i]
+-> return Expr.__new__(cls, base, *args, **kw_args)
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(373)__getitem__()->x[i]
+-> return Indexed(self, indices, **kw_args)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(364)__getitem__()
+-> def __getitem__(self, indices, **kw_args):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(365)__getitem__()
+-> if is_sequence(indices):
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/compatibility.py(247)is_sequence()
+-> def is_sequence(i, include=None):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/compatibility.py(281)is_sequence()
+-> return (hasattr(i, '__getitem__') and
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/compatibility.py(283)is_sequence()
+-> bool(include) and
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/compatibility.py(283)is_sequence()->False
+-> bool(include) and
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(371)__getitem__()
+-> if self.shape and len(self.shape) != 1:
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(375)shape()
+-> @property
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(400)shape()
+-> return self._shape
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(400)shape()->None
+-> return self._shape
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(373)__getitem__()
+-> return Indexed(self, indices, **kw_args)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(137)__new__()
+-> def __new__(cls, base, *args, **kw_args):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(138)__new__()
+-> from sympy.utilities.misc import filldedent
+(Pdb) s
+--Call--
+> <frozen importlib._bootstrap>(1594)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1604)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()
+(Pdb) s
+--Return--
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()-><module 'symp...ties/misc.py'>
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(140)__new__()
+-> if not args:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(142)__new__()
+-> if isinstance(base, (string_types, Symbol)):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(144)__new__()
+-> elif not isinstance(base, IndexedBase):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(147)__new__()
+-> args = list(map(sympify, args))
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/sympify.py(53)sympify()
+-> def sympify(a, locals=None, convert_xor=True, strict=False, rational=False,
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/sympify.py(233)sympify()
+-> if evaluate is None:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/sympify.py(234)sympify()
+-> evaluate = global_evaluate[0]
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/sympify.py(235)sympify()
+-> try:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/sympify.py(236)sympify()
+-> cls = a.__class__
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/sympify.py(239)sympify()
+-> if cls in sympy_classes:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/sympify.py(240)sympify()
+-> return a
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/sympify.py(240)sympify()->i
+-> return a
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(148)__new__()
+-> return Expr.__new__(cls, base, *args, **kw_args)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(75)__new__()
+-> def __new__(cls, *args):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(76)__new__()
+-> obj = object.__new__(cls)
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(77)__new__()
+-> obj._assumptions = cls.default_assumptions
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(78)__new__()
+-> obj._mhash = None  # will be set by __hash__ method.
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(80)__new__()
+-> obj._args = args  # all items in args must be Basic objects
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(81)__new__()
+-> return obj
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(81)__new__()->y[i]
+-> return obj
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(148)__new__()->y[i]
+-> return Expr.__new__(cls, base, *args, **kw_args)
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(373)__getitem__()->y[i]
+-> return Indexed(self, indices, **kw_args)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/decorators.py(70)__sympifyit_wrapper()
+-> @wraps(func)
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/decorators.py(72)__sympifyit_wrapper()
+-> try:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/decorators.py(75)__sympifyit_wrapper()
+-> if not hasattr(b, '_op_priority'):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/decorators.py(77)__sympifyit_wrapper()
+-> return func(a, b)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/decorators.py(108)binary_op_wrapper()
+-> @wraps(func)
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/decorators.py(110)binary_op_wrapper()
+-> if hasattr(other, '_op_priority'):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/decorators.py(111)binary_op_wrapper()
+-> if other._op_priority > self._op_priority:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/decorators.py(118)binary_op_wrapper()
+-> return func(self, other)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/expr.py(124)__mul__()
+-> @_sympifyit('other', NotImplemented)
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/expr.py(127)__mul__()
+-> return Mul(self, other)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(83)wrapper()
+-> @wraps(func)
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(88)wrapper()
+-> k = [(x, type(x)) for x in args]
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(88)<listcomp>()
+-> k = [(x, type(x)) for x in args]
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(88)<listcomp>()
+-> k = [(x, type(x)) for x in args]
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(88)<listcomp>()
+-> k = [(x, type(x)) for x in args]
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(88)<listcomp>()
+-> k = [(x, type(x)) for x in args]
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(88)<listcomp>()
+-> k = [(x, type(x)) for x in args]
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(88)<listcomp>()->[(<class 'sympy.core.mul.Mul'>, <class 'sympy...edProperties'>), (x[i], <class 'sympy...exed.Indexed'>), (y[i], <class 'sympy...exed.Indexed'>)]
+-> k = [(x, type(x)) for x in args]
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(89)wrapper()
+-> if kw_args:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(92)wrapper()
+-> if _globals:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(93)wrapper()
+-> k.extend([tuple(g) for g in _globals])
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(93)<listcomp>()
+-> k.extend([tuple(g) for g in _globals])
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(93)<listcomp>()
+-> k.extend([tuple(g) for g in _globals])
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(93)<listcomp>()
+-> k.extend([tuple(g) for g in _globals])
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(93)<listcomp>()->[(True,)]
+-> k.extend([tuple(g) for g in _globals])
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(94)wrapper()
+-> k = tuple(k)
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(96)wrapper()
+-> try:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(97)wrapper()
+-> return func_cache_it_cache[k]
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(100)__hash__()
+-> def __hash__(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(103)__hash__()
+-> h = self._mhash
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(104)__hash__()
+-> if h is None:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(105)__hash__()
+-> h = hash((type(self).__name__,) + self._hashable_content())
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(x, i)
+-> return self._args
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(100)__hash__()
+-> def __hash__(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(103)__hash__()
+-> h = self._mhash
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(104)__hash__()
+-> if h is None:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(105)__hash__()
+-> h = hash((type(self).__name__,) + self._hashable_content())
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(361)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(362)_hashable_content()
+-> return Expr._hashable_content(self) + (self._shape,)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(x,)
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(362)_hashable_content()->(x, None)
+-> return Expr._hashable_content(self) + (self._shape,)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(100)__hash__()
+-> def __hash__(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(103)__hash__()
+-> h = self._mhash
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(104)__hash__()
+-> if h is None:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()
+-> return h
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()->-7729844034073086253
+-> return h
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(106)__hash__()
+-> self._mhash = h
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()
+-> return h
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()->5746109621947149424
+-> return h
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(100)__hash__()
+-> def __hash__(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(103)__hash__()
+-> h = self._mhash
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(104)__hash__()
+-> if h is None:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(105)__hash__()
+-> h = hash((type(self).__name__,) + self._hashable_content())
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(i, (0, 1))
+-> return self._args
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(100)__hash__()
+-> def __hash__(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(103)__hash__()
+-> h = self._mhash
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(104)__hash__()
+-> if h is None:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()
+-> return h
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()->4569500049718527783
+-> return h
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/containers.py(90)__hash__()
+-> def __hash__(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/containers.py(91)__hash__()
+-> return hash(self.args)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(643)args()
+-> @property
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(673)args()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(673)args()->(0, 1)
+-> return self._args
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/numbers.py(1716)__hash__()
+-> def __hash__(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/numbers.py(1717)__hash__()
+-> return hash(self.p)
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/numbers.py(1717)__hash__()->0
+-> return hash(self.p)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/numbers.py(1716)__hash__()
+-> def __hash__(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/numbers.py(1717)__hash__()
+-> return hash(self.p)
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/numbers.py(1717)__hash__()->1
+-> return hash(self.p)
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/containers.py(91)__hash__()->3713080549409410656
+-> return hash(self.args)
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(106)__hash__()
+-> self._mhash = h
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()
+-> return h
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()->-104019382672797196
+-> return h
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(106)__hash__()
+-> self._mhash = h
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()
+-> return h
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()->4358936642712784153
+-> return h
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(100)__hash__()
+-> def __hash__(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(103)__hash__()
+-> h = self._mhash
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(104)__hash__()
+-> if h is None:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(105)__hash__()
+-> h = hash((type(self).__name__,) + self._hashable_content())
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(y, i)
+-> return self._args
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(100)__hash__()
+-> def __hash__(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(103)__hash__()
+-> h = self._mhash
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(104)__hash__()
+-> if h is None:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(105)__hash__()
+-> h = hash((type(self).__name__,) + self._hashable_content())
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(361)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(362)_hashable_content()
+-> return Expr._hashable_content(self) + (self._shape,)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(y,)
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(362)_hashable_content()->(y, None)
+-> return Expr._hashable_content(self) + (self._shape,)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(100)__hash__()
+-> def __hash__(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(103)__hash__()
+-> h = self._mhash
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(104)__hash__()
+-> if h is None:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()
+-> return h
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()->-5602186911664146494
+-> return h
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(106)__hash__()
+-> self._mhash = h
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()
+-> return h
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()->-8428298807503396547
+-> return h
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(100)__hash__()
+-> def __hash__(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(103)__hash__()
+-> h = self._mhash
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(104)__hash__()
+-> if h is None:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()
+-> return h
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()->-104019382672797196
+-> return h
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(106)__hash__()
+-> self._mhash = h
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()
+-> return h
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(107)__hash__()->-8583969460178073836
+-> return h
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(276)__eq__()
+-> def __eq__(self, other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(298)__eq__()
+-> if self is other:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(301)__eq__()
+-> from .function import AppliedUndef, UndefinedFunction as UndefFunc
+(Pdb) s
+--Call--
+> <frozen importlib._bootstrap>(1594)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1604)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()
+(Pdb) s
+--Return--
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()-><module 'symp.../function.py'>
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(303)__eq__()
+-> if isinstance(self, UndefFunc) and isinstance(other, UndefFunc):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(308)__eq__()
+-> if type(self) is not type(other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(326)__eq__()
+-> return self._hashable_content() == other._hashable_content()
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(x, i)
+-> return self._args
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(x, i)
+-> return self._args
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(276)__eq__()
+-> def __eq__(self, other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(298)__eq__()
+-> if self is other:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(301)__eq__()
+-> from .function import AppliedUndef, UndefinedFunction as UndefFunc
+(Pdb) s
+--Call--
+> <frozen importlib._bootstrap>(1594)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1604)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()
+(Pdb) s
+--Return--
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()-><module 'symp.../function.py'>
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(303)__eq__()
+-> if isinstance(self, UndefFunc) and isinstance(other, UndefFunc):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(308)__eq__()
+-> if type(self) is not type(other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(326)__eq__()
+-> return self._hashable_content() == other._hashable_content()
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(361)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(362)_hashable_content()
+-> return Expr._hashable_content(self) + (self._shape,)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(x,)
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(362)_hashable_content()->(x, None)
+-> return Expr._hashable_content(self) + (self._shape,)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(361)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(362)_hashable_content()
+-> return Expr._hashable_content(self) + (self._shape,)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(x,)
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(362)_hashable_content()->(x, None)
+-> return Expr._hashable_content(self) + (self._shape,)
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(326)__eq__()->True
+-> return self._hashable_content() == other._hashable_content()
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(276)__eq__()
+-> def __eq__(self, other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(298)__eq__()
+-> if self is other:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(301)__eq__()
+-> from .function import AppliedUndef, UndefinedFunction as UndefFunc
+(Pdb) s
+--Call--
+> <frozen importlib._bootstrap>(1594)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1604)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()
+(Pdb) s
+--Return--
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()-><module 'symp.../function.py'>
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(303)__eq__()
+-> if isinstance(self, UndefFunc) and isinstance(other, UndefFunc):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(308)__eq__()
+-> if type(self) is not type(other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(326)__eq__()
+-> return self._hashable_content() == other._hashable_content()
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(i, (0, 1))
+-> return self._args
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(i, (0, 1))
+-> return self._args
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/containers.py(80)__eq__()
+-> def __eq__(self, other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/containers.py(81)__eq__()
+-> if isinstance(other, Basic):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/containers.py(82)__eq__()
+-> return super(Tuple, self).__eq__(other)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(276)__eq__()
+-> def __eq__(self, other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(298)__eq__()
+-> if self is other:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(301)__eq__()
+-> from .function import AppliedUndef, UndefinedFunction as UndefFunc
+(Pdb) s
+--Call--
+> <frozen importlib._bootstrap>(1594)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1604)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()
+(Pdb) s
+--Return--
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()-><module 'symp.../function.py'>
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(303)__eq__()
+-> if isinstance(self, UndefFunc) and isinstance(other, UndefFunc):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(308)__eq__()
+-> if type(self) is not type(other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(326)__eq__()
+-> return self._hashable_content() == other._hashable_content()
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(0, 1)
+-> return self._args
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(0, 1)
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(326)__eq__()->True
+-> return self._hashable_content() == other._hashable_content()
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/containers.py(82)__eq__()->True
+-> return super(Tuple, self).__eq__(other)
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(326)__eq__()->True
+-> return self._hashable_content() == other._hashable_content()
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(326)__eq__()->True
+-> return self._hashable_content() == other._hashable_content()
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(276)__eq__()
+-> def __eq__(self, other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(298)__eq__()
+-> if self is other:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(301)__eq__()
+-> from .function import AppliedUndef, UndefinedFunction as UndefFunc
+(Pdb) s
+--Call--
+> <frozen importlib._bootstrap>(1594)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1604)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()
+(Pdb) s
+--Return--
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()-><module 'symp.../function.py'>
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(303)__eq__()
+-> if isinstance(self, UndefFunc) and isinstance(other, UndefFunc):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(308)__eq__()
+-> if type(self) is not type(other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(326)__eq__()
+-> return self._hashable_content() == other._hashable_content()
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(y, i)
+-> return self._args
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(y, i)
+-> return self._args
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(276)__eq__()
+-> def __eq__(self, other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(298)__eq__()
+-> if self is other:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(301)__eq__()
+-> from .function import AppliedUndef, UndefinedFunction as UndefFunc
+(Pdb) s
+--Call--
+> <frozen importlib._bootstrap>(1594)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1604)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()
+(Pdb) s
+--Return--
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()-><module 'symp.../function.py'>
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(303)__eq__()
+-> if isinstance(self, UndefFunc) and isinstance(other, UndefFunc):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(308)__eq__()
+-> if type(self) is not type(other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(326)__eq__()
+-> return self._hashable_content() == other._hashable_content()
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(361)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(362)_hashable_content()
+-> return Expr._hashable_content(self) + (self._shape,)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(y,)
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(362)_hashable_content()->(y, None)
+-> return Expr._hashable_content(self) + (self._shape,)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(361)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(362)_hashable_content()
+-> return Expr._hashable_content(self) + (self._shape,)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(y,)
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/tensor/indexed.py(362)_hashable_content()->(y, None)
+-> return Expr._hashable_content(self) + (self._shape,)
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(326)__eq__()->True
+-> return self._hashable_content() == other._hashable_content()
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(276)__eq__()
+-> def __eq__(self, other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(298)__eq__()
+-> if self is other:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(301)__eq__()
+-> from .function import AppliedUndef, UndefinedFunction as UndefFunc
+(Pdb) s
+--Call--
+> <frozen importlib._bootstrap>(1594)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1604)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()
+(Pdb) s
+--Return--
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()-><module 'symp.../function.py'>
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(303)__eq__()
+-> if isinstance(self, UndefFunc) and isinstance(other, UndefFunc):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(308)__eq__()
+-> if type(self) is not type(other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(326)__eq__()
+-> return self._hashable_content() == other._hashable_content()
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(i, (0, 1))
+-> return self._args
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(i, (0, 1))
+-> return self._args
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/containers.py(80)__eq__()
+-> def __eq__(self, other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/containers.py(81)__eq__()
+-> if isinstance(other, Basic):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/containers.py(82)__eq__()
+-> return super(Tuple, self).__eq__(other)
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(276)__eq__()
+-> def __eq__(self, other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(298)__eq__()
+-> if self is other:
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(301)__eq__()
+-> from .function import AppliedUndef, UndefinedFunction as UndefFunc
+(Pdb) s
+--Call--
+> <frozen importlib._bootstrap>(1594)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1604)_handle_fromlist()
+(Pdb) s
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()
+(Pdb) s
+--Return--
+> <frozen importlib._bootstrap>(1625)_handle_fromlist()-><module 'symp.../function.py'>
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(303)__eq__()
+-> if isinstance(self, UndefFunc) and isinstance(other, UndefFunc):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(308)__eq__()
+-> if type(self) is not type(other):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(326)__eq__()
+-> return self._hashable_content() == other._hashable_content()
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(0, 1)
+-> return self._args
+(Pdb) s
+--Call--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(109)_hashable_content()
+-> def _hashable_content(self):
+(Pdb) s
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(117)_hashable_content()->(0, 1)
+-> return self._args
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(326)__eq__()->True
+-> return self._hashable_content() == other._hashable_content()
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/containers.py(82)__eq__()->True
+-> return super(Tuple, self).__eq__(other)
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(326)__eq__()->True
+-> return self._hashable_content() == other._hashable_content()
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/basic.py(326)__eq__()->True
+-> return self._hashable_content() == other._hashable_content()
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/cache.py(97)wrapper()->x[i]*y[i]
+-> return func_cache_it_cache[k]
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/expr.py(127)__mul__()->x[i]*y[i]
+-> return Mul(self, other)
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/decorators.py(118)binary_op_wrapper()->x[i]*y[i]
+-> return func(self, other)
+(Pdb) s
+--Return--
+> /home/mm/SoilR/python/sympy/sympy/core/decorators.py(77)__sympifyit_wrapper()->x[i]*y[i]
+-> return func(a, b)
+(Pdb) s
+--Return--
+> /home/mm/benchmarkPaper/benchmark/Vmod.py(15)tt()->None
+-> x[i]
+(Pdb) s
+> /usr/lib64/python3.3/bdb.py(443)runcall()
+-> self.quitting = True
+(Pdb) s
+
