@@ -107,5 +107,12 @@ class CoordsMissMatchError(Exception):
     def __str__(self):
         t=Template("The coordinate frame  $c1 of the first Tensor differs from the coordinate frame  $c2 ot the second.")
         return(t.substitute(c1=self.c1,c2=self.c2))
+##########################################################
+class DualBaseExeption(Exception):
+    pass
+##########################################################
+class BaseMisMatchExeption(Exception):
+    pass
+
 
 

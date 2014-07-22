@@ -5,8 +5,34 @@ from sympy import symbols, default_sort_key,Expr
 from sympy.tensor import IndexedBase, Idx, Indexed
 from helperFunctions import pp
 from sympy.core import Expr, Tuple, Symbol, sympify, S
+from Exceptions import BaseMisMatchExeption,DualBaseExeption
+from Tensor import extract_keys
+class VectorFieldBase(object):
+    """This class stores relationships between bases on the same patch.
+    Every base b_i has one and only one dual (or reciprocal) base b^j
+    with b^j(b_i)= <b^j,b_i>= delta_i^j . 
+    This relationship is expressed by a reference every 
+    base object holds its dual base."""
+    @classmethod
+    def checkDualType(cls,dual):
+        if type(dual).__name__!="OneFormFieldBase":
+            raise DualBaseExeption()
+
+    def __init__(self,dual=None):
+        if dual:
+            type(self).checkDualType(dual)
+            self.dual=dual
+            #register self as the dual of the dual base
+            dual.dual=self
+
+class OneFormFieldBase(VectorFieldBase):
+    @classmethod
+    def checkDualType(cls,dual):
+        if type(dual).__name__!="VectorFieldBase":
+            raise DualBaseExeption()
+
 class VIB(IndexedBase):
-    def __new__(cls, label,data,shape=None,**kw_args):
+    def __new__(cls, label,baseFieldList,components,shape=None,**kw_args):
         if isinstance(label, string_types):
             label = Symbol(label)
         elif isinstance(label, Symbol):
@@ -15,13 +41,16 @@ class VIB(IndexedBase):
             raise TypeError("Base label should be a string or Symbol.")
         
         obj = Expr.__new__(cls, label, **kw_args)
-        obj.data=data
+        obj.baseFieldList=baseFieldList
+        obj.components=components
         if is_sequence(shape):
             obj._shape = Tuple(*shape)
         else:
             obj._shape = sympify(shape)
 
         return obj
+    def __setitem__(self,indices,**kwargs):
+
     def __getitem__(self, indices, **kw_args):
         if is_sequence(indices):
             # Special case needed because M[*my_tuple] is a syntax error.
@@ -34,37 +63,43 @@ class VIB(IndexedBase):
             return VI(self, indices, **kw_args)
 class VI(Indexed):
     def __mul__(self,other):
-        ds=self.base.data
-        do=other.base.data
+        """multiplication is only allowed if the second factor
+        is represented in the dual baseField of the first factor"""
+        #extract the indexedBase objects from Base
+        sIB=self.base
+        sc=sIB.components
+        sBFL=sIB.baseFieldList[0]
         
-        return(4)
+        oIB=other.base
+        oc=oIB.components
+        oBFL=oIB.baseFieldList[0]
 
-class Singleton(type):
-    def __init__(cls, name, bases, dict):
-        super(Singleton, cls).__init__(name, bases, dict)
-        cls.instance = None 
-        
-    def __call__(cls,*args,**kw):
-        if cls.instance is None:
-            cls.instance = super(Singleton, cls).__call__(*args, **kw)
-        return cls.instance
-        
-class VectorFieldBase(object):
-    __metaclass__ = Singleton
-    def __init__(self,partner=None):
-        self.dual=dual
-class OneFormFieldBase(VectorFieldBase):
+        if sBFL!=oBFL.dual:
+            raise BaseMisMatchExeption()
+        sDummy=extract_keys(sc.keys(),0,0)
+        oDummy=extract_keys(oc.keys(),0,0)
+        print(sDummy)
+        print(oDummy)
+        nonZeroDummyKeys=set(sDummy).intersection(oDummy)
+        print(nonZeroDummyKeys)
+        res=sum(map(lambda key:sc[key]*oc[key],nonZeroDummyKeys))
+        return(res)
 
-class B1(VectorFieldBase):
-    pass
 
 def tt():
-    b1=B1()
+    bc=VectorFieldBase()
+    br=OneFormFieldBase(bc)
     i=Idx('i',2)
-    x=VIB("x",{(0,):2,(1,):2})
-    y=VIB("y",{(0,):2,(1,):2})
-    x[i]
+    x=VIB("x",[bc],{(0,):2,(1,):2})
+    y=VIB("y",[br],{(0,):2,(1,):2})
     res=x[i]*y[i]
     print(res)
     assert(res==8)
+    j=Idx('j',2)
+    A=VIB("A",[bc,bc],{(0,0):3})
+    x
+    #res=A[i,j]*y[i]
+    #res[j]=A[i,j]*y[i]
+    #assert(res.baseFieldList==[bc])
+    #assert(res.components=={(0,):6})
 tt()
