@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from __future__ import print_function, division
 from sympy.tensor.index_methods import get_contraction_structure, get_indices
 from sympy.core.compatibility import is_sequence, string_types, NotIterable
@@ -49,7 +50,9 @@ class VIB(IndexedBase):
             obj._shape = sympify(shape)
 
         return obj
-    def __setitem__(self,indices,**kwargs):
+    def __setitem__(self,indices,val,**kwargs):
+        pass
+        
 
     def __getitem__(self, indices, **kw_args):
         if is_sequence(indices):
@@ -65,25 +68,31 @@ class VI(Indexed):
     def __mul__(self,other):
         """multiplication is only allowed if the second factor
         is represented in the dual baseField of the first factor"""
+        # find the dummy keys
+
         #extract the indexedBase objects from Base
         sIB=self.base
         sc=sIB.components
-        sBFL=sIB.baseFieldList[0]
+        sBFL=sIB.baseFieldList
         
         oIB=other.base
         oc=oIB.components
-        oBFL=oIB.baseFieldList[0]
+        oBFL=oIB.baseFieldList
+        if len(sBFL)==1: 
+            if sBFL[0]!=oBFL[0].dual:
+                raise BaseMisMatchExeption()
+            sDummy=extract_keys(sc.keys(),0,0)
+            oDummy=extract_keys(oc.keys(),0,0)
+            print(sDummy)
+            print(oDummy)
+            nonZeroDummyKeys=set(sDummy).intersection(oDummy)
+            print(nonZeroDummyKeys)
+            res=sum(map(lambda key:sc[key]*oc[key],nonZeroDummyKeys))
+            return(res)
+        else:
+            return(0)
 
-        if sBFL!=oBFL.dual:
-            raise BaseMisMatchExeption()
-        sDummy=extract_keys(sc.keys(),0,0)
-        oDummy=extract_keys(oc.keys(),0,0)
-        print(sDummy)
-        print(oDummy)
-        nonZeroDummyKeys=set(sDummy).intersection(oDummy)
-        print(nonZeroDummyKeys)
-        res=sum(map(lambda key:sc[key]*oc[key],nonZeroDummyKeys))
-        return(res)
+            
 
 
 def tt():
@@ -98,7 +107,7 @@ def tt():
     j=Idx('j',2)
     A=VIB("A",[bc,bc],{(0,0):3})
     x
-    #res=A[i,j]*y[i]
+    res=get_contraction_structure(A[i,j]*y[i])
     #res[j]=A[i,j]*y[i]
     #assert(res.baseFieldList==[bc])
     #assert(res.components=={(0,):6})
