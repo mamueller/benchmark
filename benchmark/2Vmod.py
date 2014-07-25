@@ -7,8 +7,10 @@ from sympy.tensor import IndexedBase, Idx, Indexed
 from helperFunctions import pp
 from sympy.core import Expr, Tuple, Symbol, sympify, S
 from Exceptions import BaseMisMatchExeption,DualBaseExeption
+
 class VIB(IndexedBase):
-    pass
+    def __getitem__(self, indices, **kw_args):
+            return VI(self, indices, **kw_args)
 class VI(Indexed):
     pass
 class ViExpr(VI):
@@ -27,6 +29,6 @@ def tt():
     A=VIB("A")
     B=VIB("B")
     i=Idx('i',2)
-    res=(A[i]*B[i])
+    res=A[i]*B[i]
     print(res)
 tt()
