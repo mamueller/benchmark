@@ -101,7 +101,7 @@ class VIB(IndexedBase):
                                 self.data[permuteTuple(k,newPositions)]=vbd[k]
                 elif all( type(i) is Idx or type(i) is int  for i in indices):
                     # some indices are symbolic some are integers
-                    pass
+                    
                     
 
     
