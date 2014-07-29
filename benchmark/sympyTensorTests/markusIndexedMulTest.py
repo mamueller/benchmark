@@ -39,12 +39,19 @@ class IndexedTest(unittest.TestCase):
     def test_getMultipleMixedIntegerAndSympolicIndices(self):
         x=VIB("x")
         y=VIB("y")
+        z=VIB("z")
         x[0,0,1]=1
         x[1,0,1]=2
         x[0,1,1]=3
         x[1,1,1]=4
         i, j       = map(Idx, ['i', 'j'])
-        y[1,i,j]=x[i,j,1]
+        x[i,1,1]
+        z[i,j]=x[i,j,1]
+        self.assertEqual(z[0,0],1)
+        self.assertEqual(z[1,0],2)
+        self.assertEqual(z[0,1],3)
+        self.assertEqual(z[1,1],4)
+        #y[1,i,j]=x[i,j,1]
         #self.assertEqual(y[1,0,0],1)
         #self.assertEqual(y[1,1,0],2)
         #self.assertEqual(y[1,0,1],3)

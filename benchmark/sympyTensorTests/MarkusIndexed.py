@@ -4,11 +4,15 @@ from sympy import symbols, default_sort_key, Matrix
 from sympy.tensor import IndexedBase, Indexed, Idx
 from sympy.core import Expr, Tuple, Symbol, sympify, S
 from sympy.core.compatibility import is_sequence, string_types, NotIterable
+from copy import deepcopy
 
 def permuteTuple(t,newPositions):
     nl=[t[p] for p in newPositions]
     return(tuple(nl))
 
+def extractIndices(t,pos):
+    nl=[t[p] for p in range(len(t)) if p in pos]
+    return(tuple(nl))
 
 
 class VIB(IndexedBase):
@@ -17,15 +21,7 @@ class VIB(IndexedBase):
         obj.data=dict()
         return(obj)
     def __getitem__(self, indices, **kw_args):
-        if is_sequence(indices):
-            # Special case needed because M[*my_tuple] is a syntax error.
-            if self.shape and len(self.shape) != len(indices):
-                raise IndexException("Rank mismatch.")
-            if type(indices[0]) is int:
-                return(self.data[indices])
-            else:    
-                return VI(self, *indices, **kw_args)
-        else:
+        if not(is_sequence(indices)):
             # only one index 
             index=indices 
             if self.shape and len(self.shape) != 1:
@@ -34,6 +30,29 @@ class VIB(IndexedBase):
                 return(self.data[index])
             else:    
                 return VI(self, index, **kw_args)
+
+        else:
+            if self.shape and len(self.shape) != len(indices):
+                raise IndexException("Rank mismatch.")
+            if all(type(k) is int for k in indices):
+                # all indices are integers
+                return(self.data[indices])
+            elif all( type(i) is Idx for i in indices):
+                # all indices are symbolic
+                return VI(self, *indices, **kw_args)
+            elif all( type(i) is Idx or type(i) is int  for i in indices):
+                # some indices are symbolic some are integers
+                fixedIndexPositions=[i  for i in range(len(indices)) if not(type(indices[i]) is Idx) ]
+                freeIndexPositions=[i  for i in range(len(indices)) if type(indices[i]) is Idx ]
+                freeIndices=[i for i in indices if type(i) is Idx]
+                print(fixedIndexPositions)
+                freeKeys=[k for k in self.data.keys() if all(k[p]==indices[p] for p in fixedIndexPositions )]
+                newBase=VIB("intermediate")
+                for k in freeKeys:
+                    newBase.data[extractIndices(k,freeIndexPositions)]=self.data[k]
+                return(VI(newBase,*freeIndices,**kw_args))
+                
+                
     
     
     
@@ -82,11 +101,7 @@ class VIB(IndexedBase):
                                 self.data[permuteTuple(k,newPositions)]=vbd[k]
                 elif all( type(i) is Idx or type(i) is int  for i in indices):
                     # some indices are symbolic some are integers
-                    vi,symdict=get_indices(value)
-                    print(vi)
-                    varVi=[i  for i in vi if type(i) is Idx ]
-                    print(varVi)
-                    vkeys=value.base.data.keys()
+                    pass
                     
 
     
