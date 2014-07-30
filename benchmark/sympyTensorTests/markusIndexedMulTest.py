@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # vim:set ff=unix expandtab ts=4 sw=4:
 import unittest 
-from MarkusIndexed import VIB, VI  
+from MarkusIndexed import VIB, VI ,IncompatibleShapeException
 from sympy.tensor import  Idx
 
 
@@ -50,7 +50,7 @@ class IndexedTest(unittest.TestCase):
         self.assertEqual(z[1,0],2)
         self.assertEqual(z[0,1],3)
         self.assertEqual(z[1,1],4)
-    def test_seMultipleMixedIntegerAndSympolicIndices(self):
+    def test_setMultipleMixedIntegerAndSympolicIndices(self):
         x=VIB("x")
         y=VIB("y")
         z=VIB("z")
@@ -64,6 +64,12 @@ class IndexedTest(unittest.TestCase):
         self.assertEqual(y[1,0,1],2)
         self.assertEqual(y[1,1,0],3)
         self.assertEqual(y[1,1,1],4)
+    def test_setWithWrongShape(self):
+        x=VIB("x")
+        x[1]=1
+        with self.assertRaises(IncompatibleShapeException):
+            x[1,1]=1
+
     
 
     #def test_mult(self):

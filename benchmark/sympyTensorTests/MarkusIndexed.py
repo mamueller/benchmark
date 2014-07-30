@@ -5,6 +5,8 @@ from sympy.tensor import IndexedBase, Indexed, Idx
 from sympy.core import Expr, Tuple, Symbol, sympify, S
 from sympy.core.compatibility import is_sequence, string_types, NotIterable
 from copy import deepcopy
+class IncompatibleShapeException(Exception):
+    pass
 
 def permuteTuple(t,newPositions):
     nl=[t[p] for p in newPositions]
@@ -33,7 +35,7 @@ class VIB(IndexedBase):
             if self.shape and len(self.shape) != 1:
                 raise IndexException("Rank mismatch.")
             if type(index) is int:
-                return(self.data[index])
+                return(self.data[(index,)])
             else:    
                 return VI(self, index, **kw_args)
 
@@ -63,12 +65,17 @@ class VIB(IndexedBase):
     
     
     def __setitem__(self, indices, value,**kw_args):
+        l=len(self.data.keys())
+        if l>0:
+            #if we already have values set we make sure that the shape of the tensor is not changed
+            if not(all([len(k)==len(indices)for k in self.data.keys()])):
+                raise(IncompatibleShapeException())
         if not(isinstance(value,Indexed)):
             # on the rigth hand side is a "normal" python expression without indices
             if  not(is_sequence(indices)): #only one index
                 index=indices
                 if type(index) is int:
-                    self.data[index]=value
+                    self.data[(index,)]=value
                 else:
                     raise("If v is a scalar (e.g. number,symbol,expression) \
                     then i in A[i]=v must be an integer and cannot be a symbolic index") 
