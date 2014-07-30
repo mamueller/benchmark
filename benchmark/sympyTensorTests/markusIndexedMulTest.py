@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # vim:set ff=unix expandtab ts=4 sw=4:
 import unittest 
-from MarkusIndexed import VIB, VI ,IncompatibleShapeException
+from MarkusIndexed import VIB, VI ,IncompatibleShapeException,VectorFieldBase,OneFormFieldBase
 from sympy.tensor import  Idx
 
 
@@ -69,6 +69,14 @@ class IndexedTest(unittest.TestCase):
         x[1]=1
         with self.assertRaises(IncompatibleShapeException):
             x[1,1]=1
+    def test_getWithContraction(self):
+        bc=VectorFieldBase()
+        br=OneFormFieldBase(bc)
+        x=VIB("x",Bases=[bc,br])
+        x[0,0]=3
+        x[1,1]=4
+        i=Idx('i')
+        self.assertEqual(x[i,i],7)
 
     
 

@@ -5,8 +5,6 @@ from sympy.tensor import IndexedBase, Indexed, Idx
 from sympy.core import Expr, Tuple, Symbol, sympify, S
 from sympy.core.compatibility import is_sequence, string_types, NotIterable
 from copy import deepcopy
-class IncompatibleShapeException(Exception):
-    pass
 
 def permuteTuple(t,newPositions):
     nl=[t[p] for p in newPositions]
@@ -23,8 +21,45 @@ def changedTuple(origTuple,newValTuple,newPositions):
     return(tuple(nl))
 
 
+##########################################################
+class VectorFieldBase(object):
+    """This class stores relationships between bases on the same patch.
+    Every base b_i has one and only one dual (or reciprocal) base b^j
+    with b^j(b_i)= <b^j,b_i>= delta_i^j . 
+    This relationship is expressed by a reference every 
+    base object holds its dual base."""
+    @classmethod
+    def checkDualType(cls,dual):
+        if type(dual).__name__!="OneFormFieldBase":
+            raise DualBaseExeption()
+
+    def __init__(self,dual=None):
+        if dual:
+            type(self).checkDualType(dual)
+            self.dual=dual
+            #register self as the dual of the dual base
+            dual.dual=self
+
+##########################################################
+class OneFormFieldBase(VectorFieldBase):
+    @classmethod
+    def checkDualType(cls,dual):
+        if type(dual).__name__!="VectorFieldBase":
+            raise DualBaseExeption()
+
+##########################################################
+class DualBaseExeption(Exception):
+    pass
+##########################################################
+class BaseMisMatchExeption(Exception):
+    pass
+class IncompatibleShapeException(Exception):
+    pass
+
+##########################################################
 class VIB(IndexedBase):
     def __new__(cls,label, shape=None, **kw_args):
+        print(kw_args)
         obj=IndexedBase.__new__(cls, label, shape=None, **kw_args)
         obj.data=dict()
         return(obj)
