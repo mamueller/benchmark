@@ -25,7 +25,7 @@ class IndexedTest(unittest.TestCase):
         y[i]=x[j]
         self.assertEqual(y[0],3)
     
-    def test_getMultipleSympolicIndices(self):
+    def test_getMultipleSymbolicIndices(self):
         x=VIB("x")
         y=VIB("y")
         x[0,1]=3
@@ -38,7 +38,6 @@ class IndexedTest(unittest.TestCase):
     
     def test_getMultipleMixedIntegerAndSympolicIndices(self):
         x=VIB("x")
-        y=VIB("y")
         z=VIB("z")
         x[0,0,1]=1
         x[1,0,1]=2
@@ -51,11 +50,20 @@ class IndexedTest(unittest.TestCase):
         self.assertEqual(z[1,0],2)
         self.assertEqual(z[0,1],3)
         self.assertEqual(z[1,1],4)
-        #y[1,i,j]=x[i,j,1]
-        #self.assertEqual(y[1,0,0],1)
-        #self.assertEqual(y[1,1,0],2)
-        #self.assertEqual(y[1,0,1],3)
-        #self.assertEqual(y[1,1,1],4)
+    def test_seMultipleMixedIntegerAndSympolicIndices(self):
+        x=VIB("x")
+        y=VIB("y")
+        z=VIB("z")
+        x[0,0,1]=1
+        x[1,0,1]=2
+        x[0,1,1]=3
+        x[1,1,1]=4
+        i, j       = map(Idx, ['i', 'j'])
+        y[1,i,j]=x[j,i,1]
+        self.assertEqual(y[1,0,0],1)
+        self.assertEqual(y[1,0,1],2)
+        self.assertEqual(y[1,1,0],3)
+        self.assertEqual(y[1,1,1],4)
     
 
     #def test_mult(self):

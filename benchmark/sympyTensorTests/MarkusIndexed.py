@@ -14,6 +14,12 @@ def extractIndices(t,pos):
     nl=[t[p] for p in range(len(t)) if p in pos]
     return(tuple(nl))
 
+def changedTuple(origTuple,newValTuple,newPositions):
+    nl=list(origTuple)
+    for p in range(len(newValTuple)):
+        nl[newPositions[p]]=newValTuple[p]
+    return(tuple(nl))
+
 
 class VIB(IndexedBase):
     def __new__(cls,label, shape=None, **kw_args):
@@ -45,7 +51,7 @@ class VIB(IndexedBase):
                 fixedIndexPositions=[i  for i in range(len(indices)) if not(type(indices[i]) is Idx) ]
                 freeIndexPositions=[i  for i in range(len(indices)) if type(indices[i]) is Idx ]
                 freeIndices=[i for i in indices if type(i) is Idx]
-                print(fixedIndexPositions)
+                #print(fixedIndexPositions)
                 freeKeys=[k for k in self.data.keys() if all(k[p]==indices[p] for p in fixedIndexPositions )]
                 newBase=VIB("intermediate")
                 for k in freeKeys:
@@ -57,20 +63,21 @@ class VIB(IndexedBase):
     
     
     def __setitem__(self, indices, value,**kw_args):
-        if type(value) is int:
-            # on the rigth hand side is an integer 
+        if not(isinstance(value,Indexed)):
+            # on the rigth hand side is a "normal" python expression without indices
             if  not(is_sequence(indices)): #only one index
                 index=indices
                 if type(index) is int:
                     self.data[index]=value
                 else:
-                    raise("If v is in integer then i in A[i]=v must be an integers too") 
+                    raise("If v is a scalar (e.g. number,symbol,expression) \
+                    then i in A[i]=v must be an integer and cannot be a symbolic index") 
             else:        
                 if all(type(k) is int for k in indices):
                     # all indices are integers
                     self.data[indices]=value
                 else:
-                    raise("If v is in integer then i,j,k in A[i,j,k]=v must be integers too") 
+                    raise("If v is a scalar then i,j,..,k in A[i,j,...,k]=v must be integers and can not be symbolic.") 
         
         else:
             # on the rigth hand side is an expression
@@ -101,16 +108,14 @@ class VIB(IndexedBase):
                                 self.data[permuteTuple(k,newPositions)]=vbd[k]
                 elif all( type(i) is Idx or type(i) is int  for i in indices):
                     # some indices are symbolic some are integers
+                    newPositions=[indices.index(i) for i in value.indices]
+                    vb=value.base
+                    vbd=vb.data
+                    vKeys=vbd.keys()
+
+                    for k in vKeys:
+                        self.data[changedTuple(indices,k,newPositions)]=vbd[k]
                     
-                    
-
-    
-                                
-
-
-
-
-
          
 
 class VI(Indexed):
