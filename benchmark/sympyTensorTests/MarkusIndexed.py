@@ -48,20 +48,22 @@ class OneFormFieldBase(VectorFieldBase):
             raise DualBaseExeption()
 
 ##########################################################
-class DualBaseExeption(Exception):
+class DualBaseExeption(BaseException):
     pass
 ##########################################################
-class BaseMisMatchExeption(Exception):
+class BaseMisMatchExeption(BaseException):
     pass
-class IncompatibleShapeException(Exception):
+##########################################################
+class IncompatibleShapeException(BaseException):
     pass
 
 ##########################################################
 class VIB(IndexedBase):
-    def __new__(cls,label, shape=None, **kw_args):
-        print(kw_args)
-        obj=IndexedBase.__new__(cls, label, shape=None, **kw_args)
+    def __new__(cls,label,bases=None, **kw_args):
+        obj=IndexedBase.__new__(cls, label,  **kw_args)
         obj.data=dict()
+        if bases:
+            obj.bases=bases
         return(obj)
     def __getitem__(self, indices, **kw_args):
         if not(is_sequence(indices)):
@@ -82,17 +84,38 @@ class VIB(IndexedBase):
                 return(self.data[indices])
             elif all( type(i) is Idx for i in indices):
                 # all indices are symbolic
-                return VI(self, *indices, **kw_args)
+                expr=VI(self, *indices, **kw_args)
+                cs=get_contraction_structure(expr)
+                csk=cs.keys()
+                if None in csk:
+                    #no contraction
+                    return(expr)
+                else:
+                    # compute the contracted indexed object or number
+                    # since we are in __getitem__
+                    #we assume that we deal here only with one VI instance not 
+                    # with a many term expression
+                    dummySuspects=csk[0]
+                    for d in dummySuspects:
+                        # there could be multiple contractions like x[_i,^i,^i,_i]
+                        # which is the same as x[_i,^i,^j,_j] (or x[i,i,j,j] 
+                        positions=[ p for p,ind in enumerate(indices) if ind==d ]
+                        # find up down pairs
+                        if (len(positions)%2!=0):
+                            raise(ContractionException)
+                        i1=indi
+
+
             elif all( type(i) is Idx or type(i) is int  for i in indices):
                 # some indices are symbolic some are integers
                 fixedIndexPositions=[i  for i in range(len(indices)) if not(type(indices[i]) is Idx) ]
-                freeIndexPositions=[i  for i in range(len(indices)) if type(indices[i]) is Idx ]
+                symbolicIndexPositions=[i  for i in range(len(indices)) if type(indices[i]) is Idx ]
                 freeIndices=[i for i in indices if type(i) is Idx]
                 #print(fixedIndexPositions)
                 freeKeys=[k for k in self.data.keys() if all(k[p]==indices[p] for p in fixedIndexPositions )]
                 newBase=VIB("intermediate")
                 for k in freeKeys:
-                    newBase.data[extractIndices(k,freeIndexPositions)]=self.data[k]
+                    newBase.data[extractIndices(k,symbolicIndexPositions)]=self.data[k]
                 return(VI(newBase,*freeIndices,**kw_args))
                 
                 
@@ -112,14 +135,14 @@ class VIB(IndexedBase):
                 if type(index) is int:
                     self.data[(index,)]=value
                 else:
-                    raise("If v is a scalar (e.g. number,symbol,expression) \
-                    then i in A[i]=v must be an integer and cannot be a symbolic index") 
+                    raise(IncompatibleShapeException("If v is a scalar (e.g. number,symbol,expression) \
+                    then i in A[i]=v must be an integer and cannot be a symbolic index") )
             else:        
                 if all(type(k) is int for k in indices):
                     # all indices are integers
                     self.data[indices]=value
                 else:
-                    raise("If v is a scalar then i,j,..,k in A[i,j,...,k]=v must be integers and can not be symbolic.") 
+                    raise(IncompatibleShapeException("If v is a scalar then i,j,..,k in A[i,j,...,k]=v must be integers and can not be symbolic.")) 
         
         else:
             # on the rigth hand side is an expression

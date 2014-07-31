@@ -30,6 +30,7 @@ class IndexedTest(unittest.TestCase):
         y=VIB("y")
         x[0,1]=3
         i, j        = map(Idx, ['i', 'j'])
+        print(type(x[i,j]))
         y[i,j]=x[i,j]
         self.assertEqual(y[0,1],3)
         
@@ -72,7 +73,13 @@ class IndexedTest(unittest.TestCase):
     def test_getWithContraction(self):
         bc=VectorFieldBase()
         br=OneFormFieldBase(bc)
-        x=VIB("x",Bases=[bc,br])
+        x=VIB("x",[bc,br])
+        x[0,0]=3
+        x[1,1]=4
+        i=Idx('i')
+        self.assertEqual(x[i,i],7)
+        
+        x=VIB("x",[bc,br,bc,br])
         x[0,0]=3
         x[1,1]=4
         i=Idx('i')
