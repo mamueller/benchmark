@@ -30,7 +30,7 @@ class IndexedTest(unittest.TestCase):
         y=VIB("y")
         x[0,1]=3
         i, j        = map(Idx, ['i', 'j'])
-        print(type(x[i,j]))
+        #print(type(x[i,j]))
         y[i,j]=x[i,j]
         self.assertEqual(y[0,1],3)
         
@@ -44,8 +44,11 @@ class IndexedTest(unittest.TestCase):
         x[1,0,1]=2
         x[0,1,1]=3
         x[1,1,1]=4
+        x[0,0,2]=10
+        x[1,0,2]=20
+        x[0,1,2]=30
+        x[1,1,2]=40
         i, j       = map(Idx, ['i', 'j'])
-        x[i,1,1]
         z[i,j]=x[i,j,1]
         self.assertEqual(z[0,0],1)
         self.assertEqual(z[1,0],2)
@@ -65,11 +68,23 @@ class IndexedTest(unittest.TestCase):
         self.assertEqual(y[1,0,1],2)
         self.assertEqual(y[1,1,0],3)
         self.assertEqual(y[1,1,1],4)
+    def test_getWithWrongShape(self):
+        x=VIB("x")
+        x[1]=1
+        i, j       = map(Idx, ['i', 'j'])
+        with self.assertRaises(IncompatibleShapeException):
+            x[i,j]
     def test_setWithWrongShape(self):
         x=VIB("x")
         x[1]=1
         with self.assertRaises(IncompatibleShapeException):
             x[1,1]=1
+        
+        bc=VectorFieldBase()
+        br=OneFormFieldBase(bc)
+        x=VIB("x",[bc,br,bc,br])
+        with self.assertRaises(IncompatibleShapeException):
+            x[0,0]=3
     def test_getWithContraction(self):
         bc=VectorFieldBase()
         br=OneFormFieldBase(bc)
@@ -80,10 +95,23 @@ class IndexedTest(unittest.TestCase):
         self.assertEqual(x[i,i],7)
         
         x=VIB("x",[bc,br,bc,br])
-        x[0,0]=3
-        x[1,1]=4
-        i=Idx('i')
-        self.assertEqual(x[i,i],7)
+        y=VIB("y")
+        x[0,0,0,0]=3
+        x[1,1,0,0]=4
+        i, j, k       = map(Idx, ['i', 'j','k'])
+        y[j,k]=x[i,i,j,k]
+        self.assertEqual(y[0,0],7)
+        self.assertEqual( x[i,i,j,j],7)
+        
+        x=VIB("x",[bc,br,bc,br,bc])
+        y=VIB("y")
+        x[0,0,0,0,0]=3
+        x[1,1,0,0,0]=4
+        i, j, k, l       = map(Idx, ['i', 'j','k','l'])
+        z=x[i,i,j,j,0]
+        print(z)
+        self.assertEqual(z,7)
+
 
     
 

@@ -4,59 +4,10 @@ from sympy import symbols, default_sort_key, Matrix
 from sympy.tensor import IndexedBase, Indexed, Idx
 from sympy.core import Expr, Tuple, Symbol, sympify, S
 from sympy.core.compatibility import is_sequence, string_types, NotIterable
+from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption
+from TupelHelpers import  permuteTuple, extractIndices, changedTuple, deleteIndices, tupleLen
+from Bases import OneFormFieldBase, VectorFieldBase
 from copy import deepcopy
-
-def permuteTuple(t,newPositions):
-    nl=[t[p] for p in newPositions]
-    return(tuple(nl))
-
-def extractIndices(t,pos):
-    nl=[t[p] for p in range(len(t)) if p in pos]
-    return(tuple(nl))
-
-def changedTuple(origTuple,newValTuple,newPositions):
-    nl=list(origTuple)
-    for p in range(len(newValTuple)):
-        nl[newPositions[p]]=newValTuple[p]
-    return(tuple(nl))
-
-
-##########################################################
-class VectorFieldBase(object):
-    """This class stores relationships between bases on the same patch.
-    Every base b_i has one and only one dual (or reciprocal) base b^j
-    with b^j(b_i)= <b^j,b_i>= delta_i^j . 
-    This relationship is expressed by a reference every 
-    base object holds its dual base."""
-    @classmethod
-    def checkDualType(cls,dual):
-        if type(dual).__name__!="OneFormFieldBase":
-            raise DualBaseExeption()
-
-    def __init__(self,dual=None):
-        if dual:
-            type(self).checkDualType(dual)
-            self.dual=dual
-            #register self as the dual of the dual base
-            dual.dual=self
-
-##########################################################
-class OneFormFieldBase(VectorFieldBase):
-    @classmethod
-    def checkDualType(cls,dual):
-        if type(dual).__name__!="VectorFieldBase":
-            raise DualBaseExeption()
-
-##########################################################
-class DualBaseExeption(BaseException):
-    pass
-##########################################################
-class BaseMisMatchExeption(BaseException):
-    pass
-##########################################################
-class IncompatibleShapeException(BaseException):
-    pass
-
 ##########################################################
 class VIB(IndexedBase):
     def __new__(cls,label,bases=None, **kw_args):
@@ -64,13 +15,18 @@ class VIB(IndexedBase):
         obj.data=dict()
         if bases:
             obj.bases=bases
+        else:
+            obj.bases=None
         return(obj)
+
     def __getitem__(self, indices, **kw_args):
+        self.checkShapeCompatibility(indices)
+        
         if not(is_sequence(indices)):
             # only one index 
             index=indices 
             if self.shape and len(self.shape) != 1:
-                raise IndexException("Rank mismatch.")
+                raise IncompatibleShapeException()
             if type(index) is int:
                 return(self.data[(index,)])
             else:    
@@ -82,52 +38,116 @@ class VIB(IndexedBase):
             if all(type(k) is int for k in indices):
                 # all indices are integers
                 return(self.data[indices])
-            elif all( type(i) is Idx for i in indices):
-                # all indices are symbolic
-                expr=VI(self, *indices, **kw_args)
+
+            elif all( type(i) is Idx or type(i) is int  for i in indices):
+                # some indices are symbolic some are integers
+                # first handle the integer indices
+                fixedIndexPositions=[i  for i in range(len(indices)) if not(type(indices[i]) is Idx) ]
+                symbolicIndexPositions=[i  for i in range(len(indices)) if type(indices[i]) is Idx ]
+                freeIndices=[i for i in indices if type(i) is Idx]
+                #print(fixedIndexPositions)
+                freeKeys=[k for k in self.data.keys() if all(k[p]==indices[p] for p in fixedIndexPositions )]
+                if self.bases:
+                    remainingBases=[b for p,b in enumerate(self.bases) if p in symbolicIndexPositions]
+                else:
+                    remainingBases=None
+
+                newVIB=VIB("intermediate",remainingBases)
+                newVIB.data={}
+                for k in freeKeys:
+                    newVIB.data[extractIndices(k,symbolicIndexPositions)]=self.data[k]
+                print(newVIB.data)
+                # now check the remaining part for contraction
+                expr=VI(newVIB,*freeIndices,**kw_args)
                 cs=get_contraction_structure(expr)
                 csk=cs.keys()
                 if None in csk:
                     #no contraction
                     return(expr)
                 else:
-                    # compute the contracted indexed object or number
-                    # since we are in __getitem__
-                    #we assume that we deal here only with one VI instance not 
-                    # with a many term expression
+                    # compute the contracted indexed object or number.
+                    # Since we are in __getitem__  we assume that we deal here 
+                    # only with one VI instance not with a many term expression
                     dummySuspects=csk[0]
+                    #print(dummySuspects)
+                    #freeIndices=indices
                     for d in dummySuspects:
+                        cs=get_contraction_structure(expr)
+                        csk=cs.keys()
                         # there could be multiple contractions like x[_i,^i,^i,_i]
-                        # which is the same as x[_i,^i,^j,_j] (or x[i,i,j,j] 
-                        positions=[ p for p,ind in enumerate(indices) if ind==d ]
-                        # find up down pairs
-                        if (len(positions)%2!=0):
-                            raise(ContractionException)
-                        i1=indi
-
-
-            elif all( type(i) is Idx or type(i) is int  for i in indices):
-                # some indices are symbolic some are integers
-                fixedIndexPositions=[i  for i in range(len(indices)) if not(type(indices[i]) is Idx) ]
-                symbolicIndexPositions=[i  for i in range(len(indices)) if type(indices[i]) is Idx ]
-                freeIndices=[i for i in indices if type(i) is Idx]
-                #print(fixedIndexPositions)
-                freeKeys=[k for k in self.data.keys() if all(k[p]==indices[p] for p in fixedIndexPositions )]
-                newBase=VIB("intermediate")
-                for k in freeKeys:
-                    newBase.data[extractIndices(k,symbolicIndexPositions)]=self.data[k]
-                return(VI(newBase,*freeIndices,**kw_args))
+                        # which is the same as x[_i,^i,^j,_j] (or x[_i,^j,^i,_j]
+                        # but we do not implement this because it is not very clear  
+                        dummyPositions=[ p for p,ind in enumerate(freeIndices) if ind==d ]
+                        # find pairs
+                        n=len(dummyPositions)
+                        if n!=2:
+                            # exclude things like [i,i,i,j] where one index occures more than 2 times
+                            # rendering the contraction ambigous
+                            raise(ContractionException(d,n))
+                        p0=dummyPositions[0]     
+                        p1=dummyPositions[1]     
+                        b0=newVIB.bases[p0].dual    
+                        b1=newVIB.bases[p1].dual    
+                        if b1!=b0.dual:
+                            # implement only natural pairing (up and down indices)
+                            raise(ContractionIncompatibleBaseException(i,p0,p1,b0,b1))
+                        newBases=[b for i,b in enumerate(newVIB.bases) if not(i in dummyPositions)] 
+                        nonDummyPositions=[ p for p,ind in enumerate(freeIndices) if ind!=d ]
+                        if len(newBases)==0:
+                            # the result will be a scalar
+                            res=sum([newVIB.data[k] for k in newVIB.data.keys() if k[p0]==k[p1]])
+                            return(res)   
+                        else:
+                            newData={}
+                            newKeys=set([deleteIndices(k,dummyPositions) for k in newVIB.data.keys()])
+                            for nk in newKeys:
+                                newData[nk]=sum([newVIB.data[k] for k in newVIB.data.keys() if k[p0]==k[p1] and deleteIndices(k,dummyPositions)==nk])
+                            newVIB.data=newData
+                            newVIB.bases=newBases
+                            freeIndices=[i for p,i in enumerate(freeIndices) if p in nonDummyPositions]
+                            expr=VI(newVIB, *freeIndices, **kw_args)
+                        
+                    return(expr)
                 
                 
     
     
-    
+    def checkShapeCompatibility(self,indices):
+        if self.bases:
+            lb=len(self.bases)
+        else:
+            lb=None
+
+        ld=len(self.data)
+        if ld>0:
+           lk=tupleLen(self.data.keys()[0])
+        else:
+           lk=None
+
+        if lk:
+            #if we already have set values we make sure that the shape of the 
+            # tensor is not changed by the new assignment
+            if not(is_sequence(indices)):
+                if lk!=1:
+                    raise(IncompatibleShapeException())
+            else:
+                li=len(indices)
+                if not(all([len(k)==li for k in self.data.keys()])):
+                    raise(IncompatibleShapeException())
+        if lb:
+            #if we already have set  bases we make sure that the shape of the 
+            # tensor is not changed by the new assignment
+            if not(is_sequence(indices)):
+                if lb!=1:
+                    raise(IncompatibleShapeException())
+            else:
+                li=len(indices)
+                if lb!=li: 
+                    raise(IncompatibleShapeException())
+                   
+
     def __setitem__(self, indices, value,**kw_args):
-        l=len(self.data.keys())
-        if l>0:
-            #if we already have values set we make sure that the shape of the tensor is not changed
-            if not(all([len(k)==len(indices)for k in self.data.keys()])):
-                raise(IncompatibleShapeException())
+        self.checkShapeCompatibility(indices)
         if not(isinstance(value,Indexed)):
             # on the rigth hand side is a "normal" python expression without indices
             if  not(is_sequence(indices)): #only one index
@@ -199,14 +219,14 @@ class VI(Indexed):
 
     
     def __mul__(self, other):
-        print("in mul")
-        print(self)
+        #print("in mul")
+        #print(self)
         ## we now create an Indexed object and can then use all the methods 
         expr=super(VI,self).__mul__(other)
-        print(type(expr)) 
-        print(expr) 
-        print(get_contraction_structure(expr))
-        print(get_indices(expr))
+        #print(type(expr)) 
+        #print(expr) 
+        #print(get_contraction_structure(expr))
+        #print(get_indices(expr))
         # now we can uses this information to implement the the multiplication for our subtype.
         
 
