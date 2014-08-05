@@ -2,6 +2,8 @@
 # vim:set ff=unix expandtab ts=4 sw=4:
 import unittest 
 from MarkusIndexed import VIB, VI ,IncompatibleShapeException,VectorFieldBase,OneFormFieldBase
+
+from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException
 from sympy.tensor import  Idx
 
 
@@ -30,7 +32,6 @@ class IndexedTest(unittest.TestCase):
         y=VIB("y")
         x[0,1]=3
         i, j        = map(Idx, ['i', 'j'])
-        #print(type(x[i,j]))
         y[i,j]=x[i,j]
         self.assertEqual(y[0,1],3)
         
@@ -109,19 +110,46 @@ class IndexedTest(unittest.TestCase):
         x[1,1,0,0,0]=4
         i, j, k, l       = map(Idx, ['i', 'j','k','l'])
         z=x[i,i,j,j,0]
-        print(z)
         self.assertEqual(z,7)
 
+    def test_mult(self):
+        ## cases with contraction
+        bc=VectorFieldBase()
+        br=OneFormFieldBase(bc)
+        res=VIB("res")
+        x=VIB("x",[br])
+        A=VIB("A",[bc,br])
+        i, j, k        = map(Idx, ['i', 'j', 'k'])
+        x[0]=3
+        A[0,0]=2
+        res[j]= A[i,j]*x[i]
+        self.assertEqual(res[0],6)
+        
+        with self.assertRaises(ContractionIncompatibleBaseException):
+            ## bases are not compatible
+            res[j]= A[i,j]*x[j]
 
-    
+        x=VIB("x",[br])
+        A=VIB("A",[bc,br])
+        x[0]=10
+        x[1]=20
+        A[0,0]=1
+        A[1,0]=2
+        A[0,1]=3
+        A[1,1]=4
+        res[j]= A[i,j]*x[i]
+        self.assertEqual(res[0],50)
+        self.assertEqual(res[1],110)
+        
+        ## cases without contraction
+        res=VIB("res")
+        res[i,j,k]= A[i,j]*x[k]
+        self.assertEqual(res[0,0,0],10)
+        
+        res=VIB("res")
+        with self.assertRaises(IncompatibleShapeException):
+            res[j]= A[i,j]*x[k]
 
-    #def test_mult(self):
-    #    x, A,res    = map(VIB, ['x', 'A','res'])
-    #    i, j        = map(Idx, ['i', 'j'])
-    #    x[0]=3
-    #    res[0]=6
-    #    A[0,0]=2
-    #    #self.assertEqual(A[i,j]*x[i],res)
-
+        
 if  __name__ == '__main__':
     unittest.main()

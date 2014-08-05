@@ -4,7 +4,7 @@ from sympy import symbols, default_sort_key, Matrix
 from sympy.tensor import IndexedBase, Indexed, Idx
 from sympy.core import Expr, Tuple, Symbol, sympify, S
 from sympy.core.compatibility import is_sequence, string_types, NotIterable
-from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption
+from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException
 from TupelHelpers import  permuteTuple, extractIndices, changedTuple, deleteIndices, tupleLen
 from Bases import OneFormFieldBase, VectorFieldBase
 from copy import deepcopy
@@ -45,7 +45,6 @@ class VIB(IndexedBase):
                 fixedIndexPositions=[i  for i in range(len(indices)) if not(type(indices[i]) is Idx) ]
                 symbolicIndexPositions=[i  for i in range(len(indices)) if type(indices[i]) is Idx ]
                 freeIndices=[i for i in indices if type(i) is Idx]
-                #print(fixedIndexPositions)
                 freeKeys=[k for k in self.data.keys() if all(k[p]==indices[p] for p in fixedIndexPositions )]
                 if self.bases:
                     remainingBases=[b for p,b in enumerate(self.bases) if p in symbolicIndexPositions]
@@ -56,7 +55,6 @@ class VIB(IndexedBase):
                 newVIB.data={}
                 for k in freeKeys:
                     newVIB.data[extractIndices(k,symbolicIndexPositions)]=self.data[k]
-                print(newVIB.data)
                 # now check the remaining part for contraction
                 expr=VI(newVIB,*freeIndices,**kw_args)
                 cs=get_contraction_structure(expr)
@@ -69,7 +67,6 @@ class VIB(IndexedBase):
                     # Since we are in __getitem__  we assume that we deal here 
                     # only with one VI instance not with a many term expression
                     dummySuspects=csk[0]
-                    #print(dummySuspects)
                     #freeIndices=indices
                     for d in dummySuspects:
                         cs=get_contraction_structure(expr)
@@ -148,7 +145,7 @@ class VIB(IndexedBase):
 
     def __setitem__(self, indices, value,**kw_args):
         self.checkShapeCompatibility(indices)
-        if not(isinstance(value,Indexed)):
+        if not(isinstance(value,VI)):
             # on the rigth hand side is a "normal" python expression without indices
             if  not(is_sequence(indices)): #only one index
                 index=indices
@@ -201,7 +198,7 @@ class VIB(IndexedBase):
                     for k in vKeys:
                         self.data[changedTuple(indices,k,newPositions)]=vbd[k]
                     
-         
+##########################################################
 
 class VI(Indexed):
     def __new__(cls, base, *args, **kw_args):
@@ -219,14 +216,24 @@ class VI(Indexed):
 
     
     def __mul__(self, other):
-        #print("in mul")
-        #print(self)
-        ## we now create an Indexed object and can then use all the methods 
-        expr=super(VI,self).__mul__(other)
-        #print(type(expr)) 
-        #print(expr) 
-        #print(get_contraction_structure(expr))
-        #print(get_indices(expr))
-        # now we can uses this information to implement the the multiplication for our subtype.
+        # we create an intermediate outer product and 
+        # invisibly contract it with the use of the [] operator 
+        # and the original indices
+        si=self.indices
+        sb=self.base
+        sbd=sb.data
+
+        oi=other.indices
+        ob=other.base
+        obd=ob.data
+        if not(sb.bases and ob.bases):
+            raise "one argument has no base defined"
+        allbases=sb.bases+ob.bases
+
+        intermediate=VIB("intermediate",allbases)
+        for ks in sb.data.keys():
+            for ko in ob.data.keys():
+                intermediate[ks+ko]=sbd[ks]*obd[ko]
+        return(intermediate[si+oi])
         
 
