@@ -1,0 +1,4 @@
+Ich war nicht in der Lage die Divergenz eines einfachen Vektorfeldes auszurechnen.
+Der Zusammenhang ist außerdem komplizierter als gedacht.
+Obwohl die Divergenz als spezialfall einer externen Differentiation darstellbar ist, ist die Übersetzung nicht einfach.Div(F)=*d*F^b (*hodge Star und F^b musikalischer Isomorphismus)
+Deshalb sollte man davon absehen Vektoranalysis mit dem DiffGeo Modul ausdrücken zu wollen)
