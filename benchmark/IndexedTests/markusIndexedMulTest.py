@@ -5,6 +5,7 @@ from MarkusIndexed import VIB, VI ,IncompatibleShapeException,VectorFieldBase,On
 
 from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException
 from sympy.tensor import  Idx
+from Spherical import Spherical
 
 
 class IndexedTest(unittest.TestCase):
@@ -119,7 +120,7 @@ class IndexedTest(unittest.TestCase):
         res=VIB("res")
         x=VIB("x",[br])
         A=VIB("A",[bc,br])
-        i, j, k        = map(Idx, ['i', 'j', 'k'])
+        i, j, k,l        = map(Idx, ['i', 'j', 'k','l'])
         x[0]=3
         A[0,0]=2
         res[j]= A[i,j]*x[i]
@@ -149,6 +150,27 @@ class IndexedTest(unittest.TestCase):
         res=VIB("res")
         with self.assertRaises(IncompatibleShapeException):
             res[j]= A[i,j]*x[k]
+        
+        res=VIB("res")
+        x=VIB("x",[br])
+        A=VIB("A",[bc,br,bc])
+        with self.assertRaises(IncompatibleShapeException):
+            res[i,j,l]= A[i,j,k]*x[k]
+
+    #def test_del(self):
+    #    sp=Spherical()
+    #    #delop=Spherical().delOp
+    #    bc=VectorFieldBase()
+    #    br=OneFormFieldBase(bc)
+    #    x=VIB("x",[bc])
+    #    y=VIB("y")
+    #    #y[i,j]=delop[i]*x[j]
+    ##def test_div(self):
+
+    ##    y=delop[j]*x[j]
+    ##    y[i]=delop[j]*A[j,i]
+        
+
 
         
 if  __name__ == '__main__':

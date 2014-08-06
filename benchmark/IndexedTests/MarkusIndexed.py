@@ -165,38 +165,24 @@ class VIB(IndexedBase):
             # on the rigth hand side is an expression
             if  not(is_sequence(indices)): #only one index
                 index=indices
+                if len(value.indices)!=1:
+                    raise(IncompatibleShapeException())
                 if type(index) is int:
                     self.data[indices]=value
                 elif type(index) is Idx:
                     self.data=value.base.data
             else: #general case with more than one indices
-                #if type(indices[0]) is int:
-                if all(type(k) is int for k in indices):
-                    # all indices are integers
-                    self.data[indices]=value.indices
-                
-                elif all( type(i) is Idx for i in indices):
-                    # all indices are symbolic
-                    vb=value.base
-                    vbd=vb.data
-                    if set(indices)==set(value.indices):
-                        if indices==value.indices:
-                            self.data=vbd
-                        else:
-                            # a permutation of indices, necessiating a permutation of the components 
-                            newPositions=[indices.index(i) for i in value.indices]
-                            vKeys=vbd.keys()
-                            for k in vKeys:
-                                self.data[permuteTuple(k,newPositions)]=vbd[k]
-                elif all( type(i) is Idx or type(i) is int  for i in indices):
-                    # some indices are symbolic some are integers
-                    newPositions=[indices.index(i) for i in value.indices]
-                    vb=value.base
-                    vbd=vb.data
-                    vKeys=vbd.keys()
+                if len(value.indices)!=len([i for i in indices if type(i) is Idx]):
+                    # the value indices are preprocessed by []
+                    raise(IncompatibleShapeException())
+                # some indices are symbolic some are integers
+                newPositions=[indices.index(i) for i in value.indices]
+                vb=value.base
+                vbd=vb.data
+                vKeys=vbd.keys()
 
-                    for k in vKeys:
-                        self.data[changedTuple(indices,k,newPositions)]=vbd[k]
+                for k in vKeys:
+                    self.data[changedTuple(indices,k,newPositions)]=vbd[k]
                     
 ##########################################################
 
