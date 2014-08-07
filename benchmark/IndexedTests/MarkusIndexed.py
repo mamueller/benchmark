@@ -152,6 +152,7 @@ class VIB(IndexedBase):
                 if type(index) is int:
                     self.data[(index,)]=value
                 else:
+                    print(value)
                     raise(IncompatibleShapeException("If v is a scalar (e.g. number,symbol,expression) \
                     then i in A[i]=v must be an integer and cannot be a symbolic index") )
             else:        
@@ -185,6 +186,9 @@ class VIB(IndexedBase):
                     self.data[changedTuple(indices,k,newPositions)]=vbd[k]
                     
 ##########################################################
+class OIB(VIB):
+    pass
+##########################################################
 
 class VI(Indexed):
     def __new__(cls, base, *args, **kw_args):
@@ -202,24 +206,42 @@ class VI(Indexed):
 
     
     def __mul__(self, other):
-        # we create an intermediate outer product and 
-        # invisibly contract it with the use of the [] operator 
-        # and the original indices
-        si=self.indices
+       
         sb=self.base
         sbd=sb.data
-
+        si=self.indices
+    
         oi=other.indices
         ob=other.base
         obd=ob.data
         if not(sb.bases and ob.bases):
             raise "one argument has no base defined"
         allbases=sb.bases+ob.bases
+        
+        if type(sb) == VIB:
+            # we create an intermediate outer product and 
+            # invisibly contract it with the use of the [] operator 
+            # and the original indices if indices are repeated 
+    
+            intermediate=VIB("intermediate",allbases)
+            for ks in sb.data.keys():
+                for ko in ob.data.keys():
+                    intermediate[ks+ko]=sbd[ks]*obd[ko]
+            return(intermediate[si+oi])
+        elif type(sb)==OIB:
+            # this applies to the nabla operator 
+            
+            # we apply each component of the operator first to the other tensor 
+            # and multiply the result to a tensor (not operator) with the same shape
+            # as 
 
-        intermediate=VIB("intermediate",allbases)
-        for ks in sb.data.keys():
-            for ko in ob.data.keys():
-                intermediate[ks+ko]=sbd[ks]*obd[ko]
-        return(intermediate[si+oi])
+
+            parts={} 
+            for ks in sb.data.keys():
+                    ib=VI("substituteMultiplikator",sb.bases)
+                    ib.data[ks]=1.0,
+                    parts[ks]=ib[si]*sbd[ks](other)# this takes care of possible contractions 
+                    # e.g in the case of divergene
+            res=sum([parts[ks] for ks in parts.keys()  ])
         
 

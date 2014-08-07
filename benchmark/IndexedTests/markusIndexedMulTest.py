@@ -1,11 +1,12 @@
 #!/usr/bin/python
 # vim:set ff=unix expandtab ts=4 sw=4:
 import unittest 
-from MarkusIndexed import VIB, VI ,IncompatibleShapeException,VectorFieldBase,OneFormFieldBase
+from MarkusIndexed import VIB, OIB, VI ,IncompatibleShapeException,VectorFieldBase,OneFormFieldBase
 
 from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException
 from sympy.tensor import  Idx
-from Spherical import Spherical
+from sympy import Symbol, symbols
+#from Spherical import Spherical
 
 
 class IndexedTest(unittest.TestCase):
@@ -157,15 +158,18 @@ class IndexedTest(unittest.TestCase):
         with self.assertRaises(IncompatibleShapeException):
             res[i,j,l]= A[i,j,k]*x[k]
 
-    #def test_del(self):
-    #    sp=Spherical()
-    #    #delop=Spherical().delOp
-    #    bc=VectorFieldBase()
-    #    br=OneFormFieldBase(bc)
-    #    x=VIB("x",[bc])
-    #    y=VIB("y")
-    #    #y[i,j]=delop[i]*x[j]
-    ##def test_div(self):
+    def test_del(self):
+        #sp=Spherical()
+        i, j, k,l        = map(Idx, ['i', 'j', 'k','l'])
+        bc=VectorFieldBase()
+        br=OneFormFieldBase(bc)
+        r=Symbol("r")
+        x=VIB("x",[bc])
+        nabla=OIB("nabla",[br])
+        nabla[0]=lambda f:diff(f,r)
+        y=VIB("y")
+        y[i,j]=nabla[i]*x[j]
+    ###def test_div(self):
 
     ##    y=delop[j]*x[j]
     ##    y[i]=delop[j]*A[j,i]
