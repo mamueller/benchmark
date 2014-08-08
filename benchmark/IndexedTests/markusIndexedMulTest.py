@@ -5,7 +5,7 @@ from MarkusIndexed import VIB, OIB, VI ,IncompatibleShapeException,VectorFieldBa
 
 from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException
 from sympy.tensor import  Idx
-from sympy import Symbol, symbols
+from sympy import Symbol, symbols, Lambda, diff , Derivative
 #from Spherical import Spherical
 
 
@@ -163,16 +163,31 @@ class IndexedTest(unittest.TestCase):
         i, j, k,l        = map(Idx, ['i', 'j', 'k','l'])
         bc=VectorFieldBase()
         br=OneFormFieldBase(bc)
-        r=Symbol("r")
+        r,phi,theta=symbols("r phi theta")
+        f=Symbol("f")
         x=VIB("x",[bc])
         nabla=OIB("nabla",[br])
-        nabla[0]=lambda f:diff(f,r)
-        y=VIB("y")
-        y[i,j]=nabla[i]*x[j]
+        # note that the partial derivative operator is overloaded
+        # for VI objects
+        nabla[0]=Lambda(f,diff(f,r))
+        nabla[1]=Lambda(f,diff(f,phi))
+        nabla[2]=Lambda(f,diff(f,theta))
+        #y=VIB("y")
+        #y[i,j]=nabla[i]*x[j]
     ###def test_div(self):
 
     ##    y=delop[j]*x[j]
     ##    y[i]=delop[j]*A[j,i]
+    def test_diff(self):
+        bc=VectorFieldBase()
+        br=OneFormFieldBase(bc)
+        x=VIB("x",[br])
+        r=Symbol("r")
+        x[0]=r**2
+        i=Idx("i")
+        res=Derivative(x[i],r)
+        print((res))
+        
         
 
 

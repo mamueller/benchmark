@@ -243,5 +243,8 @@ class VI(Indexed):
                     parts[ks]=ib[si]*sbd[ks](other)# this takes care of possible contractions 
                     # e.g in the case of divergene
             res=sum([parts[ks] for ks in parts.keys()  ])
+   
+    def _eval_derivative(self, x):
+        return(5)
         
 
