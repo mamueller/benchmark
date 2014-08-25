@@ -185,7 +185,9 @@ class IndexedTest(unittest.TestCase):
         r=Symbol("r")
         x[0]=r**2
         i=Idx("i")
-        res=Derivative(x[i],r)
+        print(type(x[i]))
+        #res=Derivative(x[i],r,evaluate=True)
+        res=diff(x[i],r)
         print((res))
         
         

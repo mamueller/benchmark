@@ -117,7 +117,7 @@ class VIB(IndexedBase):
 
         ld=len(self.data)
         if ld>0:
-           lk=tupleLen(self.data.keys()[0])
+           lk=tupleLen(list(self.data.keys())[0])
         else:
            lk=None
 
@@ -245,6 +245,7 @@ class VI(Indexed):
             res=sum([parts[ks] for ks in parts.keys()  ])
    
     def _eval_derivative(self, x):
+        print("blub")
         return(5)
         
 
