@@ -4,7 +4,8 @@ from markusIndexedMulTest import *
 
 def suite():
     s=unittest.TestSuite()
-    s.addTest(IndexedTest("test_diff"))
+    #s.addTest(IndexedTest("test_diff"))
+    s.addTest(IndexedTest("test_free_symbols"))
     return(s)
 
 if  __name__ == '__main__':

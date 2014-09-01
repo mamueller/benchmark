@@ -245,6 +245,7 @@ class VI(Indexed):
             res=sum([parts[ks] for ks in parts.keys()  ])
     @property
     def free_symbols(self):
+        print(self.indices)
         vib=self.base
         s=vib[0].free_symbols
         return(s)

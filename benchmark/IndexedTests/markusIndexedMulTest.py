@@ -190,6 +190,17 @@ class IndexedTest(unittest.TestCase):
         res=diff(x[i],r)
         print((res))
         
+    def test_free_symbols(self):
+        bc=VectorFieldBase()
+        br=OneFormFieldBase(bc)
+        x=VIB("x",[br])
+        r,phi=symbols("r,phi")
+        x[0]=r**2
+        x[1]=phi**2
+        i=Idx("i")
+        res=x[i]
+        print(res)
+        self.assertEqual(res,set({phi,r}))
         
 
 
