@@ -197,8 +197,9 @@ class IndexedTest(unittest.TestCase):
         r,phi=symbols("r,phi")
         x[0]=r**2
         x[1]=phi**2
+        print(x.data)
         i=Idx("i")
-        res=x[i]
+        res=x[i].free_symbols
         print(res)
         self.assertEqual(res,set({phi,r}))
         
