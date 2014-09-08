@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # vim:set ff=unix expandtab ts=4 sw=4:
 import unittest 
 from MarkusIndexed import VIB, OIB, VI ,IncompatibleShapeException,VectorFieldBase,OneFormFieldBase
@@ -6,7 +6,7 @@ from MarkusIndexed import VIB, OIB, VI ,IncompatibleShapeException,VectorFieldBa
 from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException
 from sympy.tensor import  Idx
 from sympy import Symbol, symbols, Lambda, diff , Derivative
-#from Spherical import Spherical
+from Bases import CartesianVectorFieldBase 
 
 
 class IndexedTest(unittest.TestCase):
@@ -178,9 +178,35 @@ class IndexedTest(unittest.TestCase):
 
     ##    y=delop[j]*x[j]
     ##    y[i]=delop[j]*A[j,i]
-    def test_diff(self):
-        bc=VectorFieldBase()
+    #def VID2sumOfdyads(self):
+    #    # sum of base vectors
+    #    bc=VectorFieldBase()
+    #    br=OneFormFieldBase(bc)
+    #    x=VIB("x",[br])
+    #    r=Symbol("r")
+    #    x[0]=r
+    #    i=Idx("i")
+    #    res=x[i].base_dyads()
+    #    d=
+    #    ref=r*
+        
+    #def test_partial_derivative_of_a_baseVector(self):
+    #def test_partial_derivative_of_a_Dyad_of_base_vectors(self):
+    def test_partial_derivative_of_VI_wrt_a_coordinate(self):
+        # note that we not even need the partial derivative of the components 
+        # but also of the partial derivative of the base vectors which are 
+        # expressed by the cristoffel symbols which in turn can be computed from
+        # the connection between the coordinates which respect ot wicht 
+        # we are searching the derivative and the known cristoffel symbols
+        # of a given coordinate system.
+        # A case of special interest is the cartesian coordinate system whose 
+        # coordinate functions are given as the partial derivatives of functions 
+        # on the manifold in the directions of the set of base vectors e_x,e_y,ez
+        # We therefore start with the cartesian base 
+
+        bc=CartesianVectorFieldBase()
         br=OneFormFieldBase(bc)
+        print(br.dual)
         x=VIB("x",[br])
         r=Symbol("r")
         x[0]=r**2
@@ -197,11 +223,15 @@ class IndexedTest(unittest.TestCase):
         r,phi=symbols("r,phi")
         x[0]=r**2
         x[1]=phi**2
-        print(x.data)
         i=Idx("i")
         res=x[i].free_symbols
-        print(res)
         self.assertEqual(res,set({phi,r}))
+        x=VIB("x",[br])
+        r,phi=symbols("r,phi")
+        x[0]=r**2
+        i=Idx("i")
+        res=x[i].free_symbols
+        self.assertEqual(res,set({r}))
         
 
 

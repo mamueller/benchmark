@@ -246,12 +246,14 @@ class VI(Indexed):
     @property
     def free_symbols(self):
         data=self.base.data
-        s=reduce(lambda s1,s2:(s1.free_symbols).union(s2.free_symbols),data.values())
-        print(s)
+        s=set({})
+        for v in data.values():
+            s=s.union(v.free_symbols)
         return(s)
 
 
     def _eval_derivative(self, x):
+        # compute the partial derivative by applying the product rule
         print("blub")
         return(5)
         

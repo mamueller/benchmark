@@ -1,3 +1,6 @@
+#!/usr/bin/python3
+# vim:set ff=unix expandtab ts=4 sw=4:
+from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException
 ##########################################################
 class VectorFieldBase(object):
     """This class stores relationships between bases on the same patch.
@@ -21,5 +24,10 @@ class VectorFieldBase(object):
 class OneFormFieldBase(VectorFieldBase):
     @classmethod
     def checkDualType(cls,dual):
-        if type(dual).__name__!="VectorFieldBase":
+        if not(isinstance(dual,VectorFieldBase)):
             raise DualBaseExeption()
+
+##########################################################
+class CartesianVectorFieldBase(VectorFieldBase):
+    def firstKindChristoffelSymbols(self):
+        pass
