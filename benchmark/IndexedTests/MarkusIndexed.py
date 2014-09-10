@@ -253,8 +253,24 @@ class VI(Indexed):
 
 
     def _eval_derivative(self, x):
-        # compute the partial derivative by applying the product rule
-        print("blub")
-        return(5)
+        # we treat an indexed object as a sum of dyads
+        # The derivative is then the sum of the derivatives of the dyads
+        # The derivative of a dyad is computed by the product rule from 
+        # the derivative of product of the components and the base dyads
+        # the derivative of a basedyad is computed by the product rule
+        # from the derivatives of the base vectors
+        
+        #for the moment just face the dyads and components and go directly to the
+        # vector derivative
+        IB=self.base
+        # bases of the indexed object
+        bases=IB.bases
+        # extract the first vector fieldbase
+        b0=bases[0]
+        print(type(b0))
+        # extract the first base vector 
+        er=b0.vecs[0]
+        print(type(er))
+        return(er._eval_derivative())
         
 

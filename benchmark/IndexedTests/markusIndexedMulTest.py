@@ -6,7 +6,8 @@ from MarkusIndexed import VIB, OIB, VI ,IncompatibleShapeException,VectorFieldBa
 from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException
 from sympy.tensor import  Idx
 from sympy import Symbol, symbols, Lambda, diff , Derivative
-from Bases import CartesianVectorFieldBase 
+from sympy import pi,sin,cos,trigsimp,symbols,Abs,simplify
+from sympy.diffgeom import Manifold, Patch, CoordSystem
 
 
 class IndexedTest(unittest.TestCase):
@@ -196,18 +197,42 @@ class IndexedTest(unittest.TestCase):
         # note that we not even need the partial derivative of the components 
         # but also of the partial derivative of the base vectors which are 
         # expressed by the cristoffel symbols which in turn can be computed from
-        # the connection between the coordinates which respect ot wicht 
-        # we are searching the derivative and the known cristoffel symbols
-        # of a given coordinate system.
+        # known cristoffel symbols of a given coordinate system and the connection 
+        # between the coordinates 
+        # 
         # A case of special interest is the cartesian coordinate system whose 
         # coordinate functions are given as the partial derivatives of functions 
         # on the manifold in the directions of the set of base vectors e_x,e_y,ez
-        # We therefore start with the cartesian base 
+        # We therefore start with the cartesian base or equivalently 
+        # with the cartesian coordinatesystem defined by this vectorfield 
 
-        bc=CartesianVectorFieldBase()
-        br=OneFormFieldBase(bc)
-        print(br.dual)
-        x=VIB("x",[br])
+
+        #get the catesian cellar base vectors
+        m = Manifold('M', 3)
+        patch = Patch('P', m)
+        cart= CoordSystem('cart', patch)
+        spherical= CoordSystem('spherical', patch)
+        # now connect the two coordsystems by a transformation
+        x,y,z=symbols("x,y,z")
+        r=symbols("r",positive=True,real=True)
+        phi,theta=symbols("phi,theta",real=True)
+        spherical.connect_to(cart,
+            [r,
+             phi,
+             theta
+            ]
+            ,
+            [r*cos(phi)*sin(theta) ,
+             r*sin(phi)*sin(theta),
+             r*cos(theta)
+            ],
+            inverse=False
+        )
+        # cellar base
+        bc=VectorFieldBase(spherical)
+        # roof base
+        br=OneFormFieldBase(spherical)
+        x=VIB("x",[bc])
         r=Symbol("r")
         x[0]=r**2
         i=Idx("i")
@@ -217,9 +242,14 @@ class IndexedTest(unittest.TestCase):
         print((res))
         
     def test_free_symbols(self):
-        bc=VectorFieldBase()
-        br=OneFormFieldBase(bc)
-        x=VIB("x",[br])
+        m = Manifold('M', 3)
+        patch = Patch('P', m)
+        cart= CoordSystem('cart', patch)
+        # cellar base
+        bc=VectorFieldBase(cart)
+        # roof base
+        br=OneFormFieldBase(cart)
+        x=VIB("x",[bc])
         r,phi=symbols("r,phi")
         x[0]=r**2
         x[1]=phi**2
