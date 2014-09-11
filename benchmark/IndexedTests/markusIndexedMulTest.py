@@ -2,12 +2,13 @@
 # vim:set ff=unix expandtab ts=4 sw=4:
 import unittest 
 from MarkusIndexed import VIB, OIB, VI ,IncompatibleShapeException,VectorFieldBase,OneFormFieldBase
+from Bases import PatchWithMetric
 
 from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException
 from sympy.tensor import  Idx
-from sympy import Symbol, symbols, Lambda, diff , Derivative
+from sympy import eye,Symbol, symbols, Lambda, diff , Derivative
 from sympy import pi,sin,cos,trigsimp,symbols,Abs,simplify
-from sympy.diffgeom import Manifold, Patch, CoordSystem
+from sympy.diffgeom import Manifold, CoordSystem
 
 
 class IndexedTest(unittest.TestCase):
@@ -193,6 +194,31 @@ class IndexedTest(unittest.TestCase):
         
     #def test_partial_derivative_of_a_baseVector(self):
     #def test_partial_derivative_of_a_Dyad_of_base_vectors(self):
+    def test_free_symbols(self):
+        n=3
+        m = Manifold('M', n)
+        patch = PatchWithMetric('P', m)
+        cart= CoordSystem('cart', patch)
+        patch.setMetrix("cart",eye(n))
+        # cellar base
+        bc=VectorFieldBase(cart)
+        # roof base
+        br=OneFormFieldBase(cart)
+        x=VIB("x",[bc])
+        r,phi=symbols("r,phi")
+        x[0]=r**2
+        x[1]=phi**2
+        i=Idx("i")
+        res=x[i].free_symbols
+        self.assertEqual(res,set({phi,r}))
+        x=VIB("x",[br])
+        r,phi=symbols("r,phi")
+        x[0]=r**2
+        i=Idx("i")
+        res=x[i].free_symbols
+        self.assertEqual(res,set({r}))
+        
+
     def test_partial_derivative_of_VI_wrt_a_coordinate(self):
         # note that we not even need the partial derivative of the components 
         # but also of the partial derivative of the base vectors which are 
@@ -208,9 +234,17 @@ class IndexedTest(unittest.TestCase):
 
 
         #get the catesian cellar base vectors
-        m = Manifold('M', 3)
-        patch = Patch('P', m)
-        cart= CoordSystem('cart', patch)
+        dim=3
+        manyf = Manifold('M', dim)
+        patch = PatchWithMetric('P', manyf)
+        cart= CoordSystem('cartesian', patch)
+        cc=VectorFieldBase(cart)
+        g=VIB("g",[cc,cc])
+        for i in range(dim):
+            g[i,i]=1
+        i=Idx("i")
+        j=Idx("j")
+        patch.setMetric("cartesian",g[i,j])
         spherical= CoordSystem('spherical', patch)
         # now connect the two coordsystems by a transformation
         x,y,z=symbols("x,y,z")
@@ -241,29 +275,6 @@ class IndexedTest(unittest.TestCase):
         res=diff(x[i],r)
         print((res))
         
-    def test_free_symbols(self):
-        m = Manifold('M', 3)
-        patch = Patch('P', m)
-        cart= CoordSystem('cart', patch)
-        # cellar base
-        bc=VectorFieldBase(cart)
-        # roof base
-        br=OneFormFieldBase(cart)
-        x=VIB("x",[bc])
-        r,phi=symbols("r,phi")
-        x[0]=r**2
-        x[1]=phi**2
-        i=Idx("i")
-        res=x[i].free_symbols
-        self.assertEqual(res,set({phi,r}))
-        x=VIB("x",[br])
-        r,phi=symbols("r,phi")
-        x[0]=r**2
-        i=Idx("i")
-        res=x[i].free_symbols
-        self.assertEqual(res,set({r}))
-        
-
 
         
 if  __name__ == '__main__':
