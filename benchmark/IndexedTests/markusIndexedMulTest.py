@@ -1,8 +1,7 @@
 #!/usr/bin/python3
 # vim:set ff=unix expandtab ts=4 sw=4:
 import unittest 
-from MarkusIndexed import VIB, OIB, VI ,IncompatibleShapeException,VectorFieldBase,OneFormFieldBase
-from Bases import PatchWithMetric
+from MarkusIndexed import VIB, OIB, VI ,VectorFieldBase,OneFormFieldBase, PatchWithMetric
 
 from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException
 from sympy.tensor import  Idx
@@ -85,13 +84,21 @@ class IndexedTest(unittest.TestCase):
         with self.assertRaises(IncompatibleShapeException):
             x[1,1]=1
         
-        bc=VectorFieldBase()
+        n=3
+        m = Manifold('M', n)
+        patch = PatchWithMetric('P', m)
+        cart= CoordSystem('cart', patch)
+        bc=VectorFieldBase("bc",cart)
         br=OneFormFieldBase(bc)
         x=VIB("x",[bc,br,bc,br])
         with self.assertRaises(IncompatibleShapeException):
             x[0,0]=3
     def test_getWithContraction(self):
-        bc=VectorFieldBase()
+        n=3
+        m = Manifold('M', n)
+        patch = PatchWithMetric('P', m)
+        cart= CoordSystem('cart', patch)
+        bc=VectorFieldBase("bc",cart)
         br=OneFormFieldBase(bc)
         x=VIB("x",[bc,br])
         x[0,0]=3
@@ -117,8 +124,12 @@ class IndexedTest(unittest.TestCase):
         self.assertEqual(z,7)
 
     def test_mult(self):
+        n=2
+        m = Manifold('M', n)
+        patch = PatchWithMetric('P', m)
+        cart= CoordSystem('cart', patch)
         ## cases with contraction
-        bc=VectorFieldBase()
+        bc=VectorFieldBase("cart_st",cart)
         br=OneFormFieldBase(bc)
         res=VIB("res")
         x=VIB("x",[br])
@@ -160,29 +171,29 @@ class IndexedTest(unittest.TestCase):
         with self.assertRaises(IncompatibleShapeException):
             res[i,j,l]= A[i,j,k]*x[k]
 
-    def test_del(self):
-        #sp=Spherical()
-        i, j, k,l        = map(Idx, ['i', 'j', 'k','l'])
-        bc=VectorFieldBase()
-        br=OneFormFieldBase(bc)
-        r,phi,theta=symbols("r phi theta")
-        f=Symbol("f")
-        x=VIB("x",[bc])
-        nabla=OIB("nabla",[br])
-        # note that the partial derivative operator is overloaded
-        # for VI objects
-        nabla[0]=Lambda(f,diff(f,r))
-        nabla[1]=Lambda(f,diff(f,phi))
-        nabla[2]=Lambda(f,diff(f,theta))
-        #y=VIB("y")
-        #y[i,j]=nabla[i]*x[j]
-    ###def test_div(self):
+ #   def test_del(self):
+ #       #sp=Spherical()
+ #       i, j, k,l        = map(Idx, ['i', 'j', 'k','l'])
+ #       bc=VectorFieldBase(name,cart)
+ #       br=OneFormFieldBase(bc)
+ #       r,phi,theta=symbols("r phi theta")
+ #       f=Symbol("f")
+ #       x=VIB("x",[bc])
+ #       nabla=OIB("nabla",[br])
+ #       # note that the partial derivative operator is overloaded
+ #       # for VI objects
+ #       nabla[0]=Lambda(f,diff(f,r))
+ #       nabla[1]=Lambda(f,diff(f,phi))
+ #       nabla[2]=Lambda(f,diff(f,theta))
+ #       #y=VIB("y")
+ #       #y[i,j]=nabla[i]*x[j]
+ #   ###def test_div(self):
 
-    ##    y=delop[j]*x[j]
-    ##    y[i]=delop[j]*A[j,i]
+ #   ##    y=delop[j]*x[j]
+ #   ##    y[i]=delop[j]*A[j,i]
     #def VID2sumOfdyads(self):
     #    # sum of base vectors
-    #    bc=VectorFieldBase()
+    #    bc=VectorFieldBase(name,cart)
     #    br=OneFormFieldBase(bc)
     #    x=VIB("x",[br])
     #    r=Symbol("r")
@@ -199,11 +210,16 @@ class IndexedTest(unittest.TestCase):
         m = Manifold('M', n)
         patch = PatchWithMetric('P', m)
         cart= CoordSystem('cart', patch)
-        patch.setMetrix("cart",eye(n))
         # cellar base
-        bc=VectorFieldBase(cart)
+        bc=VectorFieldBase("bc",cart)
         # roof base
-        br=OneFormFieldBase(cart)
+        br=OneFormFieldBase(bc)
+        g=VIB("g",[bc,bc])
+        for i in range(n):
+            g[i,i]=1
+        i=Idx("i")
+        j=Idx("j")
+        patch.setMetric("cart",g[i,j])
         x=VIB("x",[bc])
         r,phi=symbols("r,phi")
         x[0]=r**2
@@ -238,7 +254,7 @@ class IndexedTest(unittest.TestCase):
         manyf = Manifold('M', dim)
         patch = PatchWithMetric('P', manyf)
         cart= CoordSystem('cartesian', patch)
-        cc=VectorFieldBase(cart)
+        cc=VectorFieldBase("cc",cart)
         g=VIB("g",[cc,cc])
         for i in range(dim):
             g[i,i]=1
@@ -263,9 +279,9 @@ class IndexedTest(unittest.TestCase):
             inverse=False
         )
         # cellar base
-        bc=VectorFieldBase(spherical)
+        bc=VectorFieldBase("bc",spherical)
         # roof base
-        br=OneFormFieldBase(spherical)
+        br=OneFormFieldBase(bc)
         x=VIB("x",[bc])
         r=Symbol("r")
         x[0]=r**2
@@ -275,6 +291,97 @@ class IndexedTest(unittest.TestCase):
         res=diff(x[i],r)
         print((res))
         
+    def test_change_of_base(self):
+        # assume that between two cellar bases {B_j,j=1..n} and {b_i ,i=1..n}
+        # the following linear mapping exists
+        #                       i 
+        # B[j]=A[i,j]b[i] B  = A   b
+        #                  j     j  i
+        #                                             j 
+        # The indices V wrt the new reciprocal base B
+        #              j                                                          i
+        # of a vector represented by its indices v  wrt the old reciprocal base b 
+        #                                         i             
+        # can be represented by
+        #       i  
+        #V   = A  v      ( simmonds)
+        # j     j  i
+        #                                                                  k
+        # We also can represent this by a multiplication of the vector v  b
+        #                                                               k
+        #                            i     j    
+        # with an identity tensor I_A  b  B  
+        #                            j  i     
+        # 
+        # the result is:                             
+        #
+        #    i  j        k        i  j        k       i      j
+        # I_A  B  b  v  b    = I_A  B  v  b  b   = I_A   v  B      
+        #    j     i  k           j     k  i          j   i       
+        # so the components of I_A and A are the same.
+        n=2
+        m = Manifold('M', n)
+        patch = PatchWithMetric('P', m)
+        cart= CoordSystem('cart', patch)
+        # cellar base
+        bc=VectorFieldBase("bc",cart)
+        # roof base
+        br=OneFormFieldBase(bc)
+        # metric
+        # We define the components of g wrt the roof base
+        # therefore the bilinear form is applicable directly to cellar base 
+        # vectors and since g induces a scalar product our components
+        # should be chosen as the scalar product of cellar base vectors.
+        g=VIB("IAB",[br,br])
+        # to make thing visible we chose some symbols
+        g00,g11=symbols("g00,g11")
+        g[0,0]=g00
+        g[1,1]=g11
+        i=Idx("i")
+        j=Idx("j")
+        patch.setMetric("cart",g[i,j])
+        # new cellar base
+        Bc=VectorFieldBase("Bc")
+        # new roof base
+        Br=OneFormFieldBase(bc)
+        # define the transformation
+        IA=VIB("IAB",[bc,Br])
+        a,b=symbols("a,b")
+        IA[0,0]=a
+        IA[1,1]=b
+        x=VIB("x",[br])
+        x1,x2=symbols("x1,x2")
+        x[0]=x1
+        x[1]=x2
+        # Apply the Identity Tranformation.
+        y=VIB("y")
+        y[j]=IA[i,j]*x[i]
+        self.assertEqual(y[0],a*x1)
+        self.assertEqual(y[1],b*x2)
+        raise("not finished")
+        # a possible alternative would be to register the Transformation
+        # Bc.connect_to(bc,IA[i,j])
+        # from now on finding the components wrt a registered base could be
+        # done x[j].change2bases([Br])
+        # self.assertEqual(x[0],a*x1)
+        # self.assertEqual(x[2],b*x2)
+
+        # now we want to transform the roof components of a vector (given wrt  the old cellar base)
+        # to roof components wrt to the new cellar base
+        x=VIB("x",[bc])
+        x1,x2=symbols("x1,x2")
+        x[0]=x1
+        x[1]=x2
+        # to be able to apply our Identity transformation we have to raise the first index and lower the second.
+        # We achieve this by two other transformations which are called the 
+        # musicial isomorphisms # and b which also can be formally described
+        # as a tensor multiplication with the metric tensor.
+        #self.assertEqual(y[0],1./a*x1)
+        #self.assertEqual(y[2],1./b*x2)
+
+
+
+
 
         
 if  __name__ == '__main__':

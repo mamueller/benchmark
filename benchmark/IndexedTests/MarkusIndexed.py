@@ -1,13 +1,168 @@
 
 from sympy.tensor.index_methods import get_contraction_structure, get_indices, _remove_repeated
+from sympy.diffgeom import Manifold, Patch, CoordSystem
+from sympy.tensor import Idx
+from sympy.printing import pprint
 from sympy import symbols, default_sort_key, Matrix
 from sympy.tensor import IndexedBase, Indexed, Idx
 from sympy.core import Expr, Tuple, Symbol, sympify, S
 from sympy.core.compatibility import is_sequence, string_types, NotIterable
 from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException
 from TupelHelpers import  permuteTuple, extractIndices, changedTuple, deleteIndices, tupleLen
-from Bases import OneFormFieldBase, VectorFieldBase
 from copy import deepcopy
+class PatchWithMetric(Patch):
+    def __init__(self, name, manifold):
+        super(PatchWithMetric, self).__init__(name, manifold)
+        # a patch has only one metric but the
+        # representation of the metric tensor depends on
+        # the coordinate system.
+        # Given one representation in one coordinate system A
+        # onother representation for coordinate system B
+        # can be inferred from the connection of A and B 
+        # since the computation can be expensive we cache 
+        # the results 
+        self.metricRepresentations=dict()
+        # same here
+        self.ChristoffelCache=dict()
+
+    def setMetric(self,nameOfCordSystem,vi):
+        # vi is a representation of the metric tensor 
+        # in either roof,roof or cellar,cellar components
+        # since the mixed components would be the cronecker delta
+        # which lacks the essential metric information.
+        bases=vi.base.bases
+        if all([isinstance(b,VectorFieldBase) for b in bases]) or all([isinstance(b,OneFormFieldBase) for b in bases]):
+            self.metricRepresentations[nameOfCordSystem]=vi
+        else:    
+            raise "the metric tensor has to be given in roof roof, or cellar cellar components since the metric information can not be inferred from the cronnecker delta"
+    def  christoffelFromMetric(self,metric):
+        # compute the christophelsymbols (of the second kind) 
+        # we need 2 component sets of the metric tensor
+        # roof,roof and cellar,cellar
+        i=Idx("i")
+        j=Idx("j")
+        k=Idx("k")
+        l=Idx("p")
+        IB=metric.base
+        bases=IB.bases
+        coords=bases[0].coords
+        reciprocalBase=OneFormFieldBase(coords)
+        # 1. case metric is given as roof roof
+        grr=VIB("grr")
+        grr[k,p]=metric 
+        if all([isinstance(b,VectorFieldBase) for b in bases]): 
+            gcc=VIB("gcc",[reciprocalBase,reciprocalBase])
+            mat=Matrix(self.dim,self.dim)
+            for i in range(dim):
+                for j in range(dim):
+                    mat[i,j]=grr[i,j]
+            InvMat=mat.inverseLU()
+            for i in range(dim):
+                for j in range(dim):
+                    gcc[i,j]= InvMat[i,j]#exercise. 2.10 Simmonds
+        
+        cs=dict() 
+        dim=self.dim
+        for k in range(dim):
+            for i in range(dim):
+                for j in range(dim):
+                    cs[k,i,j]=sum(
+                    [1/2*grr[k,p]
+                    *(
+                     diff(gcc[i,p],j)
+                    +diff(gcc[j,p],i)
+                    -diff(gcc[i,j],p)
+                    ) for p in range(dim)])
+        return(cs)            
+                    
+    def deriveMetricFromConnection(self,nameOfCoordinateSystem):  
+        # check if the patch stores a coordsystem with the right name
+        matches=[cs for cs in self.coord_systems if cs.name==nameOfCoordinateSystem]
+        if len(matches)<1:
+            raise "no coordinate system of the specified name found"
+        elif len(matches)>1:
+            raise "more than one coord system with the specified name found"
+        else:   
+            targetCS=matches[0]
+        connections=targetCS.transforms
+        # check if there is at least one metric representation in a connected coord system
+        connectionsWithMetricRepresentation={key:val for key,val  in connections.items() if key.name in self.metricRepresentations }
+        # in most cases there will be only one match (e.g. the cartesian cs) but it is possible to have more
+        # so we chose the first that comes our way
+        
+        cs=list(connectionsWithMetricRepresentation.keys())[0]
+        symbols,equations=connectionsWithMetricRepresentation[cs]
+        #compute the jacobian
+        j=targetCS.jacobian(cs,symbols)
+        pprint(j)
+        # the first column of the jacobian contains the components of the 
+        # new base vectors in the old base
+        # therefor the components of the new metric tensor
+        # can be derived from the components of the old
+        # by j.transposeLU()*g_old*j          
+        # we can also look at it as the com
+        i=Idx("i")
+        j=Idx("j")
+        g_cc=VIB("g_cc")
+
+
+
+
+#        raise "continue here to derive the components of the metric tensor in the new base"
+    def getMetricRepresentation(self,nameOfCoordinateSystem):   
+        if nameOfCoordinateSystem in self.metricRepresentations.keys():
+            metric=self.metricRepresentations[nameOfCoordinateSystem]
+        else:
+            s=self.deriveMetricFromConnection(nameOfCoordinateSystem)
+            # update chache
+            self.metricRepresentations[nameOfCoordinateSystem]=s
+        return(s)
+    def christoffelSymbols(self,nameOfCoordinateSystem):
+        if nameOfCoordinateSystem in self.ChristoffelCache.keys():
+            s=self.ChristoffelCache[nameOfCoordinateSystem]
+        else:
+            metric=self.getMetricRepresentation(nameOfCoordinateSystem)
+            s=self.christoffelFromMetric(metric)
+            # update chache
+            self.ChristoffelCache[nameOfCoordinateSystem]=s
+        return(s)
+
+##########################################################
+class BaseVector(object):
+   # represents a cellar base vector
+   def __init__(self,coordSystem,ind):
+        self.ind=ind
+        self.coord=coordSystem
+   def _eval_derivative(self):
+        # find christoffel symbols
+        coord=self.coord
+        cname=coord.name
+        patch=coord.patch
+        cs=patch.christoffelSymbols(cname)
+        return(5)
+   
+##########################################################
+class VectorFieldBase(object):
+    """This class stores relationships between bases on the same patch.
+    Every base b_i has one and only one dual (or reciprocal) base b^j
+    with b^j(b_i)= <b^j,b_i>= delta_i^j . 
+    """
+    def __init__(self,name,coordSystem=None):
+        self.name=name
+        if coordSystem:
+            self.coord=coordSystem
+            self.vecs=[BaseVector(coordSystem,i) for i in range(coordSystem.dim)]
+    def connect_to(self,IA): 
+        #pass
+        raise("not implemented yet")
+
+##########################################################
+class OneFormFieldBase(VectorFieldBase):
+    def __init__(self,vfb):
+        self.dual=vfb
+        # register in the base
+        vfb.dual=self
+
 ##########################################################
 class VIB(IndexedBase):
     def __new__(cls,label,bases=None, **kw_args):
@@ -58,7 +213,7 @@ class VIB(IndexedBase):
                 # now check the remaining part for contraction
                 expr=VI(newVIB,*freeIndices,**kw_args)
                 cs=get_contraction_structure(expr)
-                csk=cs.keys()
+                csk=list(cs.keys())
                 if None in csk:
                     #no contraction
                     return(expr)
@@ -87,7 +242,7 @@ class VIB(IndexedBase):
                         b1=newVIB.bases[p1].dual    
                         if b1!=b0.dual:
                             # implement only natural pairing (up and down indices)
-                            raise(ContractionIncompatibleBaseException(i,p0,p1,b0,b1))
+                            raise(ContractionIncompatibleBaseException(d,p0,p1,b0,b1))
                         newBases=[b for i,b in enumerate(newVIB.bases) if not(i in dummyPositions)] 
                         nonDummyPositions=[ p for p,ind in enumerate(freeIndices) if ind!=d ]
                         if len(newBases)==0:
