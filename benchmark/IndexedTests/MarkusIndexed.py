@@ -327,6 +327,8 @@ class VIB(IndexedBase):
                     self.data[indices]=value
                 elif type(index) is Idx:
                     self.data=value.base.data
+                    vb=value.base
+                    self.bases=vb.bases
             else: #general case with more than one indices
                 if len(value.indices)!=len([i for i in indices if type(i) is Idx]):
                     # the value indices are preprocessed by []
@@ -334,6 +336,7 @@ class VIB(IndexedBase):
                 # some indices are symbolic some are integers
                 newPositions=[indices.index(i) for i in value.indices]
                 vb=value.base
+                self.bases=vb.bases
                 vbd=vb.data
                 vKeys=vbd.keys()
 

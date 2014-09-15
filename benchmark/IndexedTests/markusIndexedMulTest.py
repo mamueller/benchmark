@@ -100,18 +100,21 @@ class IndexedTest(unittest.TestCase):
         cart= CoordSystem('cart', patch)
         bc=VectorFieldBase("bc",cart)
         br=OneFormFieldBase(bc)
+        #full trace
         x=VIB("x",[bc,br])
         x[0,0]=3
         x[1,1]=4
         i=Idx('i')
         self.assertEqual(x[i,i],7)
-        
+        # partial trace
         x=VIB("x",[bc,br,bc,br])
         y=VIB("y")
         x[0,0,0,0]=3
         x[1,1,0,0]=4
         i, j, k       = map(Idx, ['i', 'j','k'])
+        print("before test")
         y[j,k]=x[i,i,j,k]
+        self.assertEqual(y.bases,[bc,br])
         self.assertEqual(y[0,0],7)
         self.assertEqual( x[i,i,j,j],7)
         
@@ -137,8 +140,13 @@ class IndexedTest(unittest.TestCase):
         i, j, k,l        = map(Idx, ['i', 'j', 'k','l'])
         x[0]=3
         A[0,0]=2
+        print("befor mult")
         res[j]= A[i,j]*x[i]
+        print("after mult")
+        print("res.bases")
+        print(res.bases)
         self.assertEqual(res[0],6)
+        self.assertEqual(res.bases,[br])
         
         with self.assertRaises(ContractionIncompatibleBaseException):
             ## bases are not compatible
@@ -358,7 +366,8 @@ class IndexedTest(unittest.TestCase):
         y[j]=IA[i,j]*x[i]
         self.assertEqual(y[0],a*x1)
         self.assertEqual(y[1],b*x2)
-        raise("not finished")
+        self.assertEqual(y.bases==[Br])
+        #raise("not finished")
         # a possible alternative would be to register the Transformation
         # Bc.connect_to(bc,IA[i,j])
         # from now on finding the components wrt a registered base could be
