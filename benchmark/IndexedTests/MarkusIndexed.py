@@ -35,6 +35,8 @@ class PatchWithMetric(Patch):
             self.metricRepresentations[nameOfCordSystem]=vi
         else:    
             raise "the metric tensor has to be given in roof roof, or cellar cellar components since the metric information can not be inferred from the cronnecker delta"
+
+
     def  christoffelFromMetric(self,metric):
         # compute the christophelsymbols (of the second kind) 
         # we need 2 component sets of the metric tensor

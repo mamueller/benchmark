@@ -5,7 +5,7 @@ from MarkusIndexed import VIB, OIB, VI ,VectorFieldBase,OneFormFieldBase, PatchW
 
 from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException
 from sympy.tensor import  Idx
-from sympy import eye,Symbol, symbols, Lambda, diff , Derivative
+from sympy import eye,zeros,Symbol, symbols, Lambda, diff , Derivative
 from sympy import pi,sin,cos,trigsimp,symbols,Abs,simplify
 from sympy.diffgeom import Manifold, CoordSystem
 
@@ -329,8 +329,8 @@ class IndexedTest(unittest.TestCase):
         # so the components of I_A and A are the same.
         n=2
         m = Manifold('M', n)
-        patch = PatchWithMetric('P', m)
-        cart= CoordSystem('cart', patch)
+        P = PatchWithMetric('P', m)
+        cart= CoordSystem('cart', P)
         # cellar base
         bc=VectorFieldBase("bc",cart)
         # roof base
@@ -340,36 +340,39 @@ class IndexedTest(unittest.TestCase):
         # therefore the bilinear form is applicable directly to cellar base 
         # vectors and since g induces a scalar product our components
         # should be chosen as the scalar product of cellar base vectors.
-        g=VIB("IAB",[br,br])
+        # this is equivalent to the definition in exercise 2.8 on page 39 of Simmonds
+        # nomenclature g_cc means cellar cellar components, which means components with respect to roof roof bases)
+        g_cc=VIB("IAB",[br,br])
         # to make thing visible we chose some symbols
         g00,g11=symbols("g00,g11")
-        g[0,0]=g00
-        g[1,1]=g11
+        g_cc[0,0]=g00
+        g_cc[1,1]=g11
         i=Idx("i")
         j=Idx("j")
-        patch.setMetric("cart",g[i,j])
+        P.setMetric("cart",g_cc[i,j])
         # new cellar base
         Bc=VectorFieldBase("Bc")
         # new roof base
         Br=OneFormFieldBase(bc)
         # define the transformation
-        IA=VIB("IAB",[bc,Br])
+        # nomeclature: the name rc reflects that the first index is a roof and the second a cellar index
+        IA_rc=VIB("IA_bc_Br",[bc,Br])
         a,b=symbols("a,b")
-        IA[0,0]=a
-        IA[1,1]=b
-        x=VIB("x",[br])
+        IA_rc[0,0]=a
+        IA_rc[1,1]=b
+        x_c=VIB("x",[br])
         x1,x2=symbols("x1,x2")
-        x[0]=x1
-        x[1]=x2
+        x_c[0]=x1
+        x_c[1]=x2
         # Apply the Identity Tranformation.
-        y=VIB("y")
-        y[j]=IA[i,j]*x[i]
-        self.assertEqual(y[0],a*x1)
-        self.assertEqual(y[1],b*x2)
-        self.assertEqual(y.bases==[Br])
+        y_c=VIB("y")
+        y_c[j]=IA_rc[i,j]*x_c[i]
+        self.assertEqual(y_c.bases,[Br])
+        self.assertEqual(y_c[0],a*x1)
+        self.assertEqual(y_c[1],b*x2)
         #raise("not finished")
         # a possible alternative would be to register the Transformation
-        # Bc.connect_to(bc,IA[i,j])
+        # Bc.connect_to(bc,IA_bc_Br[i,j])
         # from now on finding the components wrt a registered base could be
         # done x[j].change2bases([Br])
         # self.assertEqual(x[0],a*x1)
@@ -377,14 +380,32 @@ class IndexedTest(unittest.TestCase):
 
         # now we want to transform the roof components of a vector (given wrt  the old cellar base)
         # to roof components wrt to the new cellar base
-        x=VIB("x",[bc])
+        x_r=VIB("x",[bc])
         x1,x2=symbols("x1,x2")
-        x[0]=x1
-        x[1]=x2
-        # to be able to apply our Identity transformation we have to raise the first index and lower the second.
+        x_r[0]=x1
+        x_r[1]=x2
+        # to be able to apply our Identity transformation we have to lower the first index and raise the second.
         # We achieve this by two other transformations which are called the 
-        # musicial isomorphisms # and b which also can be formally described
-        # as a tensor multiplication with the metric tensor.
+        # musicial isomorphisms # (for raising) and b (for lowering)  which also can be formally described
+        # as a tensor multiplications with the metric tensor represented wrt the appropriate bases
+        # first we transform the roof components x_r back to x_c which we already can handle 
+        # we need the representation of the metric tensor wrt the old cellar base vectors
+        #g_rr=P.getMetric([bc,bc])
+        # we allready have the metric wrt the roof base vectors
+        mat_cc=zeros(n,n)
+        dat=g_cc.data
+        for tup in dat.keys():
+            mat_cc[tup]=dat[tup]
+        mat_rr=mat_cc.inverse_LU()   
+        grr=VIB("IAB",[bc,bc])
+        for i in range(n):
+            for j in range(n):
+                grr.data[(i,j)]=mat_rr[i,j]
+                
+        #grr=secondRankTensor(g_cc[i,j].to_matrix().inverseLU(),[bc,bc])
+        #IA_rr[j,k]=g_rr[i,j]*IA_cr[i,k]
+        #y_r[j]=IA_br_Bc[i,j]*x[i]
+        #self.assertEqual(y.bases,[Br])
         #self.assertEqual(y[0],1./a*x1)
         #self.assertEqual(y[2],1./b*x2)
 
