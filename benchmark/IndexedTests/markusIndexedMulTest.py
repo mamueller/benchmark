@@ -347,8 +347,7 @@ class IndexedTest(unittest.TestCase):
         g00,g11=symbols("g00,g11")
         g_cc[0,0]=g00
         g_cc[1,1]=g11
-        i=Idx("i")
-        j=Idx("j")
+        i, j, k        = map(Idx, ['i', 'j','k'])
         P.setMetric("cart",g_cc[i,j])
         # new cellar base
         Bc=VectorFieldBase("Bc")
@@ -397,13 +396,14 @@ class IndexedTest(unittest.TestCase):
         for tup in dat.keys():
             mat_cc[tup]=dat[tup]
         mat_rr=mat_cc.inverse_LU()   
-        grr=VIB("IAB",[bc,bc])
+        g_rr=VIB("IAB",[bc,bc])
         for i in range(n):
             for j in range(n):
-                grr.data[(i,j)]=mat_rr[i,j]
+                g_rr.data[(i,j)]=mat_rr[i,j]
                 
-        #grr=secondRankTensor(g_cc[i,j].to_matrix().inverseLU(),[bc,bc])
-        #IA_rr[j,k]=g_rr[i,j]*IA_cr[i,k]
+        #g_rr=secondRankTensor(g_cc[i,j].to_matrix().inverseLU(),[bc,bc])
+        IA_rr=VIB("IA_rr")
+        IA_rr[i,j]=IA_rc[i,k]*g_rr[k,j]
         #y_r[j]=IA_br_Bc[i,j]*x[i]
         #self.assertEqual(y.bases,[Br])
         #self.assertEqual(y[0],1./a*x1)
