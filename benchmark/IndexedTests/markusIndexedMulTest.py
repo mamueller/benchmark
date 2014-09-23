@@ -244,9 +244,9 @@ class IndexedTest(unittest.TestCase):
         
 
     def test_partial_derivative_of_VI_wrt_a_coordinate(self):
-        # note that we not even need the partial derivative of the components 
-        # but also of the partial derivative of the base vectors which are 
-        # expressed by the cristoffel symbols which in turn can be computed from
+        # note that we not only need the partial derivative of the components 
+        # but also the partial derivatives of the base vectors expressed as linear combinations
+        # of those base vectors which are  expressed by the cristoffel symbols which in turn can be computed from
         # known cristoffel symbols of a given coordinate system and the connection 
         # between the coordinates 
         # 
@@ -254,21 +254,21 @@ class IndexedTest(unittest.TestCase):
         # coordinate functions are given as the partial derivatives of functions 
         # on the manifold in the directions of the set of base vectors e_x,e_y,ez
         # We therefore start with the cartesian base or equivalently 
-        # with the cartesian coordinatesystem defined by this vectorfield 
+        # with the cartesian coordinate system defined by this vectorfield 
 
 
         #get the catesian cellar base vectors
         dim=3
         manyf = Manifold('M', dim)
         patch = PatchWithMetric('P', manyf)
-        cart= CoordSystem('cartesian', patch)
+        cart= CoordSystem('cart', patch)
         cc=VectorFieldBase("cc",cart)
         g=VIB("g",[cc,cc])
         for i in range(dim):
             g[i,i]=1
         i=Idx("i")
         j=Idx("j")
-        patch.setMetric("cartesian",g[i,j])
+        patch.setMetric("cart",g[i,j])
         spherical= CoordSystem('spherical', patch)
         # now connect the two coordsystems by a transformation
         x,y,z=symbols("x,y,z")
