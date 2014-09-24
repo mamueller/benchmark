@@ -3,11 +3,12 @@
 import unittest 
 from MarkusIndexed import VIB, OIB, VI ,VectorFieldBase,OneFormFieldBase, PatchWithMetric
 
-from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException
+from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException,IndexRangeException
 from sympy.tensor import  Idx
 from sympy import eye,zeros,Symbol, symbols, Lambda, diff , Derivative
 from sympy import pi,sin,cos,trigsimp,symbols,Abs,simplify
 from sympy.diffgeom import Manifold, CoordSystem
+from concurrencytest import ConcurrentTestSuite, fork_for_tests
 
 
 class IndexedTest(unittest.TestCase):
@@ -126,14 +127,60 @@ class IndexedTest(unittest.TestCase):
         z=x[i,i,j,j,0]
         self.assertEqual(z,7)
 
+    def test_getSetItems(self):
+        n=2
+        m = Manifold('M', n)
+        patch = PatchWithMetric('P', m)
+        cart= CoordSystem('cart', patch)
+        bc=VectorFieldBase("cart_st",cart)
+        br=OneFormFieldBase(bc)
+        i, j, k,l        = map(Idx, ['i', 'j', 'k','l'])
+        x=VIB("x",[br])
+        y=VIB("y")
+        x[0]=10
+        x[1]=20
+        y[i]=x[i]
+        self.assertEqual(y[0],10)
+        self.assertEqual(y[1],20)
+        # actually the names of the free indices should not be important
+        # as long as the indices have the same range
+        y[j]=x[i]
+        self.assertEqual(y[0],10)
+        self.assertEqual(y[1],20)
+        # two free indices on both sides
+        x2=VIB("x2",[br,br])
+        y2=VIB("y2")
+        x2[0,0]=10
+        x2[1,1]=20
+        y2[k,l]=x2[i,j]
+        self.assertEqual(y2[0,0],10)
+        self.assertEqual(y2[1,1],20)
+        # now change the range of one index and get an Exception
+        j=Idx("j",(0,4))
+        with self.assertRaises(IndexRangeException):
+            y[j]=x[i]
+        # this should also happen when more than one Index is involved
+        with self.assertRaises(IndexRangeException):
+            y[k,l]=x[i,j]
+        
+        #1 common index
+        j=Idx("j")
+        y2[i,l]=x2[i,j]
+        self.assertEqual(y2[0,0],10)
+        self.assertEqual(y2[1,1],20)
+
+
+
+
+
     def test_mult(self):
         n=2
         m = Manifold('M', n)
         patch = PatchWithMetric('P', m)
         cart= CoordSystem('cart', patch)
-        ## cases with contraction
         bc=VectorFieldBase("cart_st",cart)
         br=OneFormFieldBase(bc)
+        ## cases with contraction
         res=VIB("res")
         x=VIB("x",[br])
         A=VIB("A",[bc,br])
@@ -178,6 +225,8 @@ class IndexedTest(unittest.TestCase):
         A=VIB("A",[bc,br,bc])
         with self.assertRaises(IncompatibleShapeException):
             res[i,j,l]= A[i,j,k]*x[k]
+        ## cases with change of index
+        ## 
 
  #   def test_del(self):
  #       #sp=Spherical()
@@ -415,4 +464,9 @@ class IndexedTest(unittest.TestCase):
 
         
 if  __name__ == '__main__':
-    unittest.main()
+    suite = unittest.TestLoader().loadTestsFromTestCase(IndexedTest)
+    # Run same tests across 16 processes
+    concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests(16))
+    runner = unittest.TextTestRunner()
+    runner.run(concurrent_suite)
+    #unittest.main()

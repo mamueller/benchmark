@@ -4,16 +4,19 @@ from string import Template
 
 
 ##########################################################
-class DualBaseExeption(BaseException):
+class IndexRangeException(Exception):
     pass
 ##########################################################
-class BaseMisMatchExeption(BaseException):
+class DualBaseExeption(Exception):
     pass
 ##########################################################
-class IncompatibleShapeException(BaseException):
+class BaseMisMatchExeption(Exception):
     pass
 ##########################################################
-class ContractionException(BaseException):
+class IncompatibleShapeException(Exception):
+    pass
+##########################################################
+class ContractionException(Exception):
     def __init__(self,ind,n):
         self.ind=ind
         self.n=n

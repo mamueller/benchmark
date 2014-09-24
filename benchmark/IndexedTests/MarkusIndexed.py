@@ -7,7 +7,7 @@ from sympy import symbols, default_sort_key, Matrix
 from sympy.tensor import IndexedBase, Indexed, Idx
 from sympy.core import Expr, Tuple, Symbol, sympify, S
 from sympy.core.compatibility import is_sequence, string_types, NotIterable
-from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException
+from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException,IndexRangeException
 from TupelHelpers import  permuteTuple, extractIndices, changedTuple, deleteIndices, tupleLen
 from copy import deepcopy
 class PatchWithMetric(Patch):
@@ -323,18 +323,32 @@ class VIB(IndexedBase):
             # on the rigth hand side is an expression
             if  not(is_sequence(indices)): #only one index
                 index=indices
-                if len(value.indices)!=1:
+                if len(value.indices)==1:
+                    vIndex=value.indices[0]
+                else:
                     raise(IncompatibleShapeException())
+
                 if type(index) is int:
                     self.data[indices]=value
                 elif type(index) is Idx:
-                    self.data=value.base.data
-                    vb=value.base
-                    self.bases=vb.bases
+                    if index.upper==vIndex.upper and index.lower==vIndex.lower:
+                        self.data=value.base.data
+                        vb=value.base
+                        self.bases=vb.bases
+                    else:
+                        raise(IndexRangeException)
             else: #general case with more than one indices
-                if len(value.indices)!=len([i for i in indices if type(i) is Idx]):
-                    # the value indices are preprocessed by []
+                symbolicIndices=[i for i in indices if type(i) is Idx]
+                lsi=len(symbolicIndices)
+                if len(value.indices)!=lsi:
                     raise(IncompatibleShapeException())
+                    # note that the value indices are preprocessed by []
+                else:
+                    if any([symbolicIndices[i].lower!=value.indices[i].lower or symbolicIndices[i].upper!=value.indices[i].upper for i in range(lsi)]):
+                        raise(IndexRangeException)
+
+                inter=set(symbolicIndices).intersect(set(value.indices))
+                if len(inter)>0
                 # some indices are symbolic some are integers
                 newPositions=[indices.index(i) for i in value.indices]
                 vb=value.base
