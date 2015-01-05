@@ -7,7 +7,7 @@ from sympy import symbols, default_sort_key, Matrix
 from sympy.tensor import IndexedBase, Indexed, Idx
 from sympy.core import Expr, Tuple, Symbol, sympify, S
 from sympy.core.compatibility import is_sequence, string_types, NotIterable
-from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException,IndexRangeException
+from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException,IndexRangeException,MissingBaseException
 from TupelHelpers import  permuteTuple, extractIndices, changedTuple, deleteIndices, tupleLen
 from copy import deepcopy
 class PatchWithMetric(Patch):
@@ -50,10 +50,10 @@ class PatchWithMetric(Patch):
         coords=bases[0].coords
         reciprocalBase=OneFormFieldBase(coords)
         # 1. case metric is given as roof roof
-        grr=VIB("grr")
+        grr=TensorIndexSet("grr")
         grr[k,p]=metric 
         if all([isinstance(b,VectorFieldBase) for b in bases]): 
-            gcc=VIB("gcc",[reciprocalBase,reciprocalBase])
+            gcc=TensorIndexSet("gcc",[reciprocalBase,reciprocalBase])
             mat=Matrix(self.dim,self.dim)
             for i in range(dim):
                 for j in range(dim):
@@ -105,7 +105,7 @@ class PatchWithMetric(Patch):
         # we can also look at it as the com
         i=Idx("i")
         j=Idx("j")
-        g_cc=VIB("g_cc")
+        g_cc=TensorIndexSet("g_cc")
 
 
 
@@ -166,7 +166,10 @@ class OneFormFieldBase(VectorFieldBase):
         vfb.dual=self
 
 ##########################################################
-class VIB(IndexedBase):
+class TensorIndexSet(IndexedBase):
+    # this thing represents an indexset of a  tensor w.r.t a fixed base
+    # It is not the tensor itself which is a multilinear mapping expressable w.r.t to any base 
+    # but one such expression
     def __new__(cls,label,bases=None, **kw_args):
         obj=IndexedBase.__new__(cls, label,  **kw_args)
         obj.data=dict()
@@ -174,6 +177,7 @@ class VIB(IndexedBase):
             obj.bases=bases
         else:
             obj.bases=None
+            #raise(MissingBaseException)
         return(obj)
 
     def __getitem__(self, indices, **kw_args):
@@ -208,12 +212,12 @@ class VIB(IndexedBase):
                 else:
                     remainingBases=None
 
-                newVIB=VIB("intermediate",remainingBases)
-                newVIB.data={}
+                newTensorIndexSet=TensorIndexSet("intermediate",remainingBases)
+                newTensorIndexSet.data={}
                 for k in freeKeys:
-                    newVIB.data[extractIndices(k,symbolicIndexPositions)]=self.data[k]
+                    newTensorIndexSet.data[extractIndices(k,symbolicIndexPositions)]=self.data[k]
                 # now check the remaining part for contraction
-                expr=VI(newVIB,*freeIndices,**kw_args)
+                expr=VI(newTensorIndexSet,*freeIndices,**kw_args)
                 cs=get_contraction_structure(expr)
                 csk=list(cs.keys())
                 if None in csk:
@@ -240,26 +244,26 @@ class VIB(IndexedBase):
                             raise(ContractionException(d,n))
                         p0=dummyPositions[0]     
                         p1=dummyPositions[1]     
-                        b0=newVIB.bases[p0].dual    
-                        b1=newVIB.bases[p1].dual    
+                        b0=newTensorIndexSet.bases[p0].dual    
+                        b1=newTensorIndexSet.bases[p1].dual    
                         if b1!=b0.dual:
                             # implement only natural pairing (up and down indices)
                             raise(ContractionIncompatibleBaseException(d,p0,p1,b0,b1))
-                        newBases=[b for i,b in enumerate(newVIB.bases) if not(i in dummyPositions)] 
+                        newBases=[b for i,b in enumerate(newTensorIndexSet.bases) if not(i in dummyPositions)] 
                         nonDummyPositions=[ p for p,ind in enumerate(freeIndices) if ind!=d ]
                         if len(newBases)==0:
                             # the result will be a scalar
-                            res=sum([newVIB.data[k] for k in newVIB.data.keys() if k[p0]==k[p1]])
+                            res=sum([newTensorIndexSet.data[k] for k in newTensorIndexSet.data.keys() if k[p0]==k[p1]])
                             return(res)   
                         else:
                             newData={}
-                            newKeys=set([deleteIndices(k,dummyPositions) for k in newVIB.data.keys()])
+                            newKeys=set([deleteIndices(k,dummyPositions) for k in newTensorIndexSet.data.keys()])
                             for nk in newKeys:
-                                newData[nk]=sum([newVIB.data[k] for k in newVIB.data.keys() if k[p0]==k[p1] and deleteIndices(k,dummyPositions)==nk])
-                            newVIB.data=newData
-                            newVIB.bases=newBases
+                                newData[nk]=sum([newTensorIndexSet.data[k] for k in newTensorIndexSet.data.keys() if k[p0]==k[p1] and deleteIndices(k,dummyPositions)==nk])
+                            newTensorIndexSet.data=newData
+                            newTensorIndexSet.bases=newBases
                             freeIndices=[i for p,i in enumerate(freeIndices) if p in nonDummyPositions]
-                            expr=VI(newVIB, *freeIndices, **kw_args)
+                            expr=VI(newTensorIndexSet, *freeIndices, **kw_args)
                         
                     return(expr)
                 
@@ -348,19 +352,19 @@ class VIB(IndexedBase):
                         raise(IndexRangeException)
 
                 inter=set(symbolicIndices).intersect(set(value.indices))
-                if len(inter)>0
+                if len(inter)>0:
                 # some indices are symbolic some are integers
-                newPositions=[indices.index(i) for i in value.indices]
-                vb=value.base
-                self.bases=vb.bases
-                vbd=vb.data
-                vKeys=vbd.keys()
+                    newPositions=[indices.index(i) for i in value.indices]
+                    vb=value.base
+                    self.bases=vb.bases
+                    vbd=vb.data
+                    vKeys=vbd.keys()
 
-                for k in vKeys:
-                    self.data[changedTuple(indices,k,newPositions)]=vbd[k]
+                    for k in vKeys:
+                        self.data[changedTuple(indices,k,newPositions)]=vbd[k]
                     
 ##########################################################
-class OIB(VIB):
+class OIB(TensorIndexSet):
     pass
 ##########################################################
 
@@ -370,10 +374,10 @@ class VI(Indexed):
         if not args:
             raise IndexException("Indexed needs at least one index.")
         if isinstance(base, (string_types, Symbol)):
-            base = VIB(base)
-        elif not isinstance(base, VIB):
+            base = TensorIndexSet(base)
+        elif not isinstance(base, TensorIndexSet):
             raise TypeError(filldedent("""
-                Indexed expects string, Symbol or VIB as base."""))
+                Indexed expects string, Symbol or TensorIndexSet as base."""))
 
         args = list(map(sympify, args))
         return Expr.__new__(cls, base, *args, **kw_args)
@@ -392,12 +396,12 @@ class VI(Indexed):
             raise "one argument has no base defined"
         allbases=sb.bases+ob.bases
         
-        if type(sb) == VIB:
+        if type(sb) == TensorIndexSet:
             # we create an intermediate outer product and 
             # invisibly contract it with the use of the [] operator 
             # and the original indices if indices are repeated 
     
-            intermediate=VIB("intermediate",allbases)
+            intermediate=TensorIndexSet("intermediate",allbases)
             for ks in sb.data.keys():
                 for ko in ob.data.keys():
                     intermediate[ks+ko]=sbd[ks]*obd[ko]

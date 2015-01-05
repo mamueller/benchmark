@@ -4,6 +4,9 @@ from string import Template
 
 
 ##########################################################
+class MissingBaseException(Exception):
+    pass
+##########################################################
 class IndexRangeException(Exception):
     pass
 ##########################################################
