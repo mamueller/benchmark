@@ -6,6 +6,11 @@ def extractIndices(t,pos):
     nl=[t[p] for p in range(len(t)) if p in pos]
     return(tuple(nl))
 
+def changedTupleAtPos(origTuple,newVal,newPos):
+    nl=list(origTuple)
+    nl[newPos]=newVal
+    return(tuple(nl))
+
 def changedTuple(origTuple,newValTuple,newPositions):
     nl=list(origTuple)
     for p in range(len(newValTuple)):

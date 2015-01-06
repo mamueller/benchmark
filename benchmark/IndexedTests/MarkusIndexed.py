@@ -8,7 +8,7 @@ from sympy.tensor import IndexedBase, Indexed, Idx
 from sympy.core import Expr, Tuple, Symbol, sympify, S
 from sympy.core.compatibility import is_sequence, string_types, NotIterable
 from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException,IndexRangeException,MissingBaseException
-from TupelHelpers import  permuteTuple, extractIndices, changedTuple, deleteIndices, tupleLen
+from TupelHelpers import  permuteTuple, extractIndices,changedTupleAtPos,changedTuple, deleteIndices, tupleLen
 from copy import deepcopy
 class PatchWithMetric(Patch):
     def __init__(self, name, manifold):
@@ -25,14 +25,15 @@ class PatchWithMetric(Patch):
         # same here
         self.ChristoffelCache=dict()
 
-    def setMetric(self,nameOfCordSystem,vi):
+    def setMetric(self,CordSystem,vi):
         # vi is a representation of the metric tensor 
         # in either roof,roof or cellar,cellar components
         # since the mixed components would be the cronecker delta
         # which lacks the essential metric information.
         bases=vi.base.bases
         if all([isinstance(b,VectorFieldBase) for b in bases]) or all([isinstance(b,OneFormFieldBase) for b in bases]):
-            self.metricRepresentations[nameOfCordSystem]=vi
+            # create a dictionary indexed by CoordSystems
+            self.metricRepresentations[CordSystem]=vi
         else:    
             raise "the metric tensor has to be given in roof roof, or cellar cellar components since the metric information can not be inferred from the cronnecker delta"
 
@@ -77,35 +78,44 @@ class PatchWithMetric(Patch):
                     ) for p in range(dim)])
         return(cs)            
                     
-    def deriveMetricFromConnection(self,nameOfCoordinateSystem):  
+    def deriveMetricFromConnection(self,nameOfTargetCoordinateSystem):  
         # check if the patch stores a coordsystem with the right name
-        matches=[cs for cs in self.coord_systems if cs.name==nameOfCoordinateSystem]
+        matches=[cs for cs in self.coord_systems if cs.name==nameOfTargetCoordinateSystem]
         if len(matches)<1:
             raise "no coordinate system of the specified name found"
         elif len(matches)>1:
             raise "more than one coord system with the specified name found"
         else:   
-            targetCS=matches[0]
-        connections=targetCS.transforms
+            targetCoordinateSystem=matches[0]
+        connections=targetCoordinateSystem.transforms
+        #connections is a dictionary whose keys are CoordSystems
         # check if there is at least one metric representation in a connected coord system
-        connectionsWithMetricRepresentation={key:val for key,val  in connections.items() if key.name in self.metricRepresentations }
+        connectionsWithMetricRepresentation={key:val for key,val  in connections.items() if key in self.metricRepresentations }
         # in most cases there will be only one match (e.g. the cartesian cs) but it is possible to have more
         # so we chose the first that comes our way
         
-        cs=list(connectionsWithMetricRepresentation.keys())[0]
-        symbols,equations=connectionsWithMetricRepresentation[cs]
+        firstCoordSystem=list(connectionsWithMetricRepresentation.keys())[0]
+        # now the question is to which of the metric representations of the patch it refers
+        
+        symbols,equations=connectionsWithMetricRepresentation[firstCoordSystem]
         #compute the jacobian
-        j=targetCS.jacobian(cs,symbols)
-        pprint(j)
+        J=targetCoordinateSystem.jacobian(firstCoordSystem,symbols)
+        pprint(J)
         # the first column of the jacobian contains the components of the 
         # new base vectors in the old base
         # therefor the components of the new metric tensor
         # can be derived from the components of the old
-        # by j.transposeLU()*g_old*j          
-        # we can also look at it as the com
-        i=Idx("i")
-        j=Idx("j")
-        g_cc=TensorIndexSet("g_cc")
+        # by J.transposeLU()*g_old*J          
+        g_old=self.metricRepresentations[firstCoordSystem]
+        oldBase=g_old.base.bases
+        if  isinstance(oldBase[0],VectorFieldBase):
+            newBase=VectorFieldBase("newBase",targetCoordinateSystem)
+            print("blub2")
+            print(g_old)
+            print(newBase)
+            newBase.connect(oldBase,J)
+        #newTensorIndexSet=g_old.base.rebase2([
+        
 
 
 
@@ -120,10 +130,14 @@ class PatchWithMetric(Patch):
             self.metricRepresentations[nameOfCoordinateSystem]=s
         return(s)
     def christoffelSymbols(self,nameOfCoordinateSystem):
+        print("blub1")
+        print(nameOfCoordinateSystem)
         if nameOfCoordinateSystem in self.ChristoffelCache.keys():
             s=self.ChristoffelCache[nameOfCoordinateSystem]
         else:
             metric=self.getMetricRepresentation(nameOfCoordinateSystem)
+            print("blub3")
+            print(metric)
             s=self.christoffelFromMetric(metric)
             # update chache
             self.ChristoffelCache[nameOfCoordinateSystem]=s
@@ -341,8 +355,9 @@ class TensorIndexSet(IndexedBase):
                         self.bases=vb.bases
                     else:
                         raise(IndexRangeException)
-            else: #general case with more than one indices
+            else: #general case with more than one index
                 symbolicIndices=[i for i in indices if type(i) is Idx]
+                #integerIndices=[i for i in indices if type(i) is int]
                 lsi=len(symbolicIndices)
                 if len(value.indices)!=lsi:
                     raise(IncompatibleShapeException())
@@ -350,18 +365,35 @@ class TensorIndexSet(IndexedBase):
                 else:
                     if any([symbolicIndices[i].lower!=value.indices[i].lower or symbolicIndices[i].upper!=value.indices[i].upper for i in range(lsi)]):
                         raise(IndexRangeException)
-
-                inter=set(symbolicIndices).intersect(set(value.indices))
-                if len(inter)>0:
-                # some indices are symbolic some are integers
-                    newPositions=[indices.index(i) for i in value.indices]
-                    vb=value.base
-                    self.bases=vb.bases
-                    vbd=vb.data
-                    vKeys=vbd.keys()
-
-                    for k in vKeys:
-                        self.data[changedTuple(indices,k,newPositions)]=vbd[k]
+                # The lhs expressions can contain indices that are also 
+                # present on the rhs, those are matched first
+                inter=set(symbolicIndices).intersection(set(value.indices))
+                li=len(inter)
+                # first handle positions marked by common indices
+                newPositions=[indices.index(i) for i in inter]
+                oldPositions=[value.indices.index(i) for i in inter]
+                # now determine free positions on the lhs
+                freeLhs=set(symbolicIndices).difference(inter)
+                freeRhs=set(value.indices).difference(inter)
+                lf=len(freeLhs)
+                freeLhsPositions=[indices.index(i) for i in freeLhs]
+                freeRhsPositions=[value.indices.index(i) for i in freeRhs]
+                vb=value.base
+                self.bases=vb.bases
+                vbd=vb.data
+                vKeys=vbd.keys()
+                newKey=indices 
+                # the new key can still contain symbolic indices
+                # first we handle those which are present in the rhs
+                for k in vKeys:
+                    for i in range(li):
+                        newKey=changedTupleAtPos(newKey,k[oldPositions[i]],newPositions[i])
+                    # now the remaining free symbolic idices are overwritte
+                    # by the values of the rhs key
+                    for i in range(lf):
+                        newKey=changedTupleAtPos(newKey,k[freeRhsPositions[i]],freeLhsPositions[i])
+                    # now the remaining free symbolic idices are overwritte
+                    self.data[newKey]=vbd[k]
                     
 ##########################################################
 class OIB(TensorIndexSet):
@@ -443,7 +475,7 @@ class VI(Indexed):
         IB=self.base
         # bases of the indexed object
         bases=IB.bases
-        # extract the first vector fieldbase
+        # extract the first vector field base
         b0=bases[0]
         print(type(b0))
         # extract the first base vector 
