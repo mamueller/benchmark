@@ -13,6 +13,9 @@ class IndexRangeException(Exception):
 class DualBaseExeption(Exception):
     pass
 ##########################################################
+class MissingConnectionException(Exception):
+    pass
+##########################################################
 class BaseMisMatchExeption(Exception):
     pass
 ##########################################################

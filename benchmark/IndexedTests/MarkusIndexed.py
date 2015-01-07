@@ -7,7 +7,7 @@ from sympy import symbols, default_sort_key, Matrix
 from sympy.tensor import IndexedBase, Indexed, Idx
 from sympy.core import Expr, Tuple, Symbol, sympify, S
 from sympy.core.compatibility import is_sequence, string_types, NotIterable
-from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException,IndexRangeException,MissingBaseException
+from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException,IndexRangeException,MissingBaseException, MissingConnectionException
 from TupelHelpers import  permuteTuple, extractIndices,changedTupleAtPos,changedTuple, deleteIndices, tupleLen
 from copy import deepcopy
 class PatchWithMetric(Patch):
@@ -26,11 +26,11 @@ class PatchWithMetric(Patch):
         self.ChristoffelCache=dict()
 
     def setMetric(self,CordSystem,vi):
-        # vi is a representation of the metric tensor 
+        # vi is a representation of the metric tensor (a TensorIndexSet)
         # in either roof,roof or cellar,cellar components
         # since the mixed components would be the cronecker delta
         # which lacks the essential metric information.
-        bases=vi.base.bases
+        bases=vi.bases
         if all([isinstance(b,VectorFieldBase) for b in bases]) or all([isinstance(b,OneFormFieldBase) for b in bases]):
             # create a dictionary indexed by CoordSystems
             self.metricRepresentations[CordSystem]=vi
@@ -46,20 +46,18 @@ class PatchWithMetric(Patch):
         j=Idx("j")
         k=Idx("k")
         l=Idx("p")
-        IB=metric.base
-        bases=IB.bases
+        bases=metric.bases
         coords=bases[0].coords
         reciprocalBase=OneFormFieldBase(coords)
         # 1. case metric is given as roof roof
-        grr=TensorIndexSet("grr")
-        grr[k,p]=metric 
+        grr=metric 
         if all([isinstance(b,VectorFieldBase) for b in bases]): 
             gcc=TensorIndexSet("gcc",[reciprocalBase,reciprocalBase])
             mat=Matrix(self.dim,self.dim)
             for i in range(dim):
                 for j in range(dim):
                     mat[i,j]=grr[i,j]
-            InvMat=mat.inverseLU()
+            InvMat=mat.inverse_LU()
             for i in range(dim):
                 for j in range(dim):
                     gcc[i,j]= InvMat[i,j]#exercise. 2.10 Simmonds
@@ -107,14 +105,17 @@ class PatchWithMetric(Patch):
         # can be derived from the components of the old
         # by J.transposeLU()*g_old*J          
         g_old=self.metricRepresentations[firstCoordSystem]
-        oldBase=g_old.base.bases
-        if  isinstance(oldBase[0],VectorFieldBase):
+        oldBases=g_old.bases
+        oB0=oldBases[0] # first base
+        if  isinstance(oB0,VectorFieldBase):
+            # the second base must be of the same type 
+            # in this case also
             newBase=VectorFieldBase("newBase",targetCoordinateSystem)
+            newBase.connect(oB0,J)
             print("blub2")
-            print(g_old)
             print(newBase)
-            newBase.connect(oldBase,J)
-        #newTensorIndexSet=g_old.base.rebase2([
+        i, j= map(Idx, ['i', 'j'])
+        g_new[i,j]=g_old[i,j].rebase2([newBase,newBase])
         
 
 
@@ -145,32 +146,35 @@ class PatchWithMetric(Patch):
 
 ##########################################################
 class BaseVector(object):
-   # represents a cellar base vector
-   def __init__(self,coordSystem,ind):
+    # represents a cellar base vector
+    def __init__(self,coordSystem,ind):
         self.ind=ind
         self.coord=coordSystem
-   def _eval_derivative(self):
+    def _eval_derivative(self):
         # find christoffel symbols
         coord=self.coord
         cname=coord.name
         patch=coord.patch
         cs=patch.christoffelSymbols(cname)
         return(5)
+        
+   
    
 ##########################################################
 class VectorFieldBase(object):
     """This class stores relationships between bases on the same patch.
     Every base b_i has one and only one dual (or reciprocal) base b^j
-    with b^j(b_i)= <b^j,b_i>= delta_i^j . 
+    with b^j(b_i)= <b^j,b_i>= delta_i^j but can be connected to other bases
+    by linear mappings.
     """
     def __init__(self,name,coordSystem=None):
         self.name=name
+        self.baseConnections={}
         if coordSystem:
             self.coord=coordSystem
             self.vecs=[BaseVector(coordSystem,i) for i in range(coordSystem.dim)]
-    def connect_to(self,IA): 
-        #pass
-        raise("not implemented yet")
+    def connect(self,oldBase,Mat):
+        self.baseConnections[oldBase]=Mat
 
 ##########################################################
 class OneFormFieldBase(VectorFieldBase):
@@ -193,6 +197,8 @@ class TensorIndexSet(IndexedBase):
             obj.bases=None
             #raise(MissingBaseException)
         return(obj)
+
+
 
     def __getitem__(self, indices, **kw_args):
         self.checkShapeCompatibility(indices)
@@ -414,6 +420,47 @@ class VI(Indexed):
         args = list(map(sympify, args))
         return Expr.__new__(cls, base, *args, **kw_args)
 
+    def rebase2(self,newBases):
+        
+        oldBases=self.base.bases
+        lo=len(oldBases)
+        ln=len(newBases)
+        if lo!=ln:
+            raise(IncompatibleShapeException())
+        newTensorIndexSet=self.base
+        for pos in range(ln):
+            nb=newBases[pos]
+            ob=oldBases[pos]
+            if not(ob in nb.baseConnections.keys()):
+                raise(MissingConnectionException)
+            Mat=nb.baseConnections[ob]
+            #construct the dual base
+            if isinstance(ob,VectorFieldBase):
+                dob=OneFormFieldBase(ob)
+            else: 
+                dob=ob.dual
+            I=TensorIndexSet("I",[dob,nb])
+            # we know that the columns of M contain the components
+            # of the new base vectors w.r.t the old ones
+            # If we want to express a Tensor w.r.t the new bases
+            # we need the inverse transformation
+            InvMat=Mat.inverse_LU()
+            dim=Mat.shape[0]
+            for i in range(dim):
+                for j in range(dim):
+                    I[i,j]= InvMat[i,j]
+
+            dummy=Idx("dummy")
+            indices=self.indices
+            orgind=indices[pos]
+            newkey=changedTupleAtPos(indices,dummy,pos)
+            newTensorIndexSet[indices]=newTensorIndexSet[newkey]*I[dummy,orgind]
+            print("blub")
+            print(indices)
+            print(pos)
+            #print(newTensorIndexSet[newkey]*I[dummy,orgind])
+        return(newTensorIndexSet[indices])
+              
     
     def __mul__(self, other):
        
@@ -482,5 +529,7 @@ class VI(Indexed):
         er=b0.vecs[0]
         print(type(er))
         return(er._eval_derivative())
+            
+            
         
 
