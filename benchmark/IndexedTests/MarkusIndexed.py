@@ -188,6 +188,23 @@ class TensorIndexSet(IndexedBase):
     # this thing represents an indexset of a  tensor w.r.t a fixed base
     # It is not the tensor itself which is a multilinear mapping expressable w.r.t to any base 
     # but one such expression
+    def __deepcopy__(self,memo):
+        cls = self.__class__
+        print(cls)
+        result = cls.__new__(cls,"intermediate")
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, deepcopy(v, memo))
+        # for the bases we do not want copies but references    
+        result.bases=self.bases
+        return result
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
+
+
     def __new__(cls,label,bases=None, **kw_args):
         obj=IndexedBase.__new__(cls, label,  **kw_args)
         obj.data=dict()
@@ -422,12 +439,13 @@ class VI(Indexed):
 
     def rebase2(self,newBases):
         
+        indices=self.indices
         oldBases=self.base.bases
         lo=len(oldBases)
         ln=len(newBases)
         if lo!=ln:
             raise(IncompatibleShapeException())
-        newTensorIndexSet=self.base
+        newTensorIndexSet=deepcopy(self.base)
         for pos in range(ln):
             nb=newBases[pos]
             ob=oldBases[pos]
@@ -451,11 +469,18 @@ class VI(Indexed):
                     I[i,j]= InvMat[i,j]
 
             dummy=Idx("dummy")
-            indices=self.indices
             orgind=indices[pos]
             newkey=changedTupleAtPos(indices,dummy,pos)
             newTensorIndexSet[indices]=newTensorIndexSet[newkey]*I[dummy,orgind]
         return(newTensorIndexSet[indices])
+        #    t=Idx("t")
+        #    u=Idx("u")
+        #    print(I.bases)
+        #    print(newTensorIndexSet.bases)
+        #    print(len(newTensorIndexSet.bases))
+        #    newTensorIndexSet[t]=newTensorIndexSet[dummy]*I[dummy,u]
+
+        #return(newTensorIndexSet[t])
               
     
     def __mul__(self, other):

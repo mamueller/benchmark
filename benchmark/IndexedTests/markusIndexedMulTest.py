@@ -360,6 +360,47 @@ class IndexedTest(unittest.TestCase):
         res=diff(x[i],r)
         print((res))
         
+    def test_change_of_base_roof2roof_components(self):
+        n=2
+        m = Manifold('M', n)
+        P = PatchWithMetric('P', m)
+        cart= CoordSystem('cart', P)
+        # oldcellar base
+        bc=VectorFieldBase("bc",cart)
+        br=OneFormFieldBase(bc)
+        # new cellar base
+        Bc=VectorFieldBase("Bc")
+        a,b=symbols("a,b")
+        i=Idx("i")
+        M=Matrix([[a,0],[0,b]]) #columns contain representation of new 
+        # base vectors w.r.t. old 
+        Bc.connect(bc,M)
+        x=TensorIndexSet("x",[bc])
+        print("blub6")
+        print(x.bases)
+        x1,x2=symbols("x1,x2")
+        x[0]=x1
+        x[1]=x2
+        y=TensorIndexSet("y")
+        y[i]=x[i].rebase2([Bc])
+        self.assertEqual(y.bases,[Bc])
+        self.assertEqual(y[0],x1/a)
+        self.assertEqual(y[1],x2/b)
+        
+        Bc=VectorFieldBase("Bc")
+        # define the (Identety)transformation
+        #br=OneFormFieldBase(bc)
+        IA=TensorIndexSet("IA",[br,Bc])
+        #a,b=symbols("a,b")
+        IA[0,0]=1./a
+        IA[1,1]=1./b
+        # Apply the Identity Tranformation.
+        j=Idx("j")
+        y[j]=IA[i,j]*x[i]
+        self.assertEqual(y.bases,[Bc])
+        self.assertEqual(simplify(y[0]-x1/a),0)
+        self.assertEqual(simplify(y[1]-x2/b),0)
+
     def test_change_of_base(self):
         # assume that between two cellar bases {B_j,j=1..n} and {b_i ,i=1..n}
         # the following linear mapping exists
@@ -472,7 +513,7 @@ class IndexedTest(unittest.TestCase):
      #   ##self.assertEqual(y[2],1./b*x2)
      #   
     
-    #another exmample old roof components to new roo components 
+    #exmample old roof components to new roof codmponents 
 
         Bc=VectorFieldBase("Bc")
         # define the (Identety)transformation
@@ -492,13 +533,6 @@ class IndexedTest(unittest.TestCase):
         self.assertEqual(simplify(y[1]-x2/b),0)
         #raise("not finished")#see following lines
         ## a possible alternative would be the following syntax
-        M=Matrix([[a,0],[0,b]]) #columns contain representation of new 
-        # base vectors w.r.t. old 
-        Bc.connect(bc,M)
-        y[i]=x[i].rebase2([Bc])
-        self.assertEqual(y.bases,[Bc])
-        self.assertEqual(y[0],x1/a)
-        self.assertEqual(y[1],x2/b)
 
 
 
