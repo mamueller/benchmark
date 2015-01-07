@@ -455,10 +455,6 @@ class VI(Indexed):
             orgind=indices[pos]
             newkey=changedTupleAtPos(indices,dummy,pos)
             newTensorIndexSet[indices]=newTensorIndexSet[newkey]*I[dummy,orgind]
-            print("blub")
-            print(indices)
-            print(pos)
-            #print(newTensorIndexSet[newkey]*I[dummy,orgind])
         return(newTensorIndexSet[indices])
               
     
