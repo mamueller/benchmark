@@ -2,6 +2,9 @@
 # vim:set ff=unix expandtab ts=4 sw=4:
 from string import Template
 
+##########################################################
+class NotImplementedException(Exception):
+    pass
 
 ##########################################################
 class MissingBaseException(Exception):

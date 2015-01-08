@@ -360,24 +360,32 @@ class IndexedTest(unittest.TestCase):
         res=diff(x[i],r)
         print((res))
         
-    def test_change_of_base_roof2roof_components(self):
+    def test_change_of_base_given_by_cellarVectorTransform(self):
+        # we assume that we know the matrix connecting
+        # the new cellar base vectors to the old cellar base vectors
+        
+    # set up
         n=2
         m = Manifold('M', n)
         P = PatchWithMetric('P', m)
         cart= CoordSystem('cart', P)
         # oldcellar base
         bc=VectorFieldBase("bc",cart)
+        # old roof base
         br=OneFormFieldBase(bc)
         # new cellar base
         Bc=VectorFieldBase("Bc")
+        # new roof base
+        Br=OneFormFieldBase(Bc)
         a,b=symbols("a,b")
         i=Idx("i")
         M=Matrix([[a,0],[0,b]]) #columns contain representation of new 
         # base vectors w.r.t. old 
         Bc.connect(bc,M)
+        
+    # start checks
+     # old roof components to new roof components
         x=TensorIndexSet("x",[bc])
-        print("blub6")
-        print(x.bases)
         x1,x2=symbols("x1,x2")
         x[0]=x1
         x[1]=x2
@@ -386,6 +394,8 @@ class IndexedTest(unittest.TestCase):
         self.assertEqual(y.bases,[Bc])
         self.assertEqual(y[0],x1/a)
         self.assertEqual(y[1],x2/b)
+         
+        # manual alternative 
         
         Bc=VectorFieldBase("Bc")
         # define the (Identety)transformation
@@ -400,6 +410,60 @@ class IndexedTest(unittest.TestCase):
         self.assertEqual(y.bases,[Bc])
         self.assertEqual(simplify(y[0]-x1/a),0)
         self.assertEqual(simplify(y[1]-x2/b),0)
+     
+     # old cellar components to new cellar  components
+        # assume that between two cellar bases {B_j,j=1..n} and {b_i ,i=1..n}
+        # the following linear mapping exists
+        #                       i 
+        # B[j]=A[i,j]b[i] B  = A   b
+        #                  j     j  i
+        #                                             j 
+        # The indices V wrt the new reciprocal base B
+        #              j                                                          i
+        # of a vector represented by its indices v  wrt the old reciprocal base b 
+        #                                         i             
+        # can be represented by
+        #       i  
+        #V   = A  v      ( simmonds)
+        # j     j  i
+        #                                                                  k
+        # We also can represent this by a multiplication of the vector v  b
+        #                                                               k
+        #                            i     j    
+        # with an identity tensor I_A  b  B  
+        #                            j  i     
+        # 
+        # the result is:                             
+        #
+        #    i  j        k        i  j        k       i      j
+        # I_A  B  b  v  b    = I_A  B  v  b  b   = I_A   v  B      
+        #    j     i  k           j     k  i          j   i       
+        # so the components of I_A and A are the same.
+        x=TensorIndexSet("x",[br])
+        print("blub6")
+        print(x.bases)
+        x1,x2=symbols("x1,x2")
+        x[0]=x1
+        x[1]=x2
+        y=TensorIndexSet("y")
+        y[i]=x[i].rebase2([Br])
+        self.assertEqual(y.bases,[Br])
+        self.assertEqual(y[0],a*x1)
+        self.assertEqual(y[1],b*x2)
+         
+        # manual alternative 
+        # define the (Identity)transformation
+        IA=TensorIndexSet("IA",[bc,Br])
+        IA[0,0]=a
+        IA[1,1]=b
+        # Apply the identity tranformation.
+        y=TensorIndexSet("y")
+        y[j]=IA[i,j]*x[i]
+        self.assertEqual(y.bases,[Br])
+        self.assertEqual(y[0],a*x1)
+        self.assertEqual(y[1],b*x2)
+        
+
 
     def test_change_of_base(self):
         # assume that between two cellar bases {B_j,j=1..n} and {b_i ,i=1..n}
@@ -471,14 +535,6 @@ class IndexedTest(unittest.TestCase):
         self.assertEqual(y_c.bases,[Br])
         self.assertEqual(y_c[0],a*x1)
         self.assertEqual(y_c[1],b*x2)
-        ## a possible alternative would be the following syntax
-        M=Matrix([[a,0],[0,b]])
-        Bc.connect(bc,M)
-        #the next line will fail due to missing implementation
-        #y_c[i]=x_c[i].rebase2([Br])
-        #self.assertEqual(y_c.bases,[Br])
-        #self.assertEqual(y_c[0],a*x1)
-        #self.assertEqual(y_c[1],b*x2)
 
      #   # now we want to transform the roof components of a vector (given wrt  the old cellar base)
      #   # to roof components wrt to the new cellar base
@@ -513,26 +569,6 @@ class IndexedTest(unittest.TestCase):
      #   ##self.assertEqual(y[2],1./b*x2)
      #   
     
-    #exmample old roof components to new roof codmponents 
-
-        Bc=VectorFieldBase("Bc")
-        # define the (Identety)transformation
-        IA=TensorIndexSet("IA",[br,Bc])
-        a,b=symbols("a,b")
-        IA[0,0]=1./a
-        IA[1,1]=1./b
-        x=TensorIndexSet("x",[bc])
-        x1,x2=symbols("x1,x2")
-        x[0]=x1
-        x[1]=x2
-        # Apply the Identity Tranformation.
-        y=TensorIndexSet("y")
-        y[j]=IA[i,j]*x[i]
-        self.assertEqual(y.bases,[Bc])
-        self.assertEqual(simplify(y[0]-x1/a),0)
-        self.assertEqual(simplify(y[1]-x2/b),0)
-        #raise("not finished")#see following lines
-        ## a possible alternative would be the following syntax
 
 
 
@@ -546,3 +582,9 @@ if  __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(concurrent_suite)
     #unittest.main()
+
+
+    # notes.
+    # *  make sure that a one form field base is created only once 
+    #    because the dual vector  field will not know who is it's dual
+    #    this is important for the implementaiton of rebase2

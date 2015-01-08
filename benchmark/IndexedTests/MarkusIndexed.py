@@ -7,7 +7,7 @@ from sympy import symbols, default_sort_key, Matrix
 from sympy.tensor import IndexedBase, Indexed, Idx
 from sympy.core import Expr, Tuple, Symbol, sympify, S
 from sympy.core.compatibility import is_sequence, string_types, NotIterable
-from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException,IndexRangeException,MissingBaseException, MissingConnectionException
+from Exceptions import IncompatibleShapeException, DualBaseExeption, BaseMisMatchExeption,ContractionIncompatibleBaseException,IndexRangeException,MissingBaseException, MissingConnectionException, NotImplementedException
 from TupelHelpers import  permuteTuple, extractIndices,changedTupleAtPos,changedTuple, deleteIndices, tupleLen
 from copy import deepcopy
 class PatchWithMetric(Patch):
@@ -173,15 +173,52 @@ class VectorFieldBase(object):
         if coordSystem:
             self.coord=coordSystem
             self.vecs=[BaseVector(coordSystem,i) for i in range(coordSystem.dim)]
+
+
+    def getDual(self):
+        if 'dual' in self.__dict__:
+            return(self.dual)
+        else:
+            return(OneFormFieldBase(self))
+
     def connect(self,oldBase,Mat):
         self.baseConnections[oldBase]=Mat
 
 ##########################################################
-class OneFormFieldBase(VectorFieldBase):
-    def __init__(self,vfb):
-        self.dual=vfb
-        # register in the base
-        vfb.dual=self
+class OneFormFieldBase(object):
+    #def __init__(self,vfb):
+    #    self.dual=vfb
+    #    # register in the base
+    #    vfb.dual=self
+           
+    def __new__(cls,VectorFieldBaseInstance=None):
+        # a OneFormFieldBase is by definition the dual base
+        # to a VectorFieldBaseInstance
+        # So we check if such a dual base has already been created
+        # and registered in the VectorFieldBaseInstance
+        # If so we copy the object instead of creating a new one
+        # this makes sure that there is only one dual base
+        if VectorFieldBaseInstance:
+            if "dual" in VectorFieldBaseInstance.__dict__:
+                obj=VectorFieldBaseInstance.dual
+            else:
+                obj=object.__new__(cls)
+                obj.dual=VectorFieldBaseInstance
+                # register in VectorFieldBaseInstance
+                VectorFieldBaseInstance.dual=obj
+        else:
+            obj=object.__new__(cls)
+           
+        obj.baseConnections={}
+        return(obj)
+    def getDual(self):
+        if 'dual' in self.__dict__:
+            return(self.dual)
+        else:
+            b=VectorFieldBase("")
+            b.dual=self
+            return(b)
+
 
 ##########################################################
 class TensorIndexSet(IndexedBase):
@@ -437,8 +474,65 @@ class VI(Indexed):
         args = list(map(sympify, args))
         return Expr.__new__(cls, base, *args, **kw_args)
 
-    def rebase2(self,newBases):
+
+
+    @staticmethod
+    def getBaseTransformationTensor(nb,ob):
+        dob=ob.getDual()
+        I=TensorIndexSet("I",[dob,nb])
+        # Note that the same connection of bases can be given in one of 4 forms
+        # connecting either
+        # C1.) new roof   to old roof
+        # C2.) new roof   to old cellar
+        # C3.) new cellar to old cellar
+        # C4.) new cellar to old roof 
+        # bases.
+        # So we have to check if one of those representations is given 
         
+        # We can also use any of the above representations to transform
+        # T1.) new roof   to old roof
+        # T2.) new roof   to old cellar
+        # T3.) new cellar to old cellar
+        # T4.) new cellar to old roof 
+        # components.
+        # So we have 16 possible scenarios to implement 
+        # which probably only lead to 2 different behaviours
+        # Either the components transform like the bases
+        # or inverse to them.
+        # e.g. 
+        # Let nb and ob both cellarBases then the transform key is (Tcc)
+        # Let the connection matrix M be given w.r.t the same bases
+        # then the connection key is Ccc
+        # 
+        # The matrix used to transform the old roof components to the 
+        # new ones is in this case M itself (see Simmonds ip.36 for a proof)
+        # We would therefore try to get this one to avoid computation
+        
+        if nb.__class__==ob.__class__: # no raising and lowering involved
+            dob=ob.getDual()
+            dnb=nb.getDual()
+            # try if the directly usable connection is already stored
+            if dob in dnb.baseConnections.keys():
+                TensMat=dnb.baseConnections[dob]
+            elif ob in nb.baseConnections.keys():
+                TensMat=(nb.baseConnections[ob]).inverse_LU()
+            else:
+                # we could try to look further and try to infer 
+                # the connection
+                raise(NotImplementedException)
+        else:
+            # raising and lowering would be involved 
+            # we do not do this at the moment
+            raise(NotImplementedException)
+        # assemble the Transformation Tensor from the matrix        
+        dim=TensMat.shape[0]
+        for i in range(dim):
+            for j in range(dim):
+                I[i,j]= TensMat[i,j]
+        return(I)
+
+
+    def rebase2(self,newBases):
         indices=self.indices
         oldBases=self.base.bases
         lo=len(oldBases)
@@ -449,29 +543,43 @@ class VI(Indexed):
         for pos in range(ln):
             nb=newBases[pos]
             ob=oldBases[pos]
-            if not(ob in nb.baseConnections.keys()):
-                raise(MissingConnectionException)
-            Mat=nb.baseConnections[ob]
-            #construct the dual base
-            if isinstance(ob,VectorFieldBase):
-                dob=OneFormFieldBase(ob)
-            else: 
-                dob=ob.dual
-            I=TensorIndexSet("I",[dob,nb])
-            # we know that the columns of M contain the components
-            # of the new base vectors w.r.t the old ones
-            # If we want to express a Tensor w.r.t the new bases
-            # we need the inverse transformation
-            InvMat=Mat.inverse_LU()
-            dim=Mat.shape[0]
-            for i in range(dim):
-                for j in range(dim):
-                    I[i,j]= InvMat[i,j]
-
+            #if isinstance(nb,VectorFieldBase):
+            #    if isinstance(ob,VectorFieldBase):
+            #        # the desired Transformation is T1
+            #        # now we have to find out in which form the connection is given
+            #        if ob in nb.baseConnections.keys()):
+            #            #direct hit, C1
+            #            Mat=nb.baseConnections[ob]
+            #            #find or construct the dual base
+            #            if 'dual' in ob.__dict__:
+            #                dob=ob.dual
+            #            else: 
+            #                dob=OneFormFieldBase(ob)
+            #            I=TensorIndexSet("I",[dob,nb])
+            #            # we know that the columns of M contain the components
+            #            # of the new base vectors w.r.t the old ones
+            #            # If we want to express a Tensor w.r.t the new bases
+            #            # we need the inverse transformation
+            #            InvMat=Mat.inverse_LU()
+            #            dim=Mat.shape[0]
+            #            for i in range(dim):
+            #                for j in range(dim):
+            #                    I[i,j]= InvMat[i,j]
+    
+            #            dummy=Idx("dummy")
+            #            orgind=indices[pos]
+            #            newkey=changedTupleAtPos(indices,dummy,pos)
+            #            newTensorIndexSet[indices]=newTensorIndexSet[newkey]*I[dummy,orgind]
+            #        else:
+            #            raise(NotImplementedException)
+            #    elif isinstance(nb,OneFormFieldBase):
+            #        raise(NotImplementedException)
+            I=self.getBaseTransformationTensor(nb,ob)
             dummy=Idx("dummy")
             orgind=indices[pos]
             newkey=changedTupleAtPos(indices,dummy,pos)
             newTensorIndexSet[indices]=newTensorIndexSet[newkey]*I[dummy,orgind]
+
         return(newTensorIndexSet[indices])
         #    t=Idx("t")
         #    u=Idx("u")
