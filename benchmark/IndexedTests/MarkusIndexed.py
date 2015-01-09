@@ -219,6 +219,8 @@ class OneFormFieldBase(object):
             b.dual=self
             return(b)
 
+    def connect(self,oldBase,Mat):
+        self.baseConnections[oldBase]=Mat
 
 ##########################################################
 class TensorIndexSet(IndexedBase):
@@ -480,34 +482,47 @@ class VI(Indexed):
     def getBaseTransformationTensor(nb,ob):
         dob=ob.getDual()
         I=TensorIndexSet("I",[dob,nb])
-        # Note that the same connection of bases can be given in one of 4 forms
-        # connecting either
-        # C1.) new roof   to old roof
-        # C2.) new roof   to old cellar
-        # C3.) new cellar to old cellar
-        # C4.) new cellar to old roof 
-        # bases.
-        # So we have to check if one of those representations is given 
+        # Note that a connection of bases is a transitiv relation
+        # e.g.  O N E  connection of 
+        # C1.) new cellar   to old cellar base  ,      which immediately implies  its inversese 
+        # C2.) old cellar   to new cellar base  ,      and also by the definition of the dual bases
+        # C3.) new roof     to old roof         ,      and its inverse 
+        # C4.) old roof     to new roof         
         
-        # We can also use any of the above representations to transform
-        # T1.) new roof   to old roof
-        # T2.) new roof   to old cellar
-        # T3.) new cellar to old cellar
-        # T4.) new cellar to old roof 
-        # components.
-        # So we have 16 possible scenarios to implement 
-        # which probably only lead to 2 different behaviours
-        # Either the components transform like the bases
-        # or inverse to them.
-        # e.g. 
-        # Let nb and ob both cellarBases then the transform key is (Tcc)
-        # Let the connection matrix M be given w.r.t the same bases
-        # then the connection key is Ccc
+        # so up to now it's bye one, get four
+
+        # if you now add a metric you add more possibilities
+        # because you can now raise and lower indices which means
+        # that you can connect a base to its dual which gives you
+        # C5.) new roof     to new cellar
+        # C6.) new cellar   to new roof
+        # C7.) old roof     to old cellar
+        # C8.) old cellar   to old roof
         # 
-        # The matrix used to transform the old roof components to the 
-        # new ones is in this case M itself (see Simmonds ip.36 for a proof)
-        # We would therefore try to get this one to avoid computation
+        # which you can combine with C1,..,C4
+        # to get some new possibilities
+        # 
+        # C9.)  new roof   to old cellar         
+        # C10.) old cellar to new roof 
+        # C11.) new cellar to old roof 
+        # C12.) old roof   to new cellar
         
+        # This was a first example of trasitivity 
+        # we can extend it by a base 
+        # A1 connected to A2 and B1
+        #   which is connected to B2 and C1
+        #        which is connected to ....
+        
+        # This implies a lot more connections 
+        # e.g. from A1 to C2.... which we could compute by composition (or matrix multiplication)
+        
+
+        # This raises questions how to implement this generaly
+        #
+        # For now we restrict ourselfes willfully to the already tested cases
+        # these are 
+        
+
         if nb.__class__==ob.__class__: # no raising and lowering involved
             dob=ob.getDual()
             dnb=nb.getDual()
@@ -518,7 +533,7 @@ class VI(Indexed):
                 TensMat=(nb.baseConnections[ob]).inverse_LU()
             else:
                 # we could try to look further and try to infer 
-                # the connection
+                # the connection but 
                 raise(NotImplementedException)
         else:
             # raising and lowering would be involved 
@@ -543,37 +558,6 @@ class VI(Indexed):
         for pos in range(ln):
             nb=newBases[pos]
             ob=oldBases[pos]
-            #if isinstance(nb,VectorFieldBase):
-            #    if isinstance(ob,VectorFieldBase):
-            #        # the desired Transformation is T1
-            #        # now we have to find out in which form the connection is given
-            #        if ob in nb.baseConnections.keys()):
-            #            #direct hit, C1
-            #            Mat=nb.baseConnections[ob]
-            #            #find or construct the dual base
-            #            if 'dual' in ob.__dict__:
-            #                dob=ob.dual
-            #            else: 
-            #                dob=OneFormFieldBase(ob)
-            #            I=TensorIndexSet("I",[dob,nb])
-            #            # we know that the columns of M contain the components
-            #            # of the new base vectors w.r.t the old ones
-            #            # If we want to express a Tensor w.r.t the new bases
-            #            # we need the inverse transformation
-            #            InvMat=Mat.inverse_LU()
-            #            dim=Mat.shape[0]
-            #            for i in range(dim):
-            #                for j in range(dim):
-            #                    I[i,j]= InvMat[i,j]
-    
-            #            dummy=Idx("dummy")
-            #            orgind=indices[pos]
-            #            newkey=changedTupleAtPos(indices,dummy,pos)
-            #            newTensorIndexSet[indices]=newTensorIndexSet[newkey]*I[dummy,orgind]
-            #        else:
-            #            raise(NotImplementedException)
-            #    elif isinstance(nb,OneFormFieldBase):
-            #        raise(NotImplementedException)
             I=self.getBaseTransformationTensor(nb,ob)
             dummy=Idx("dummy")
             orgind=indices[pos]
@@ -581,15 +565,6 @@ class VI(Indexed):
             newTensorIndexSet[indices]=newTensorIndexSet[newkey]*I[dummy,orgind]
 
         return(newTensorIndexSet[indices])
-        #    t=Idx("t")
-        #    u=Idx("u")
-        #    print(I.bases)
-        #    print(newTensorIndexSet.bases)
-        #    print(len(newTensorIndexSet.bases))
-        #    newTensorIndexSet[t]=newTensorIndexSet[dummy]*I[dummy,u]
-
-        #return(newTensorIndexSet[t])
-              
     
     def __mul__(self, other):
        
