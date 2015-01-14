@@ -90,6 +90,84 @@ class TestChangeOfBaseGivenByCellarVectorTransform(unittest.TestCase):
         s.assertEqual(simplify(y[0]-x1/a),0)
         s.assertEqual(simplify(y[1]-x2/b),0)
         
+    def test_oldRoofToNewRoofSecondOrder(s):
+        # old roof components to new roof components
+        # assume that between two cellar bases {B_j,j=1..n} and {b_i ,i=1..n}
+        # the following linear mapping exists
+        #                           i 
+        # Bn[j]=A[i,j]b[i]   Bn  = A   b
+        #                      j    j   i
+        #               i,j                            
+        # The indices Tn     w.r.t. the new  base Bn
+        #                                           l
+        #                                                       i,j
+        # of a second order tensor  represented by its indices t  wrt the old base b 
+        #                                                                           k             
+        # can be represented by
+        #   i,j          i      j  k,p
+        # Tn      = (A^-1) (A^-1) t      ( Simmonds p.37  eq. 2.36)
+        #                k      p 
+        #                                                                   k,l
+        # We also can represent this by two multiplications of the tensor t     b  b
+        #                                                                        k  l
+        #                            i       j 
+        # with an identity tensor   I   Bn  b  
+        #                             j   i       
+        # 
+        # the result is:                             
+        #
+        #   k,p             i       m   j       n    k,p      
+        # t     b  b      =I   Bn  b   I   Bn  b   t     b  b    
+        #        k  p        m   i      *n   j            k  p
+        #
+        #
+        #                   i       m   j      k,p        
+        #                 =I   Bn  b   I     t     Bn  b     
+        #                    m   i       p           j  k 
+        #                                         i
+        #
+        #                   i   j      k,p          
+        #                 =I   I     t    Bn   Bn      
+        #                    k   p          i    j  
+        #
+        #                   i,j
+        #                 =T   Bn   Bn      
+        #                        i    j  
+        #                                        
+        #                                        
+        #
+        #                                     i        i
+        # so by comparison the components    I  =(A^-1) 
+        #                                     *j       *j
+        #
+        t=TensorIndexSet("t",[s.bc,s.bc])
+        t_00,t_11=symbols("t_00,t_11")
+        t[0,0]=t_00
+        t[1,1]=t_11
+        inter=TensorIndexSet("inter")
+        T=TensorIndexSet("T")
+        # 1 manual alternative #########################################
+        # define the (Identety)transformation
+        IA=TensorIndexSet("IA",[s.Bc,s.br])
+        a,b=s.symbols
+        IA[0,0]=1./a
+        IA[1,1]=1./b
+        # Apply the Identity Tranformation.
+        i,j,k,p=map(Idx,["i","j","k","p"])
+        inter[j,p]=IA[j,k]*t[k,p] #pos 0
+        s.assertEqual(inter.bases,[s.Bc,s.bc])
+        T[i,j]=IA[i,p]*inter[j,p]
+        s.assertEqual(T.bases,[s.Bc,s.Bc])
+        #s.assertEqual(T[0,0],t_00/a**2)
+        #s.assertEqual(T[1,1],t_11/b**2)
+
+        T[i,j]=t[i,j].rebase2([s.Bc,s.Bc])
+        s.assertEqual(T.bases,[s.Bc,s.Bc])
+        s.assertEqual(T[0,0],t_00/a**2)
+        s.assertEqual(T[1,1],t_11/b**2)
+         
+
+
     def test_oldCellarToNewCellar(s):
         # old cellar components to new cellar components
         # assume that between two cellar bases {B_j,j=1..n} and {b_i ,i=1..n}

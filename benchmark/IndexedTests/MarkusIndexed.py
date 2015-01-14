@@ -1,4 +1,5 @@
-
+#!/usr/bin/python3
+# vim:set ff=unix expandtab ts=4 sw=4:
 from sympy.tensor.index_methods import get_contraction_structure, get_indices, _remove_repeated
 from sympy.diffgeom import Manifold, Patch, CoordSystem
 from sympy.tensor import Idx
@@ -107,15 +108,17 @@ class PatchWithMetric(Patch):
         g_old=self.metricRepresentations[firstCoordSystem]
         oldBases=g_old.bases
         oB0=oldBases[0] # first base
+        print("oldBases")
+        print(oldBases)
         if  isinstance(oB0,VectorFieldBase):
             # the second base must be of the same type 
             # in this case also
             newBase=VectorFieldBase("newBase",targetCoordinateSystem)
             newBase.connect(oB0,J)
-            print("blub2")
-            print(newBase)
         i, j= map(Idx, ['i', 'j'])
+        g_new=TensorIndexSet("g_new")
         g_new[i,j]=g_old[i,j].rebase2([newBase,newBase])
+        return(g_new)
         
 
 
@@ -549,20 +552,23 @@ class VI(Indexed):
 
     def rebase2(self,newBases):
         indices=self.indices
-        oldBases=self.base.bases
+        newTensorIndexSet=deepcopy(self.base)
+        oldBases=newTensorIndexSet.bases
         lo=len(oldBases)
         ln=len(newBases)
         if lo!=ln:
             raise(IncompatibleShapeException())
-        newTensorIndexSet=deepcopy(self.base)
         for pos in range(ln):
+            
             nb=newBases[pos]
             ob=oldBases[pos]
-            I=self.getBaseTransformationTensor(nb,ob)
-            dummy=Idx("dummy")
-            orgind=indices[pos]
-            newkey=changedTupleAtPos(indices,dummy,pos)
-            newTensorIndexSet[indices]=newTensorIndexSet[newkey]*I[dummy,orgind]
+            if nb!=ob: #check if transformation is necessary at all at this positon
+                I=self.getBaseTransformationTensor(nb,ob)
+                dummy=Idx("dummy")
+                i2=Idx("i2")
+                orgind=indices[pos]
+                newkey=changedTupleAtPos(indices,dummy,pos)
+                newTensorIndexSet[indices]=I[dummy,i2]*newTensorIndexSet[newkey]
 
         return(newTensorIndexSet[indices])
     
