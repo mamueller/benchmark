@@ -356,6 +356,7 @@ class IndexedTest(unittest.TestCase):
         i=Idx("i")
         print(type(x[i]))
         #res=Derivative(x[i],r,evaluate=True)
+        raise(Exception("The following line hangs we have to check the creation of the ingredients in new tests: metrics in the new coordinate system simple derivative without coord transformation"))
         res=diff(x[i],r)
         print((res))
         

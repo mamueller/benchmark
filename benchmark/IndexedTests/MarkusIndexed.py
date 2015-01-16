@@ -4,7 +4,7 @@ from sympy.tensor.index_methods import get_contraction_structure, get_indices, _
 from sympy.diffgeom import Manifold, Patch, CoordSystem
 from sympy.tensor import Idx
 from sympy.printing import pprint
-from sympy import symbols, default_sort_key, Matrix
+from sympy import symbols, default_sort_key, Matrix,zeros
 from sympy.tensor import IndexedBase, Indexed, Idx
 from sympy.core import Expr, Tuple, Symbol, sympify, S
 from sympy.core.compatibility import is_sequence, string_types, NotIterable
@@ -47,24 +47,31 @@ class PatchWithMetric(Patch):
         j=Idx("j")
         k=Idx("k")
         l=Idx("p")
-        bases=metric.bases
-        coords=bases[0].coords
-        reciprocalBase=OneFormFieldBase(coords)
+        b,b1=metric.bases
+        if b!=b1:
+            raise(Exception("a metric should be given w.r.t to identical Bases"))
+        coordSystem=b.coord
+        #reciprocalBases
+        db=b.getDual()
         # 1. case metric is given as roof roof
         grr=metric 
-        if all([isinstance(b,VectorFieldBase) for b in bases]): 
-            gcc=TensorIndexSet("gcc",[reciprocalBase,reciprocalBase])
-            mat=Matrix(self.dim,self.dim)
+        if all([isinstance(b,VectorFieldBase) for b in metric.bases]): 
+            Mf=self.manifold
+            dim=Mf.dim
+
+            mat=zeros(dim,dim)
             for i in range(dim):
                 for j in range(dim):
                     mat[i,j]=grr[i,j]
+            gcc=TensorIndexSet("gcc",[db,db])
+            print("blub4")
+            print(mat)
             InvMat=mat.inverse_LU()
             for i in range(dim):
                 for j in range(dim):
                     gcc[i,j]= InvMat[i,j]#exercise. 2.10 Simmonds
         
         cs=dict() 
-        dim=self.dim
         for k in range(dim):
             for i in range(dim):
                 for j in range(dim):
@@ -75,6 +82,7 @@ class PatchWithMetric(Patch):
                     +diff(gcc[j,p],i)
                     -diff(gcc[i,j],p)
                     ) for p in range(dim)])
+        print("blub5")
         return(cs)            
                     
     def deriveMetricFromConnection(self,nameOfTargetCoordinateSystem):  
@@ -134,14 +142,11 @@ class PatchWithMetric(Patch):
             self.metricRepresentations[nameOfCoordinateSystem]=s
         return(s)
     def christoffelSymbols(self,nameOfCoordinateSystem):
-        print("blub1")
         print(nameOfCoordinateSystem)
         if nameOfCoordinateSystem in self.ChristoffelCache.keys():
             s=self.ChristoffelCache[nameOfCoordinateSystem]
         else:
             metric=self.getMetricRepresentation(nameOfCoordinateSystem)
-            print("blub3")
-            print(metric)
             s=self.christoffelFromMetric(metric)
             # update chache
             self.ChristoffelCache[nameOfCoordinateSystem]=s
@@ -155,7 +160,11 @@ class BaseVector(object):
         self.coord=coordSystem
     def _eval_derivative(self):
         # find christoffel symbols
+        if  not("coord" in self.__dict__):
+            raise(NotImplementedException("At the moment only base vectors along the derivatives w.r.t. coordinates are supported, although by means of the chain rule the derivatives of connected base vectors could be computed" ))
         coord=self.coord
+        print("blub7")
+        print(coord)
         cname=coord.name
         patch=coord.patch
         cs=patch.christoffelSymbols(cname)
@@ -209,6 +218,8 @@ class OneFormFieldBase(object):
                 obj.dual=VectorFieldBaseInstance
                 # register in VectorFieldBaseInstance
                 VectorFieldBaseInstance.dual=obj
+            if "coord" in VectorFieldBaseInstance.__dict__:
+                obj.coord=VectorFieldBaseInstance.coord
         else:
             obj=object.__new__(cls)
            
@@ -627,16 +638,18 @@ class VI(Indexed):
         # the derivative of a basedyad is computed by the product rule
         # from the derivatives of the base vectors
         
-        #for the moment just face the dyads and components and go directly to the
+        #for the moment just fake the dyads and components and go directly to the
         # vector derivative
         IB=self.base
         # bases of the indexed object
         bases=IB.bases
         # extract the first vector field base
         b0=bases[0]
-        print(type(b0))
         # extract the first base vector 
         er=b0.vecs[0]
+
+        print("blub1")
+        print(type(b0))
         print(type(er))
         return(er._eval_derivative())
             
