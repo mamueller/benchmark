@@ -4,7 +4,7 @@ from sympy.tensor.index_methods import get_contraction_structure, get_indices, _
 from sympy.diffgeom import Manifold, Patch, CoordSystem
 from sympy.tensor import Idx
 from sympy.printing import pprint
-from sympy import symbols, default_sort_key, Matrix,zeros
+from sympy import symbols, default_sort_key, Matrix,zeros,simplify
 from sympy.tensor import IndexedBase, Indexed, Idx
 from sympy.core import Expr, Tuple, Symbol, sympify, S
 from sympy.core.compatibility import is_sequence, string_types, NotIterable
@@ -349,7 +349,7 @@ class TensorIndexSet(IndexedBase):
                             newData={}
                             newKeys=set([deleteIndices(k,dummyPositions) for k in newTensorIndexSet.data.keys()])
                             for nk in newKeys:
-                                newData[nk]=sum([newTensorIndexSet.data[k] for k in newTensorIndexSet.data.keys() if k[p0]==k[p1] and deleteIndices(k,dummyPositions)==nk])
+                                newData[nk]=simplify(sum([newTensorIndexSet.data[k] for k in newTensorIndexSet.data.keys() if k[p0]==k[p1] and deleteIndices(k,dummyPositions)==nk]))
                             newTensorIndexSet.data=newData
                             newTensorIndexSet.bases=newBases
                             freeIndices=[i for p,i in enumerate(freeIndices) if p in nonDummyPositions]

@@ -303,6 +303,74 @@ class IndexedTest(unittest.TestCase):
         self.assertEqual(res,set({r}))
         
 
+    def test_derivedMetricInNewCoordSystem(self):
+        # A metric is a property of a patch so 
+        # it is shared by all coordinate systems
+        # on this patch
+        # We define the typical euklidian metric
+        # by the metric tensor w.r.t the cartesian 
+        # base vectors
+        # system and then derive the form of
+        # the metric tensors w.r.t to the new base
+
+
+        #get the catesian cellar base vectors
+        dim=3
+        manyf = Manifold('M', dim)
+        patch = PatchWithMetric('P', manyf)
+        cart= CoordSystem('unitbase', patch)
+        cc=VectorFieldBase("cc",cart)
+        g=TensorIndexSet("g",[cc,cc])
+        for i in range(dim):
+            g[i,i]=1
+        i=Idx("i")
+        j=Idx("j")
+        patch.setMetric(cart,g)
+        longVecs= CoordSystem('longCellarBaseVectors', patch)
+        # now connect the two coordsystems by a transformation
+        x,y,z=symbols("x,y,z")
+        u,v,w=symbols("u v w",real=True)
+        lu,lv,lw=symbols("lu lv lw",real=True)
+        longVecs.connect_to(cart,
+            [u,
+             v,
+             w
+            ]
+            ,
+            [lu*u,
+             lv*v,
+             lw*w
+            ],
+            inverse=False
+        )
+        #another coordsystem
+        metric=patch.getMetricRepresentation('longCellarBaseVectors')
+        print(metric.bases)
+        #pprint(metric[0,0])
+        self.assertEqual(metric[0,0],lu**(-2))
+        self.assertEqual(metric[1,1],lv**(-2))
+        self.assertEqual(metric[2,2],lw**(-2))
+        spherical= CoordSystem('spherical', patch)
+        # now connect the two coordsystems by a transformation
+        r=symbols("r",positive=True,real=True)
+        phi,theta=symbols("phi,theta",real=True)
+        spherical.connect_to(cart,
+            [r,
+             phi,
+             theta
+            ]
+            ,
+            [r*cos(phi)*sin(theta) ,
+             r*sin(phi)*sin(theta),
+             r*cos(theta)
+            ],
+            inverse=False
+        )
+        metric=patch.getMetricRepresentation('spherical')
+        print(metric.bases)
+        print(metric.data)
+        raise(Exception("There must be a fixture for this"))
+
     def test_partial_derivative_of_VI_wrt_a_coordinate(self):
         # note that we not only need the partial derivative of the components 
         # but also the partial derivatives of the base vectors expressed as linear combinations
