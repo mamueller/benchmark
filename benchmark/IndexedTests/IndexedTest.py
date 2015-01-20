@@ -302,8 +302,70 @@ class IndexedTest(unittest.TestCase):
         res=x[i].free_symbols
         self.assertEqual(res,set({r}))
         
+    def test_derivedMetricInNewCoordSystem2d(self):
+        # A metric is a property of a patch so 
+        # it is shared by all coordinate systems
+        # on this patch
+        # We define the typical euklidian metric
+        # by the metric tensor w.r.t the cartesian 
+        # base vectors
+        # system and then derive the form of
+        # the metric tensors w.r.t to the new base
 
-    def test_derivedMetricInNewCoordSystem(self):
+
+        #get the catesian cellar base vectors
+        dim=2
+        manyf = Manifold('M', dim)
+        patch = PatchWithMetric('P', manyf)
+        cart= CoordSystem('unitbase', patch)
+        cc=VectorFieldBase("cc",cart)
+        g=TensorIndexSet("g",[cc,cc])
+        for i in range(dim):
+            g[i,i]=1
+        i=Idx("i")
+        j=Idx("j")
+        patch.setMetric(cart,g)
+        longVecs= CoordSystem('longCellarBaseVectors', patch)
+        # now connect the two coordsystems by a transformation
+        x,y=symbols("x y")
+        u,v=symbols("u v",real=True)
+        lu,lv=symbols("lu lv",real=True)
+        longVecs.connect_to(cart,
+            [u,
+             v
+            ]
+            ,
+            [lu*u,
+             lv*v
+            ],
+            inverse=False
+        )
+        #another coordsystem
+        metric=patch.getMetricRepresentation('longCellarBaseVectors')
+        print(metric.bases)
+        #pprint(metric[0,0])
+        self.assertEqual(metric[0,0],lu**(-2))
+        self.assertEqual(metric[1,1],lv**(-2))
+        polar= CoordSystem('polar', patch)
+        # now connect the two coordsystems by a transformation
+        r=symbols("r",positive=True,real=True)
+        phi,theta=symbols("phi,theta",real=True)
+        polar.connect_to(cart,
+            [r,
+             phi
+            ]
+            ,
+            [r*cos(phi)*sin(theta) ,
+             r*sin(phi)*sin(theta)
+            ],
+            inverse=False
+        )
+        metric=patch.getMetricRepresentation('polar')
+        print(metric.bases)
+        print(metric.data)
+        raise(Exception("There must be a fixture for this"))
+
+    def test_derivedMetricInNewCoordSystem3d(self):
         # A metric is a property of a patch so 
         # it is shared by all coordinate systems
         # on this patch

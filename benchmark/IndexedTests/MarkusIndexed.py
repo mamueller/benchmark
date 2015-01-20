@@ -241,6 +241,9 @@ class TensorIndexSet(IndexedBase):
     # this thing represents an indexset of a  tensor w.r.t a fixed base
     # It is not the tensor itself which is a multilinear mapping expressable w.r.t to any base 
     # but one such expression
+    def __simplifyComponents__(self):
+        pass
+        
     def __deepcopy__(self,memo):
         cls = self.__class__
         print(cls)
